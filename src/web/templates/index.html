@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline de Selección de Élite | Multi-Agent Financial System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+        <div class="globe globe-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="navbar glass-card">
+            <div class="brand">
+                <div class="brand-logo"><i class="fa-solid fa-chart-line-up"></i></div>
+                <div>
+                    <h1 class="brand-title">Elite Stock Selector MAS</h1>
+                    <span class="brand-subtitle">State Machine Multi-Agent Orchestrator (LangGraph + Open Source)</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/api/report/download" target="_blank" class="btn btn-outline">
+                    <i class="fa-solid fa-file-arrow-down"></i> Descargar Informe Daily
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <main class="main-content">
+            <!-- Control Panel & Tickers Input -->
+            <section class="control-section glass-card">
+                <div class="section-title">
+                    <i class="fa-solid fa-sliders"></i>
+                    <h2>Panel de Control y Selección de Tickers</h2>
+                </div>
+
+                <div class="input-group">
+                    <label for="tickerInput">Tickers Bursátiles (separados por coma):</label>
+                    <div class="input-row">
+                        <input type="text" id="tickerInput" class="form-control" value="NVDA, AAPL, TSLA, INTC" placeholder="Ej: NVDA, AAPL, MSFT, AMD">
+                        <button id="analyzeBtn" class="btn btn-primary">
+                            <i class="fa-solid fa-bolt"></i> Ejecutar Análisis Multi-Agente
+                        </button>
+                    </div>
+                </div>
+
+                <div class="presets-row">
+                    <span class="preset-label">Presets Rápidos:</span>
+                    <button class="btn-chip" onclick="setTickers('NVDA, AAPL, TSLA')">Big Tech Bullish</button>
+                    <button class="btn-chip" onclick="setTickers('AMD, INTC, MSFT')">Semiconductores</button>
+                    <button class="btn-chip" onclick="setTickers('AMZN, GOOGL, META')">MAG 7 Expansion</button>
+                </div>
+            </section>
+
+            <!-- Agent Execution Pipeline Status -->
+            <section id="progressSection" class="progress-section glass-card hidden">
+                <div class="progress-header">
+                    <span class="status-indicator spinning"><i class="fa-solid fa-spinner"></i></span>
+                    <h3 id="progressStatusText">Ejecutando Agentes en Cadena de Estados...</h3>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar" style="width: 0%;"></div>
+                </div>
+
+                <!-- Live Agent Execution Terminal Logs -->
+                <div class="terminal-box">
+                    <div class="terminal-header">
+                        <i class="fa-solid fa-terminal"></i>
+                        <span>Registro de Estado de Agentes (Live Stream)</span>
+                    </div>
+                    <div id="terminalLogs" class="terminal-logs">
+                        <!-- Dynamic logs appended here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="resultsSection" class="results-section">
+                <!-- Cards dynamically populated -->
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Sistema Multi-Agente Financiero &copy; 2026. Patrón de Orquestación Jerárquica LangGraph. Reconciliación Multi-Fuente SEC EDGAR + Finnhub + yfinance.</p>
+        </footer>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

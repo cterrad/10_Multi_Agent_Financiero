@@ -1,0 +1,19 @@
+# Caché del backtest: precios de yfinance y companyfacts de SEC EDGAR (~250 MB).
+# Se regenera con `python backtest_cli.py` (sin --offline) en la primera pasada.
+data/cache/
+
+# Salidas generadas
+output/*.png
+output/*.csv
+output/regimes/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Entornos y secretos
+.env
+.venv/
+venv/

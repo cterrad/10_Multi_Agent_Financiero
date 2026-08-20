@@ -1,0 +1,165 @@
+[
+  {
+    "ticker": "DOCN",
+    "company_name": "DigitalOcean Holdings, Inc.",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "sec_edgar_data": {
+      "status": "SUCCESS",
+      "source": "SEC EDGAR (Oficial)",
+      "cik": "0001582961",
+      "revenues": 539089000.0,
+      "net_income": 51208000.0,
+      "total_assets": 3123053000.0,
+      "total_liabilities": 2192322000.0
+    },
+    "finnhub_data": {
+      "status": "ERROR",
+      "source": "Finnhub"
+    },
+    "yfinance_data": {
+      "status": "SUCCESS",
+      "ticker": "DOCN",
+      "company_name": "DigitalOcean Holdings, Inc.",
+      "sector": "Technology",
+      "industry": "Software - Infrastructure",
+      "current_price": 116.66000366210938,
+      "fundamentals": {
+        "revenue_growth": 0.286,
+        "net_margin": 0.23265,
+        "debt_to_equity": 2.12506,
+        "roe": 0.62273,
+        "pe_ratio": 56.907322,
+        "market_cap": 13638499328
+      },
+      "technical": {
+        "close": 116.66000366210938,
+        "rsi": 47.68,
+        "macd": -1.943,
+        "macd_signal": -2.666,
+        "macd_hist": 0.723,
+        "bb_upper": 138.66,
+        "bb_lower": 109.56,
+        "atr": 11.56,
+        "sma_50": 137.91,
+        "sma_200": 93.11,
+        "volume_rel": 0.83
+      },
+      "price_history_summary": {
+        "min_52w": 29.6200008392334,
+        "max_52w": 187.5,
+        "close_today": 116.66000366210938,
+        "change_1m_pct": -0.11048410910191754
+      }
+    },
+    "reconciliation_data": {
+      "status": "HIGH_CONFIDENCE",
+      "ticker": "DOCN",
+      "confidence_score": 1.0,
+      "sources_consulted": [
+        "yfinance",
+        "SEC EDGAR (Oficial)"
+      ],
+      "discrepancies": [],
+      "reconciled_metrics": {
+        "revenue_growth": 0.286,
+        "net_margin": 0.23265,
+        "debt_to_equity": 2.12506,
+        "roe": 0.62273,
+        "pe_ratio": 56.907322
+      }
+    },
+    "fundamental_report": {
+      "passed_gatekeeper": true,
+      "status": "APROBADO",
+      "metrics": {
+        "revenue_growth": 0.286,
+        "net_margin": 0.23265,
+        "debt_to_equity": 2.12506,
+        "roe": 0.62273,
+        "pe_ratio": 56.907322
+      },
+      "reasons": [],
+      "confidence_score": 1.0,
+      "discrepancies": [],
+      "summary": [
+        {
+          "type": "text",
+          "text": "DOCN demuestra una salud financiera sobresaliente, respaldada por un crecimiento de ingresos del 28.6% y una alta rentabilidad reflejada en un margen neto del 23.3% y un ROE del 62.3%. Aunque presenta un apalancamiento elevado con una relación Deuda/Capital de 2.13, sus sólidos fundamentales justifican la superación del filtro y su aprobación como Gatekeeper.",
+          "extras": {
+            "signature": "El4KXAERTTIPV0thxtzZbNeHVEi+wDb1j6EfAN1PSahJskItW842btghq62HOYC6q1NCK+DDhddfayVw13KkbndpkB4BYWyLezbuWLWTQb1LTjg+IhPXTH5W3xsp9b+x"
+          }
+        }
+      ]
+    },
+    "technical_report": {
+      "momentum_classification": "NEUTRAL",
+      "rsi": 47.68,
+      "macd": -1.943,
+      "macd_signal": -2.666,
+      "macd_hist": 0.723,
+      "atr": 11.56,
+      "bb_upper": 138.66,
+      "bb_lower": 109.56,
+      "sma_50": 137.91,
+      "sma_200": 93.11,
+      "signals": [
+        "RSI neutral (30-50)",
+        "MACD con cruce alcista y momentum positivo"
+      ],
+      "summary": [
+        {
+          "type": "text",
+          "text": "DigitalOcean (DOCN) cotiza en $116.66 con un RSI de 47.7, reflejando indecisión y ausencia de fuerza direccional dominante en el corto plazo. No obstante, el MACD (-1.943) se ubica por encima de su línea de señal (-2.666), sugiriendo un tímido sesgo alcista que podría dinamizar el momentum si logra romper la neutralidad actual.",
+          "extras": {
+            "signature": "El4KXAERTTIPnoumjFkF4MJxOT3zEVHi6yiiJ31tywuvR4lhRhQeHMl7PrUWZUcjjgAod035B9bZXwlH9QRsyJYBGHdLoBuXeG6WFRK5H5TIujnOfa66l9bjtiRaEKnD"
+          }
+        }
+      ]
+    },
+    "debate_report": {
+      "bullish_case": "TESIS ALCISTA (DOCN): Excelente crecimiento de ingresos (28.6%) demostrando expansión de mercado. Margen neto sólido del 23.3%, garantizando rentabilidad y generación de caja. Estructura técnica con clasificación NEUTRAL y RSI de 47.7 en zona de fuerte impulso.",
+      "bearish_case": "TESIS BAJISTA (DOCN): Múltiplo P/E elevado (56.9x) que sugiere sobrevaloración. Carga financiera moderada/alta con Deuda/Capital en 2.13.",
+      "synthesis": [
+        {
+          "type": "text",
+          "text": "A continuación, se presenta la síntesis del debate de inversión sobre **DigitalOcean (DOCN)**:\n\n### **Síntesis del Debate de Inversión: DOCN**\n\n*   **Tesis Alcista (Bull Case):** \n    La compañía destaca por un excelente crecimiento de sus ingresos del 28.6%, lo que evidencia una sólida expansión en su mercado objetivo. Este dinamismo comercial se traduce en un margen neto muy saludable del 23.3%, garantizando una alta rentabilidad y una fuerte capacidad de generación de caja. Desde el punto de vista técnico, el valor presenta una clasificación neutral con un RSI de 47.7, situándose en una zona propicia para un fuerte impulso alcista.\n\n*   **Tesis Bajista (Bear Case):** \n    Los principales riesgos se centran en su elevada valoración, reflejada en un múltiplo Precio/Beneficio (P/E) de 56.9x que sugiere que el precio actual ya incorpora grandes expectativas de crecimiento. Asimismo, preocupa su estructura de capital, la cual muestra una carga financiera moderada a alta con un ratio de Deuda/Capital de 2.13, limitando su flexibilidad financiera ante posibles escenarios adversos.\n\n---\n\n### **Conclusión Imparcial**\nDigitalOcean demuestra una combinación atractiva de fuerte crecimiento operativo y alta rentabilidad, respaldada por fundamentales financieros sólidos en su negocio principal. Sin embargo, esta calidad operativa viene acompañada de una valoración exigente y un apalancamiento financiero que incrementan el riesgo ante cualquier desviación en sus resultados futuros. Por lo tanto, los inversores deben ponderar si el dinamismo de sus ingresos compensa el precio pagado y la exposición a su actual estructura de deuda.",
+          "extras": {
+            "signature": "El4KXAERTTIPwSM/7TEcjAwPRwXQDvRADgAYVZM/iua4tALEni6J5oUN9skQbYngE6gjP6bJ313lYO6DHVZnGoteQYcPoAa7x7kCnyFoGRCfn4vLWTbvUPBlsdfMw65F"
+          }
+        }
+      ]
+    },
+    "final_decision": {
+      "rating": "MANTENER",
+      "position_size_pct": "2.0% - 3.0%",
+      "current_price": 116.66000366210938,
+      "stop_loss_atr": 93.54,
+      "take_profit_atr": 157.12,
+      "rationale": "Fundamentales aprobados con éxito. Momentum técnico classified como NEUTRAL. Síntesis de debate: [{'type': 'text', 'text': 'A continuación, se presenta la síntesis del debate de inversión sobre **DigitalOcean (DOCN)**:\\n\\n### **Síntesis del Debate de Inversión: DOCN**\\n\\n*   **Tesis Alcista (Bull Case):** \\n    La compañía destaca por un excelente crecimiento de sus ingresos del 28.6%, lo que evidencia una sólida expansión en su mercado objetivo. Este dinamismo comercial se traduce en un margen neto muy saludable del 23.3%, garantizando una alta rentabilidad y una fuerte capacidad de generación de caja. Desde el punto de vista técnico, el valor presenta una clasificación neutral con un RSI de 47.7, situándose en una zona propicia para un fuerte impulso alcista.\\n\\n*   **Tesis Bajista (Bear Case):** \\n    Los principales riesgos se centran en su elevada valoración, reflejada en un múltiplo Precio/Beneficio (P/E) de 56.9x que sugiere que el precio actual ya incorpora grandes expectativas de crecimiento. Asimismo, preocupa su estructura de capital, la cual muestra una carga financiera moderada a alta con un ratio de Deuda/Capital de 2.13, limitando su flexibilidad financiera ante posibles escenarios adversos.\\n\\n---\\n\\n### **Conclusión Imparcial**\\nDigitalOcean demuestra una combinación atractiva de fuerte crecimiento operativo y alta rentabilidad, respaldada por fundamentales financieros sólidos en su negocio principal. Sin embargo, esta calidad operativa viene acompañada de una valoración exigente y un apalancamiento financiero que incrementan el riesgo ante cualquier desviación en sus resultados futuros. Por lo tanto, los inversores deben ponderar si el dinamismo de sus ingresos compensa el precio pagado y la exposición a su actual estructura de deuda.', 'extras': {'signature': 'El4KXAERTTIPwSM/7TEcjAwPRwXQDvRADgAYVZM/iua4tALEni6J5oUN9skQbYngE6gjP6bJ313lYO6DHVZnGoteQYcPoAa7x7kCnyFoGRCfn4vLWTbvUPBlsdfMw65F'}}]",
+      "summary": [
+        {
+          "type": "text",
+          "text": "**ORDEN EJECUTIVA DE INVERSIÓN: DOCN**\n\nTras una revisión exhaustiva, se emite un dictamen de **MANTENER** para DigitalOcean (DOCN) a un precio actual de **$116.66**, estableciendo una asignación táctica de cartera entre el **2.0% y el 3.0%**. Esta decisión equilibra los sólidos fundamentales y el margen neto del 23.3% frente a una valoración exigente (P/E de 56.9x) y un momento técnico neutral, respaldados por una gestión de riesgo estricta fijada en un Stop-Loss ATR de **$93.54** y un Take-Profit ATR de **$157.12**.",
+          "extras": {
+            "signature": "El4KXAERTTIPVV0xiX4lsRjnXv9dA3D8MaIB0lc6yrqBUuiCv9KskLT1+uxq3O2ahSdFPNQRJkCCiMoSpKMrKhI9iRZR4qXnA/uheKSQJ3DUvLG6L7YZlb2Yk+fHSRIG"
+          }
+        }
+      ]
+    },
+    "passed_fundamental_gatekeeper": true,
+    "workflow_status": "COMPLETED",
+    "logs": [
+      "[Ingesta] Recolectando datos multi-fuente para DOCN...",
+      "[Reconciliación] Puntuación de confianza: 1.0, Fuentes: ['yfinance', 'SEC EDGAR (Oficial)']",
+      "[Gatekeeper Fundamental] Evaluando salud financiera para DOCN...",
+      "[Gatekeeper Fundamental] Resultado: APROBADO -> Continuando a Análisis Técnico",
+      "[Analista Técnico] Evaluando indicadores de momentum para DOCN...",
+      "[Analista Técnico] Momentum clasificado como: NEUTRAL",
+      "[Capa de Debate] Ejecutando confrontación Bullish vs Bearish para DOCN...",
+      "[Capa de Debate] Síntesis finalizada.",
+      "[Fund Manager] Sintetizando informes y emitiendo recomendación final para DOCN...",
+      "[Fund Manager] DICTAMEN FINAL: MANTENER"
+    ]
+  }
+]
