@@ -57,21 +57,64 @@ class StubPriceStore:
         return w if not w.empty else None
 
 
-class StubFundamentals:
-    """Fundamentales que siempre aprueban el gatekeeper."""
+def _serie(valor, factor=0.85, n=2):
+    """Serie anual sintética: el ejercicio más reciente y otro peor detrás."""
+    return [valor * (factor ** i) for i in range(n)]
 
-    def __init__(self, available=True, **overrides):
+
+class StubFundamentals:
+    """
+    Fundamentales que siempre aprueban el gatekeeper.
+
+    Implementa también `estados_financieros()` porque el `QualityAnalystAgent`
+    entró en la ruta de decisión del replay: sin estados, el agente degradaría
+    a DATOS_INSUFICIENTES y el Fund Manager limitaría todo a MANTENER, con lo
+    que los tests de la tabla de decisión dejarían de probar lo que dicen
+    probar.
+    """
+
+    def __init__(self, available=True, con_estados=True, **overrides):
         self.base = {"revenue_growth": 0.20, "net_margin": 0.15, "debt_to_equity": 1.0,
-                     "roe": 0.30, "pe_ratio": 20.0, "market_cap": 0,
+                     "roe": 0.30, "pe_ratio": 20.0, "market_cap": 1.0e10,
                      "available": available, "as_of_period_end": "2019-12-31",
                      "filed": "2020-02-15"}
         self.base.update(overrides)
+        self.con_estados = con_estados
 
     def as_of(self, ticker, date):
         return dict(self.base)
 
     def sec_payload(self, ticker, date):
         return {"status": "NOT_USED", "source": "SEC EDGAR"}
+
+    def estados_financieros(self, ticker, date):
+        if not self.con_estados:
+            return {"disponible": False, "bloques_ok": [],
+                    "bloques_fallidos": ["balance", "resultados", "flujos"],
+                    "balance": {}, "resultados": {}, "flujos": {}}
+        return {
+            "disponible": True, "bloques_ok": ["balance", "resultados", "flujos"],
+            "bloques_fallidos": [],
+            "balance": {
+                "activos_totales": _serie(1.0e10), "pasivos_totales": _serie(4.0e9),
+                "patrimonio": _serie(6.0e9), "activo_corriente": _serie(3.0e9),
+                "pasivo_corriente": _serie(1.2e9), "beneficios_retenidos": _serie(3.5e9),
+                "deuda_largo_plazo": _serie(1.8e9), "deuda_total": _serie(2.0e9),
+                "acciones_emitidas": _serie(5.0e8, 1.005), "efectivo": _serie(1.0e9),
+                "inmovilizado": _serie(3.0e9), "fondo_comercio": [], "intangibles": [],
+            },
+            "resultados": {
+                "ingresos": _serie(5.0e9), "beneficio_bruto": _serie(2.75e9),
+                "ebit": _serie(1.25e9), "beneficio_neto": _serie(7.5e8),
+                "gastos_financieros": _serie(8.0e7), "impuestos": _serie(2.0e8),
+                "beneficio_antes_impuestos": _serie(9.5e8),
+            },
+            "flujos": {
+                "flujo_operativo": _serie(9.0e8), "capex": _serie(-3.0e8),
+                "flujo_libre": _serie(6.0e8), "dividendos_pagados": [], "recompras": [],
+            },
+            "reconstruido_point_in_time": True,
+        }
 
 
 # --------------------------------------------------------------------------- #
@@ -218,24 +261,67 @@ def test_llm_is_decision_neutral():
 
 def test_replay_matches_production_decision_table():
     """
-    El replay debe reproducir la tabla de decisión de `fund_manager.py:43-65`,
-    no una reimplementación suya.
+    El replay debe reproducir la tabla de decisión del `FundManagerAgent`, no
+    una reimplementación suya.
+
+    Los múltiplos de ATR ya no son constantes: dependen del estilo asignado por
+    el Analista de Calidad (`ATR_AJUSTE_POR_ESTILO`), porque una compounder y
+    una cíclica volátil no necesitan el mismo aire. El test los lee de la misma
+    tabla que usa producción en lugar de fijar 2.0 y 3.5 a mano — así sigue
+    detectando una reimplementación en la capa de backtest, que es lo que debe
+    vigilar, sin romperse cada vez que se recalibra un múltiplo.
     """
+    from src.config import ATR_AJUSTE_POR_ESTILO
+
     df = make_prices(n=400, drift=0.0015, vol=0.008, seed=3)  # tendencia clara
     r = HistoricalReplayer(StubPriceStore({"T": df}), StubFundamentals(), mode="pit")
     s = r.signal("T", df.index[-1])
     assert s is not None
-    assert s.rating in {"COMPRA FUERTE", "COMPRA", "MANTENER", "VENTA", "VENTA FUERTE"}
+    assert s.rating in {"COMPRA FUERTE", "COMPRA", "MANTENER", "VENTA",
+                        "VENTA FUERTE", "SIN OPINION"}
 
     if s.rating in ("COMPRA FUERTE", "COMPRA"):
-        # SL = close - 2.0*ATR y TP = close + 3.5*ATR, redondeados a 2 decimales.
-        assert s.stop_loss == pytest.approx(round(s.close - 2.0 * s.atr, 2))
-        assert s.take_profit == pytest.approx(round(s.close + 3.5 * s.atr, 2))
-    if s.rating == "COMPRA FUERTE":
-        assert s.momentum == "ALCISTA_FUERTE" and s.rsi < 70
-        assert s.target_weight == pytest.approx(0.09)
-    if s.rating == "COMPRA":
-        assert s.target_weight == pytest.approx(0.055)
+        ajuste = ATR_AJUSTE_POR_ESTILO.get(s.estilo, ATR_AJUSTE_POR_ESTILO["MIXTA"])
+        assert s.stop_loss == pytest.approx(round(s.close - ajuste["stop"] * s.atr, 2))
+        assert s.take_profit == pytest.approx(round(s.close + ajuste["objetivo"] * s.atr, 2))
+        # El peso ya no sale de una tabla del backtest: lo emite el Fund Manager.
+        assert 0.0 < s.target_weight <= 0.10
+    else:
+        assert s.target_weight == 0.0
+
+
+def test_signal_arrastra_el_dictamen_de_calidad():
+    """
+    El replay ejecuta el Analista de Calidad y propaga su dictamen.
+
+    Desde que la convicción fundamental entra en el rating, omitirlo en el
+    backtest mediría una lógica distinta de la que decide en producción.
+    """
+    df = make_prices(n=400, drift=0.0015, vol=0.008, seed=3)
+    r = HistoricalReplayer(StubPriceStore({"T": df}), StubFundamentals(), mode="pit")
+    s = r.signal("T", df.index[-1])
+    assert s is not None
+    assert s.estilo is not None and s.estilo != "DATOS_INSUFICIENTES"
+    assert s.conviccion is not None and 0.0 <= s.conviccion <= 100.0
+    assert s.banderas_rojas >= 0
+
+
+def test_sin_estados_financieros_la_calidad_limita_el_dictamen():
+    """
+    Sin estados financieros reconstruibles, el sistema no puede tener
+    convicción y el Fund Manager no debe emitir una compra.
+
+    Es la traducción operativa de «no sé, luego no arriesgo»: la degradación
+    tiene que ser hacia la prudencia, nunca hacia una compra por defecto.
+    """
+    df = make_prices(n=400, drift=0.0015, vol=0.008, seed=3)
+    sin_estados = StubFundamentals(con_estados=False)
+    r = HistoricalReplayer(StubPriceStore({"T": df}), sin_estados, mode="pit")
+    s = r.signal("T", df.index[-1])
+    assert s is not None
+    assert s.estilo == "DATOS_INSUFICIENTES"
+    assert s.rating not in ("COMPRA", "COMPRA FUERTE")
+    assert s.target_weight == 0.0
 
 
 def test_gatekeeper_rejection_forces_sell_and_no_levels():

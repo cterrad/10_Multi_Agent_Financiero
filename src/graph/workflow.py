@@ -7,6 +7,7 @@ from src.data.finnhub_client import FinnhubClient
 from src.data.reconciler import DataReconciler
 from src.data.news import recolectar as recolectar_noticias
 from src.agents.fundamental import FundamentalAnalystAgent
+from src.agents.quality import QualityAnalystAgent
 from src.agents.technical import TechnicalAnalystAgent
 from src.agents.news import NewsAnalystAgent
 from src.agents.debate import DebateUnitAgent
@@ -19,6 +20,7 @@ finnhub_client = FinnhubClient()
 reconciler = DataReconciler()
 
 fundamental_agent = FundamentalAnalystAgent()
+quality_agent = QualityAnalystAgent()
 technical_agent = TechnicalAnalystAgent()
 news_agent = NewsAnalystAgent()
 debate_agent = DebateUnitAgent()
@@ -45,6 +47,48 @@ def node_ingest_and_reconcile(state: FinancialAnalysisState) -> Dict[str, Any]:
         "finnhub_data": fh_data,
         "reconciliation_data": rec_data,
         "workflow_status": "INGESTED",
+        "logs": logs
+    }
+
+def node_quality_analysis(state: FinancialAnalysisState) -> Dict[str, Any]:
+    """
+    Analista de Calidad y Valoración.
+
+    Corre SECUENCIALMENTE entre `ingest` y el fan-out, no en paralelo, por dos
+    motivos:
+
+      1. Es cálculo puro sobre datos ya ingeridos —no toca la red—, así que
+         paralelizarlo no ahorra latencia; solo añadiría un tercer escritor al
+         mismo superstep, y `FinancialAnalysisState` no declara reductores.
+      2. Situarlo ANTES del gatekeeper hace que sus puntuaciones y banderas
+         rojas estén disponibles para TODOS los valores, incluidos los que el
+         gatekeeper rechace. Un Altman en zona de insolvencia es justamente la
+         información que se quiere leer sobre una empresa rechazada, y con el
+         orden inverso se habría perdido.
+
+    A diferencia del Analista de Noticias, este dictamen SÍ es variable de
+    decisión: el Fund Manager cruza `conviccion_fundamental` con el momentum.
+    Por eso el backtest lo ejecuta.
+    """
+    ticker = state["ticker"]
+    logs = state.get("logs", [])
+    logs.append(f"[Analista de Calidad] Evaluando calidad, valoración y solvencia de {ticker}...")
+
+    report = quality_agent.analyze(state)
+    conviccion = (report.get("conviccion_fundamental") or {}).get("valor")
+    logs.append(
+        f"[Analista de Calidad] Estilo: {report.get('style_classification')} | "
+        f"Convicción: {conviccion} | "
+        f"Piotroski: {report.get('piotroski', {}).get('score')} | "
+        f"Altman: {report.get('altman', {}).get('zona')} | "
+        f"Cobertura de datos: {report.get('cobertura_global', 0.0):.0%}"
+    )
+    if report.get("banderas_rojas"):
+        logs.append(f"[Analista de Calidad] Banderas rojas: {'; '.join(report['banderas_rojas'])}")
+
+    return {
+        "quality_report": report,
+        "workflow_status": "QUALITY_EVALUATED",
         "logs": logs
     }
 
@@ -185,6 +229,7 @@ def build_financial_workflow():
 
     # Agregar Nodos
     workflow.add_node("ingest", node_ingest_and_reconcile)
+    workflow.add_node("quality_analysis", node_quality_analysis)
     workflow.add_node("gatekeeper", node_fundamental_gatekeeper)
     workflow.add_node("news_analysis", node_news_analysis)
     workflow.add_node("join_analisis", node_join_analisis)
@@ -197,8 +242,9 @@ def build_financial_workflow():
 
     # Fan-out: el gatekeeper (cálculo puro) y el analista de noticias (tres
     # buscadores de red) no dependen el uno del otro y corren a la vez.
-    workflow.add_edge("ingest", "gatekeeper")
-    workflow.add_edge("ingest", "news_analysis")
+    workflow.add_edge("ingest", "quality_analysis")
+    workflow.add_edge("quality_analysis", "gatekeeper")
+    workflow.add_edge("quality_analysis", "news_analysis")
 
     # Unión antes de ramificar. El enrutado condicional cuelga del nodo de
     # unión, no del gatekeeper: así las dos ramas del fan-out han terminado
@@ -226,13 +272,52 @@ def build_financial_workflow():
 # Instancia del grafo compilado
 financial_app = build_financial_workflow()
 
-def run_stock_analysis(ticker: str) -> FinancialAnalysisState:
-    """Función de alto nivel para ejecutar el pipeline de un ticker."""
+def run_stock_analysis(ticker: str,
+                       benchmark_data: Dict[str, Any] = None) -> FinancialAnalysisState:
+    """
+    Ejecuta el pipeline completo de un ticker.
+
+    `benchmark_data` es opcional y contiene las rentabilidades del índice de
+    referencia (ver `cargar_benchmark`). Cuando está, el Analista Técnico
+    calcula momentum RELATIVO; sin él, momentum absoluto, y lo declara en el
+    informe. No se descarga aquí dentro para no repetir la misma petición una
+    vez por ticker: quien orquesta el lote la hace una sola vez.
+    """
     initial_state: FinancialAnalysisState = {
         "ticker": ticker.upper(),
         "logs": [],
         "passed_fundamental_gatekeeper": False,
-        "workflow_status": "INITIALIZED"
+        "workflow_status": "INITIALIZED",
+        "benchmark_data": benchmark_data or {},
     }
     result = financial_app.invoke(initial_state)
     return result
+
+
+def cargar_benchmark(ticker: str = "SPY") -> Dict[str, Any]:
+    """
+    Rentabilidades del índice de referencia, para medir momentum relativo.
+
+    Sin esta referencia, «el valor sube un 20% a doce meses» no distingue
+    habilidad de selección de simple exposición al mercado — que es
+    precisamente la crítica que el contraste de Monte Carlo del backtest hace
+    a la estrategia. Un fallo de red devuelve un dict vacío y el sistema
+    degrada a momentum absoluto en lugar de detenerse.
+    """
+    try:
+        datos = fetcher.fetch_all(ticker)
+        if datos.get("status") != "SUCCESS":
+            return {}
+        resumen = datos.get("price_history_summary", {})
+        return {
+            "ticker": ticker.upper(),
+            "change_1m_pct": resumen.get("change_1m_pct"),
+            "change_3m_pct": resumen.get("change_3m_pct"),
+            "change_6m_pct": resumen.get("change_6m_pct"),
+            "change_12m_pct": resumen.get("change_12m_pct"),
+            "volatilidad_anual": datos.get("technical", {}).get("volatilidad_anual"),
+        }
+    except Exception as e:
+        print(f"[Benchmark] No se pudo cargar {ticker}: {e}. "
+              f"El momentum se calculará en términos absolutos.")
+        return {}

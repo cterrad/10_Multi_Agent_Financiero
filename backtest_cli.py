@@ -113,12 +113,15 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
             "conclusión no cambia, pero la cifra publicada es algo más pesimista de lo que "
             "sería con una gestión de tesorería realista.")
         lims.append(
-            "**El sistema no define qué hacer con el efectivo sobrante.** Emite pesos por "
-            "posición (8-10% / 4-7%) pero nunca dice cuántas posiciones abrir ni cómo "
-            "invertir el resto. La exposición del "
-            f"{avg_exposure:.0%} es una consecuencia emergente de cuántas señales de compra "
-            "aparecen, no una decisión de diseño. Buena parte de la diferencia frente al "
-            "índice es simplemente no estar invertido.")
+            "**La exposición sigue siendo emergente, aunque ya no arbitraria.** El Fund "
+            "Manager emite ahora un peso NUMÉRICO por posición, derivado de un presupuesto "
+            "de riesgo (riesgo asumible / distancia al stop, escalado por volatilidad), y "
+            "`src/portfolio/construccion.py` aplica límites por sector, penalización por "
+            "correlación y un tope de exposición bruta. Pero el backtest recorre un ticker "
+            "cada vez: la exposición del "
+            f"{avg_exposure:.0%} sigue siendo consecuencia de cuántas señales de compra "
+            "aparecen, no de una decisión de asignación agregada. Integrar la capa de "
+            "cartera en el motor histórico es trabajo pendiente.")
 
     if regime == "pit":
         lims.append(
@@ -138,6 +141,21 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
         lims.append(
             "**Gatekeeper neutralizado.** Este régimen desactiva el filtro fundamental para "
             "aislar la capa técnica. No mide el sistema completo, sino la mitad de él.")
+
+    lims.append(
+        "**Normas sectoriales estáticas.** El contexto de valoración compara cada múltiplo "
+        "contra una mediana de largo plazo del mercado estadounidense (`SECTOR_NORMAS` en "
+        "`src/config.py`), no contra la mediana viva del sector en la fecha simulada. En un "
+        "backtest de once años eso introduce un anacronismo: el P/E mediano del software en "
+        "2015 no era el de 2025. Las etiquetas de estilo ordenan y contextualizan, pero no "
+        "deben leerse como una valoración relativa exacta.")
+
+    lims.append(
+        "**Coste de capital constante.** El ROIC se compara contra un WACC de referencia "
+        "único (`WACC_REFERENCIA`) en lugar de estimarlo por empresa y por fecha. Es una "
+        "decisión consciente —la dispersión de un WACC estimado con beta y estructura de "
+        "capital superaría la señal que aporta— pero implica que «crea valor» significa "
+        "«supera un umbral fijo», no «supera su propio coste de capital».")
 
     lims.append(
         f"**Sesgo de supervivencia.** El universo son {n_universe} valores seleccionados hoy "
@@ -219,8 +237,23 @@ NEXT_STEPS = [
     "evaluar 2020-2025 como out-of-sample estricto, sin volver a mirar el periodo de test.",
     "Añadir datos intradía (o al menos barras horarias) para resolver correctamente el "
     "orden entre stop y objetivo dentro de la misma sesión.",
-    "Corregir `_extract_recent_fact()` en `src/data/sec_edgar.py` para que ordene por `filed` "
-    "y no por `end`: hoy es un look-ahead latente que también afecta a producción en tiempo real.",
+    "Integrar `src/portfolio/construccion.py` en el motor histórico. Hoy el backtest "
+    "dimensiona posición a posición con el peso que emite el Fund Manager, pero no aplica "
+    "los límites por sector, la penalización por correlación ni el presupuesto de riesgo "
+    "agregado que sí se aplican en vivo. Hasta que se integre, el backtest mide una cartera "
+    "más concentrada que la que el sistema recomendaría hoy.",
+    "Sustituir `SECTOR_NORMAS` por la mediana calculada sobre un conjunto de comparables en "
+    "cada fecha. Es lo que convierte el contexto sectorial de una referencia estática en una "
+    "valoración relativa point-in-time, y elimina el anacronismo declarado en las "
+    "limitaciones.",
+    "Revalidar el sistema completo tras la incorporación del Analista de Calidad a la "
+    "decisión. El track record publicado corresponde a la versión anterior, en la que el "
+    "rating salía de momentum y RSI únicamente; las cifras de rendimiento no son "
+    "transferibles a la versión actual hasta ejecutar de nuevo el régimen `pit`.",
+    "Reconstruir el riesgo legal y regulatorio de forma point-in-time desde EDGAR (8-K "
+    "Ítem 8.01 y el apartado de Procedimientos Legales del 10-K). Es la única vía para que un "
+    "litigio material entre en la decisión sin romper el backtest: a diferencia de la prensa, "
+    "esas presentaciones tienen fecha `filed` exacta.",
     "Construir un `NewsStore` point-in-time antes de dejar que las noticias entren en la "
     "decisión. El único camino barato es el histórico completo de 8-K/10-Q de EDGAR filtrado "
     "por `filed <= t` (mismo patrón que `FundamentalStore`), que cubre resultados y hechos "
