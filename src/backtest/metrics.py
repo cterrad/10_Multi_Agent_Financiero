@@ -256,7 +256,13 @@ def event_study(signals: List[Any], price_data: Dict[str, pd.DataFrame],
             continue
         entry = float(fut.iloc[0])
         rec = {"ticker": s.ticker, "date": s.date, "rating": s.rating,
-               "momentum": s.momentum, "sector": s.sector}
+               "momentum": s.momentum, "sector": s.sector,
+               # Estilo y convicción del Analista de Calidad. Permiten preguntar
+               # al event study si el sistema falla en un estilo concreto —el
+               # gatekeeper descarta sistemáticamente el value y las
+               # recuperaciones cíclicas— o de forma transversal.
+               "estilo": getattr(s, "estilo", None),
+               "conviccion": getattr(s, "conviccion", None)}
         for h in horizons_months:
             tgt = s.date + pd.DateOffset(months=h)
             win = fut.loc[fut.index <= tgt]

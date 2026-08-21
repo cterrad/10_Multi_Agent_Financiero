@@ -165,6 +165,8 @@ Restricciones **en este orden**, y el orden importa porque cambia el resultado:
 
 Cada paso deja constancia de lo que recortó en `restricciones_activadas` y en los `ajustes` de cada posición. Sin matriz de correlaciones **no se corrige nada** y se declara la limitación: es preferible no corregir a corregir con una matriz inventada.
 
+`posiciones_existentes` permite usar esta misma capa desde el motor histórico, donde en cada rebalanceo ya hay posiciones abiertas. Entran con peso **fijo** —no se reescalan, porque reajustar la cartera entera en cada rebalanceo generaría rotación cuyo coste se comería el ajuste— pero **consumen presupuesto** sectorial, de riesgo y de exposición. Sin eso, cada rebalanceo respetaría el tope del 30% por sector y la cartera acabaría igualmente con el 90% en un sector tras tres rebalanceos.
+
 ### Analista de Noticias (`src/agents/news.py` + `src/data/news/`) — capa ASESORA
 
 Estima la probabilidad de que la actualidad de una empresa mueva su cotización. Reparto de responsabilidades idéntico al del resto del sistema: `src/data/news/` ingiere y normaliza, `src/agents/news.py` decide.
@@ -187,6 +189,13 @@ Consecuencia práctica: **cualquier regla de decisión que aparezca en `src/back
 El `TodayFundamentalStore` (régimen `biased`) **no** devuelve estados financieros a propósito. Ese almacén existe para medir el look-ahead de los *ratios* de `yfinance.info`; añadir además Piotroski y Altman calculados con memorias que en la fecha simulada no existían mezclaría dos mediciones distintas.
 
 `WEIGHT_BY_RATING` ya no manda: el Fund Manager emite `peso_objetivo` numérico y el replay lo consume directamente. La tabla queda solo como respaldo para estados antiguos — una regla de decisión duplicada fuera de `src/agents/` era justo lo que la arquitectura prohíbe.
+
+**El motor histórico dimensiona con `PortfolioConstructor`**, la misma capa que corre en vivo (`build_orders(..., constructor)` en `engine.py`). Antes escalaba los pesos proporcionalmente hasta llenar la exposición bruta y nada más: sin límite sectorial, sin penalización por correlación y sin presupuesto de riesgo agregado. La cartera simulada podía por tanto concentrar todo el capital en un sector o en cinco valores que se movían al unísono, y las métricas describían una estrategia distinta de la que el sistema recomienda. Dos detalles:
+
+- Las correlaciones se calculan con `_series_hasta()`, que **corta en `t` inclusive**. Una matriz calculada con datos posteriores sería look-ahead del más difícil de detectar: no cambia ninguna señal, solo los pesos.
+- El régimen `technical_only` pasa `constructor=None` y conserva el reparto proporcional. Allí no hay Analista de Calidad, todas las convicciones son nulas y la capa de cartera no tendría nada que ordenar.
+
+`Signal`, `Position` y `Trade` arrastran `estilo` y `conviccion` hasta el registro de operaciones, lo que habilita la **atribución por estilo** (`attr_estilo`) del informe: responde si el sistema pierde dinero en valor, en crecimiento o de forma transversal — la hipótesis que `NEXT_STEPS` planteaba sin poder medir.
 
 División de responsabilidades:
 - `data.py` — `PriceStore` (OHLCV cacheado) y `FundamentalStore` (point-in-time desde XBRL, ratios **y** estados financieros). `TodayFundamentalStore` es el almacén deliberadamente sesgado.
@@ -221,7 +230,11 @@ Todos los outputs del régimen `biased` llevan marca de sesgo. No los presentes 
 
 `backtest_cli.py` mantiene a mano las listas `build_limitations()` y `NEXT_STEPS`, que se vuelcan al informe. Si un cambio altera una limitación o corrige un defecto listado, actualiza esas listas: el informe declara sus sesgos residuales explícitamente (supervivencia del universo, ausencia de Finnhub histórico, sin datos intradía, contrastes múltiples sin corregir) y esa franqueza es intencional. El resultado publicado es que **el sistema no bate a comprar y mantener el índice** y que el rendimiento a 12 meses ordena las categorías al revés de lo que el sistema afirma; no suavices esa conclusión al editar los informes.
 
-**Ese track record corresponde a la versión anterior del sistema**, en la que el rating salía de momentum y RSI únicamente. Las mejoras posteriores —convicción fundamental en la decisión, dimensionamiento por riesgo, clasificador de momentum continuo— **no están revalidadas**: hasta ejecutar de nuevo `backtest_cli.py --regime pit`, las cifras publicadas son las que aplican y el informe diario debe seguir declarándolo así (`ReportGenerator._limitaciones()`).
+Revalidación tras incorporar el Analista de Calidad a la decisión (régimen `pit`, 2015-2025): el perfil de riesgo mejora de forma clara —Sharpe 0.35 → 0.68, drawdown máximo −22.6% → −13.8%, operaciones 928 → 563— pero **las dos conclusiones incómodas siguen en pie**: el CAGR (3.95%) no alcanza al del índice (13.51%) y el percentil frente a selección aleatoria (7.4) sigue por debajo de la mediana. Es decir, la selección de valores todavía no aporta sobre elegir al azar con el mismo perfil de exposición.
+
+Lo que sí resolvió la revalidación: la atribución por estilo (`attr_estilo`) **descarta** la hipótesis que figuraba en `NEXT_STEPS` de que el gatekeeper penalizaba al *value*. Las operaciones etiquetadas VALOR son las de mejor rentabilidad media; el lastre está en CRECIMIENTO, con rentabilidad media negativa.
+
+**El informe diario ya no lleva estas cifras escritas a mano.** `ReportGenerator._track_record()` las lee de `output/backtest_results.json`, precisamente porque la versión anterior las tenía embebidas en el código y quedó obsoleta en cuanto el backtest volvió a ejecutarse. Si el fichero no existe, el informe lo dice en vez de callar. **No vuelvas a incrustar cifras de rendimiento en el generador.**
 
 El informe diario (`src/utils/report_generator.py`) numera las secciones de cada ficha con un **contador**, no con literales: un valor rechazado no tiene análisis técnico ni debate, y sin `TAVILY_API_KEY` puede no haber noticias. Numerarlas a mano dejaba huecos («3» seguido de «5»).
 

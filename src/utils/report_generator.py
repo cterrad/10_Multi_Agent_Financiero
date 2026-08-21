@@ -765,30 +765,91 @@ class ReportGenerator:
         lineas += ["---", ""]
         return lineas
 
+    @staticmethod
+    def _track_record() -> List[str]:
+        """
+        Track record leído de `output/backtest_results.json`.
+
+        Se lee del fichero en lugar de escribirlo a mano por un motivo concreto:
+        la versión anterior lo tenía embebido en el código y quedó obsoleta en
+        cuanto el backtest se volvió a ejecutar. Un informe que declara un
+        historial desactualizado es peor que uno que no lo declara, porque
+        parece verificado.
+        """
+        ruta = os.path.join(OUTPUT_DIR, "backtest_results.json")
+        if not os.path.exists(ruta):
+            return [
+                "**No hay backtest disponible.** No existe `output/backtest_results.json`, así "
+                "que este informe no puede declarar ningún historial. Ejecuta "
+                "`backtest_cli.py --regime pit` antes de dar peso a las recomendaciones: un "
+                "sistema de selección sin track record es una hipótesis, no una estrategia.",
+                "",
+            ]
+        try:
+            with open(ruta, encoding="utf-8") as f:
+                bt = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            return [f"**Backtest ilegible** (`{ruta}`): {e}.", ""]
+
+        est = bt.get("strategy", {}) or {}
+        spy = bt.get("spy", {}) or {}
+        aleatorio = bt.get("random_test", {}) or {}
+        regimen = bt.get("regime", "?")
+        generado = (bt.get("generated_at") or "")[:16]
+
+        exceso = (est.get("cagr", 0.0) - spy.get("cagr", 0.0))
+        bate = exceso > 0
+        veredicto = ("**El sistema bate a comprar y mantener el índice en el histórico "
+                     "simulado.**" if bate else
+                     "**El sistema NO bate a comprar y mantener el índice.**")
+
+        lineas = [
+            f"{veredicto} Backtest en régimen `{regimen}` sobre "
+            f"{est.get('start', '?')} → {est.get('end', '?')} "
+            f"(generado el {generado}, ver `output/backtest_report.md`):",
+            "",
+            "| Métrica | Estrategia | SPY |",
+            "| :--- | ---: | ---: |",
+            f"| CAGR | {_p(est.get('cagr'))} | {_p(spy.get('cagr'))} |",
+            f"| Volatilidad anualizada | {_p(est.get('volatility'))} | {_p(spy.get('volatility'))} |",
+            f"| Sharpe | {_p(est.get('sharpe'), '{:.2f}')} | {_p(spy.get('sharpe'), '{:.2f}')} |",
+            f"| Sortino | {_p(est.get('sortino'), '{:.2f}')} | {_p(spy.get('sortino'), '{:.2f}')} |",
+            f"| Máximo drawdown | {_p(est.get('max_drawdown'))} | {_p(spy.get('max_drawdown'))} |",
+            "",
+        ]
+
+        pct = aleatorio.get("percentil_vs_aleatorio")
+        if pct is not None:
+            lectura = ("por encima de la mediana de carteras aleatorias con el mismo perfil de "
+                       "exposición" if pct >= 50 else
+                       "**por debajo** de la mediana de carteras aleatorias con el mismo perfil "
+                       "de exposición, lo que significa que la selección de valores no aporta")
+            lineas += [
+                f"Frente a la selección aleatoria, la estrategia queda en el **percentil "
+                f"{pct:.1f}** — {lectura}.",
+                "",
+            ]
+
+        if est.get("volatility") and spy.get("volatility") and \
+                est["volatility"] < spy["volatility"] * 0.6:
+            lineas += [
+                f"> **Cuidado al comparar el CAGR.** La estrategia opera con una volatilidad del "
+                f"{est['volatility']:.1%} frente al {spy['volatility']:.1%} del índice, porque el "
+                f"presupuesto de riesgo la mantiene estructuralmente poco invertida. Comparar "
+                f"rentabilidades absolutas entre carteras con perfiles de riesgo tan distintos "
+                f"favorece mecánicamente a la más expuesta; el Sharpe y el Sortino son la "
+                f"comparación pertinente.",
+                "",
+            ]
+
+        return lineas
+
     def _limitaciones(self) -> List[str]:
         return [
             "## 6. Limitaciones y track record",
             "",
-            "**El sistema no ha batido históricamente a comprar y mantener el índice.** El "
-            "backtest point-in-time sobre 2015-2025 (`output/backtest_report.md`) documenta un "
-            "CAGR del 2.11% frente al 13.51% del SPY, un Sharpe de 0.35 frente a 0.80 y un alfa "
-            "anualizado de −0.41% (t = −0.24). Frente a carteras aleatorias con el mismo perfil "
-            "de exposición, la estrategia queda en el percentil 1.9.",
-            "",
-            "Más grave que el rendimiento: **en aquella versión el rating no ordenaba el "
-            "rendimiento futuro en la dirección que afirmaba** — los valores calificados VENTA "
-            "FUERTE rindieron de media un 35.06% a doce meses frente al 21.02% de los COMPRA "
-            "FUERTE. La lectura prudente es que el rating no separaba ganadores de perdedores; "
-            "afirmar que la señal estaba *invertida* exigiría composiciones históricas del índice "
-            "para descartar el sesgo de supervivencia.",
-            "",
-            "Las mejoras incorporadas en esta versión —convicción fundamental en la decisión, "
-            "dimensionamiento por riesgo, corrección del clasificador de momentum— **no han sido "
-            "revalidadas todavía en el backtest**. Hasta que se ejecute de nuevo "
-            "`backtest_cli.py --regime pit`, el track record vigente es el anterior y las cifras "
-            "de arriba son las que aplican.",
-            "",
-            "**Limitaciones metodológicas que siguen vigentes:**",
+        ] + self._track_record() + [
+            "**Limitaciones metodológicas vigentes:**",
             "",
             "- **Universo con sesgo de supervivencia.** Solo se analizan valores que existen hoy.",
             "- **Normas sectoriales estáticas.** Las medianas de comparación son de largo plazo, "

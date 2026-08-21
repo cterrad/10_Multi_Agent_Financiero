@@ -1,6 +1,6 @@
 # Informe de Inversión — Selección Multi-Agente
 
-**Fecha de análisis:** `2026-08-21 11:46:51`  
+**Fecha de análisis:** `2026-08-21 12:03:51`  
 **Universo analizado:** DOCN, NRGV, BE, GOOGL, NEM (5 valores)  
 **Referencia de mercado:** SPY · 12m 21.3% · 3m 3.1%  
 **Capital de referencia:** $100,000
@@ -87,9 +87,7 @@ El estilo no es una etiqueta descriptiva: determina los múltiplos de ATR del st
 
 - ℹ️ 4 discrepancia(s) entre proveedores; confianza rebajada al 89%.
 
-**Lectura:** **Resumen Financiero - DOCN (Sector Tecnológico)**
-
-DOCN ha superado con éxito el filtro fundamental gracias a un sólido crecimiento de ingresos del 28.6% y un margen neto excepcionalmente rentable del 23.3%. Además, respalda su **APROBACIÓN** con un ROE sobresaliente de 62.3%, a pesar de operar con un nivel de apalancamiento elevado de Deuda/Patrimonio de 2.13x.
+**Lectura:** Como Analista Fundamental Gatekeeper, el **APROBADO** de DOCN se sustenta en un robusto crecimiento de ingresos del 28.6% y una excepcional rentabilidad sobre el capital (ROE) del 62.3%, combinados con un saludable margen neto del 23.3%. No obstante, su perfil de apalancamiento exige cautela debido a una relación Deuda/Patrimonio elevada de 2.13x.
 
 #### 2. Calidad y valoración
 
@@ -154,7 +152,7 @@ _Cobertura de datos: 96% (OK)._
 
 **Lectura:** Como Analista de Calidad y Valoración, aquí tienes el resumen de la tesis para **DigitalOcean (DOCN)**:
 
-DigitalOcean opera en un segmento de infraestructura tecnológica con un atractivo ROIC operativo (13.5%) y una alta puntuación de Piotroski (8/9), lo que refleja una excelente eficiencia y disciplina operativa subyacente. Sin embargo, el negocio sufre de una "calidad deteriorada" estructural debido a un patrimonio neto negativo (-$28.69M) que distorsiona los fondos propios y sitúa a la compañía en zona de insolvencia según el Altman Z'', a pesar de su capacidad para generar caja. Por último, con una valoración extremadamente baja (2.3/100) frente a un crecimiento moderado-alto (49.4/100), el mercado descuenta un riesgo de distress financiero severo que el inversor debe sopesar frente a la viabilidad real de su flujo de caja.
+DigitalOcean opera en un segmento tecnológico con un perfil de **calidad deteriorada** (Piotroski sólido de 8/9 y un ROIC aceptable del 13.4%), pero cuya salud financiera está severamente comprometida por un patrimonio neto negativo que arroja una **alerta de insolvencia** según el modelo Altman. A pesar de este riesgo de reestructuración y de la fuerte distorsión en sus fondos propios, el mercado ofrece una **valoración extremadamente estresada (2.3/100)** que apenas asigna valor a su capacidad de generar caja. En definitiva, el precio refleja con crudeza el riesgo de balance, dejando la oportunidad supeditada a si la compañía logra limpiar su estructura de capital antes de que la presión de su deuda ahogue su crecimiento.
 
 #### 3. Análisis técnico
 
@@ -182,7 +180,7 @@ DigitalOcean opera en un segmento de infraestructura tecnológica con un atracti
 - Precio en el 20% del canal de Bollinger
 - Momentum 12m (excl. último mes) +337.3% frente al +21.3% de SPY: exceso +316.0%
 
-**Lectura:** DigitalOcean (DOCN) mantiene una estructura de tendencia alcista en fase de corrección, cotizando por debajo de su SMA50 pero cómodamente por encima de su SMA200. A pesar de mostrar un impulso técnico moderado y positivo en el acumulado, indicadores como el RSI neutral (48.0) y el MACD ligeramente negativo reflejan una pausa compradora en el corto plazo.
+**Lectura:** DOCN mantiene una estructura de tendencia alcista en fase de corrección al cotizar por debajo de su SMA50 ($136.83) pero respetando su SMA200 ($93.48). Aunque el momentum muestra un sesgo positivo moderado (+28.1/100) y un RSI neutral (48.0), la ausencia de un impulso fuerte se confirma con el histograma MACD ligeramente negativo (-0.058).
 
 #### 4. Analista de noticias — **capa asesora, no altera el dictamen**
 
@@ -196,7 +194,11 @@ Cobertura: 12 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 - `2026-08-04` · **RESULTADOS** · NEUTRA · p=0.08 · _SEC EDGAR (8-K)_ (1 fuente/s) — [DigitalOcean Holdings, Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)](https://www.sec.gov/Archives/edgar/data/1582961/000162828026052135/docn-20260804.htm)
 - `2026-08-12` · **GUIDANCE** · NEUTRA · p=0.08 · _24/7 Wall St._ (1 fuente/s) — [DOCN Stock Price Prediction 2025-2026 | DigitalOcean Holdings Inc Forecast - 24/7 Wall St.](https://news.google.com/rss/articles/CBMiZEFVX3lxTE41dXUyUXgycTJKY0dqem5KdGVuOGdQUUxlS1hJNlROelVFNmJWa19hbzR1V2xRMmdzcHhIVk00VlZ4VHFtdEhGTEEzcmhuZHJtVlJXb05EZTJlbkVKbFNobldONk4?oc=5)
 
-**Lectura:** **DigitalOcean Holdings, Inc. (DOCN)** ha presentado sus resultados del segundo trimestre y el formulario 8-K, mostrando un balance mixto que fue compensado por unas previsiones de negocio optimistas. Este escenario, respaldado por nuevas revisiones en las proyecciones de precio para el periodo 2025-2026, actúa como catalizador alcista al disipar dudas operativas y reactivar el optimismo sobre el crecimiento futuro de la compañía.
+**Lectura:** **Lectura de Actualidad - DigitalOcean Holdings, Inc. (DOCN)**
+* **Probabilidad de impacto:** MEDIA (0.38)
+* **Dirección probable:** ALCISTA
+
+DigitalOcean ha presentado unos resultados del segundo trimestre de 2026 calificados como mixtos, aunque acompañados de una guía de perspectivas optimista que redefine el atractivo de la compañía. Esta combinación de un rendimiento financiero reciente heterogéneo y unas previsiones de negocio favorables actúa como catalizador principal, generando expectativas positivas que podrían impulsar al alza el precio de la acción en el corto y mediano plazo.
 
 > **Por qué las noticias no mueven el dictamen.** Dos de las tres fuentes son buscadores «de hoy» y no hay forma asequible de reconstruir qué era visible en una fecha pasada. Conectarlas a la decisión invalidaría el backtest hasta disponer de un almacén de noticias point-in-time. Un litigio o una investigación regulatoria relevante debe activar una **revisión manual**, no un recálculo automático del peso.
 
@@ -218,7 +220,7 @@ Cobertura: 12 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 - Altman Z'' (no manufactureras) en 0.04, por debajo del umbral de insolvencia (1.1).
 - 4 discrepancia(s) entre proveedores de datos; confianza del 89%.
 
-**⚖️ Síntesis:** DigitalOcean Holdings (DOCN) presenta una tesis alcista fundamentada en un crecimiento de ingresos del 28.6% —que duplica la mediana del sector de tecnología (12%)—, un margen neto del 23.3% y un margen bruto del 57% que refleja poder de fijación de precios, respaldado además por un sólido F-Score de Piotroski de 8/9 y un flujo de noticias con sesgo alcista. Sin embargo, esta alta calidad operativa contrasta con riesgos financieros y de valoración significativos, evidenciados por un ratio P/E de 52.9x que duplica la norma sectorial (26x), una elevada carga de deuda con un endeudamiento patrimonial de 2.13x frente al 0.6x del sector, y un Altman Z'' de 0.04 que se sitúa por debajo del umbral de insolvencia de 1.1. En conclusión, aunque la compañía exhibe una rentabilidad y eficiencia contable superiores a la media, su cotización exige una ejecución impecable para justificar una valoración tan estricta mientras soporta una posición de solvencia muy comprometida.
+**⚖️ Síntesis:** DigitalOcean Holdings (DOCN) presenta una tesis alcista fundamentada en un crecimiento de ingresos del 28.6% —que duplica la mediana del sector de tecnología (12%)—, un sólido margen neto del 23.3%, un margen bruto del 57% y un sobresaliente F-Score de Piotroski de 8/9 que refleja mejoras simultáneas en rentabilidad, apalancamiento y eficiencia. Sin embargo, esta calidad operativa convive con una tesis bajista muy severa marcada por una valoración exigente, con un P/E de 52.9x que duplica la mediana sectorial de 26x, y una alta vulnerabilidad financiera evidenciada por una ratio de deuda sobre patrimonio de 2.13x y un Altman Z'' de 0.04 que se sitúa profundamente por debajo del umbral de insolvencia de 1.1. En conclusión, aunque el notable desempeño fundamental y el flujo de noticias con sesgo alcista avalan el momento operativo de la compañía, la elevada carga financiera y el riesgo de insolvencia implícito en su puntuación de quiebra configuran un perfil de calidad marcadamente deteriorada que exige extrema cautela ante cualquier desviación en su ejecución.
 
 **Condiciones que invalidarían la tesis** — sin ellas, esto sería una opinión, no una tesis:
 
@@ -255,11 +257,9 @@ _Sin asignación: VENTA FUERTE no genera asignación en una cartera solo larga._
 
 > Stop y objetivo se evalúan sobre 126 sesiones (~6 meses). Fuera de ese plazo la posición se revisa, no se mantiene por inercia.
 
-**Orden ejecutiva:** **ORDEN EJECUTIVA DE INVERSIÓN: DOCN**
+**Orden ejecutiva:** **ORDEN EJECUTIVA DE INVERSIÓN – DOCN**
 
-**Dictamen: VENTA FUERTE (Calidad Deteriorada).** 
-La combinación de una baja convicción fundamental (19.3/100), un momentum deprimido (28.15/100) y graves banderas rojas —como un patrimonio neto negativo de -$28.69M y un Altman Z'' en zona crítica de insolvencia— justifica una asignación del 0.00% en cartera y el cierre inmediato de posiciones. 
-Para el horizonte táctico de 126 sesiones, establecemos un precio de salida en $114.35, con un stop loss de protección en $92.09 y un objetivo técnico a la baja en $153.3 (R:R 1.75).
+**Dictamen: VENTA FUERTE (CALIDAD_DETERIORADA)**. Con una convicción fundamental de 19.3/100 y un momentum técnico de 28.15/100, la asignación en cartera se reduce inmediatamente a **0.00%**, debido a las banderas rojas críticas detectadas por patrimonio neto negativo y zona de insolvencia concursal según el Altman Z''. Establecemos un precio de entrada/seguimiento en $114.35 con un stop en $92.09 y un objetivo bajista a $153.3, operando bajo un horizonte temporal de 126 sesiones y una relación Riesgo/Beneficio de 1.75. Esta directriz es concluyente y desestima cualquier exposición al valor hasta nueva orden del comité.
 
 ---
 
@@ -282,7 +282,7 @@ Para el horizonte táctico de 126 sesiones, establecemos un precio de salida en 
 - ℹ️ Umbral de deuda ajustado a 5.0x por ser Utilities, donde el apalancamiento alto es estructural (el umbral general es 3.0x).
 - ℹ️ 3 discrepancia(s) entre proveedores; confianza rebajada al 85%.
 
-**Lectura:** Como Analista Fundamental Gatekeeper, la empresa NRGV muestra un crecimiento de ingresos excepcional del 104.1%, pero es insostenible debido a un margen neto negativo de -48.6% y un ROE devastador de -178.6%. Además, su apalancamiento es extremadamente peligroso con una relación Deuda/Patrimonio de 7.51x, lo que justifica plenamente su **RECHAZO** bajo estrictos criterios de salud financiera en el sector Utilities.
+**Lectura:** Como Analista Fundamental Gatekeeper, el veredicto para NRGV es **RECHAZADO** debido a que su impresionante crecimiento de ingresos del 104.1% no logra compensar una destrucción masiva de valor, evidenciada por un margen neto del -48.6% y un ROE profundamente negativo de -178.6%. Adicionalmente, la compañía presenta un riesgo financiero crítico con un apalancamiento de Deuda/Patrimonio de 7.51x, lo que la hace insostenible bajo nuestros filtros de salud financiera en el sector Utilities.
 
 #### 2. Calidad y valoración
 
@@ -350,9 +350,9 @@ _Convicción bruta 20.9 × cobertura de datos 1.0 × confianza en fuentes 0.853 
 
 _Cobertura de datos: 77% (OK)._
 
-**Lectura:** Como Analista de Calidad y Valoración, mi veredicto sobre **NRGV** es el siguiente: 
+**Lectura:** Como Analista de Calidad y Valoración, la tesis sobre **NRGV** se resume de la siguiente manera:
 
-El negocio presenta una **calidad extremadamente deficiente (28.2/100)**, caracterizada por un ROIC profundamente negativo (-65.2%), destrucción neta de valor, márgenes operativos deficitarios y un consumo crónico de caja libre. A nivel financiero, la compañía se encuentra en una situación crítica de **insolvencia técnica (Altman Z'' en -7.56)**, con un apalancamiento insostenible (Deuda/Patrimonio de 7.51x) y una agresiva dilución accionarial anual del 10.3% que castiga al inversor. Por último, aunque cuantitativamente la valoración aparezca a cero, **el precio actual no refleja adecuadamente el riesgo de quiebra inminente** implícito en sus métricas de solvencia y su nula cobertura de intereses.
+NRGV es un negocio de energías renovables profundamente deficitario (ROIC de -65.2% y margen neto del -48.6%) que destruye valor de forma sistemática y consume caja de manera alarmante. Su perfil financiero es crítico, encontrándose en zona de insolvencia según el Altman Z'' (-7.56), con un endeudamiento extremo (7.51x Deuda/Patrimonio) y una dilución anual del 10.3% que perjudica severamente al accionista. A pesar de que la valoración cuantitativa arroje un 0.0/100 debido a la imposibilidad de justificar fundamentales sanos, el precio actual refleja con precisión el elevado riesgo de distress financiero, sin que exista un margen de seguridad que compense su precaria solvencia.
 
 #### 3. Analista de noticias — **capa asesora, no altera el dictamen**
 
@@ -366,7 +366,9 @@ Cobertura: 13 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 - `2026-08-12` · **RESULTADOS** · NEUTRA · p=0.08 · _Seeking Alpha_ (1 fuente/s) — [Energy Vault Holdings, Inc. 2026 Q2 - Results - Earnings Call Presentation (NYSE:NRGV) 2026-08-12 - Seeking Alpha](https://news.google.com/rss/articles/CBMirgFBVV95cUxQaktxOTJkUi00LXZyVUtFTzloV0F6RHltUjVkeWhfWTg3ZF96S2ctUFIyMDJadjE5VzlTcExuUmNOck81REVPTndBTWlRdnJoU2hsbDhCS19YWFVuWERZZE9MZk90dGlWbVFzdWZaVWQtNGhoVUZWS2dCQWxVTVZ2MFpsTngtX0tKMktoU1RtTWVmcUljMEVhYkNyc2N3YmZBZno0bDdrbFp5NXZ6ckE?oc=5)
 - `2026-08-11` · **RESULTADOS** · NEUTRA · p=0.05 · _marketscreener.com_ (1 fuente/s) — [Energy Vault Holdings, Inc. Reports Earnings Results for the Second Quarter and Six Months Ended June 30, 2026 - marketscreener.com](https://news.google.com/rss/articles/CBMi5gFBVV95cUxORktWcGlpM29DUjZoOHBpM2hRMGxhb0w0cDFtdXYxblRUcjNkMjJqOVhwLXBScDFaU0ZFZTJacHM3M2RpUGxoUWVLVGpyNGI1UnN2ckFFRG1obnUxdElORHF4SmRMMWtpMDFjcnlLaWJJVXBaVm9HVXM3dE9KbkZVVUlqU0g1NllSTm9oV3dNSkJnQXkzQjJDOElNcmloQUM1elY3WmU5V3RwdG9LVTBjcTQ2MUtDdXFaSWEwb3A5TWxMcTFvVS1xcWY1WldoS1U3UXZMaTJaM3hGbFlhZ2Vtck9lcWtkQQ?oc=5)
 
-**Lectura:** Energy Vault Holdings, Inc. (NRGV) ha presentado sus resultados financieros correspondientes al segundo trimestre de 2026 mediante el formulario 8-K y su respectiva conferencia de resultados. Este informe operativo y financiero actúa como el catalizador principal que justifica una lectura **ALCISTA** con una probabilidad de impacto en precio **MEDIA (0.38)** tras el análisis de las 13 noticias recientes.
+**Lectura:** **Qué ha pasado:** Energy Vault Holdings, Inc. ha presentado sus resultados financieros correspondientes al segundo trimestre de 2026 mediante el formulario 8-K y su respectiva conferencia de resultados.
+
+**Por qué puede mover la acción:** La publicación de estos estados financieros y las perspectivas de negocio compartidas con los inversores actúan como un catalizador fundamental de **dirección alcista** y **probabilidad de impacto media (0.38)** para reevaluar la valoración de la compañía en el mercado.
 
 > **Por qué las noticias no mueven el dictamen.** Dos de las tres fuentes son buscadores «de hoy» y no hay forma asequible de reconstruir qué era visible en una fecha pasada. Conectarlas a la decisión invalidaría el backtest hasta disponer de un almacén de noticias point-in-time. Un litigio o una investigación regulatoria relevante debe activar una **revisión manual**, no un recálculo automático del peso.
 
@@ -380,7 +382,7 @@ Cobertura: 13 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 
 _Sin asignación: no supera el filtro fundamental._
 
-**Orden ejecutiva:** Dictamen Final (NRGV): VENTA FUERTE. Sin asignación de cartera. Rechazado en el filtro fundamental. Como Analista Fundamental Gatekeeper, la empresa NRGV muestra un crecimiento de ingresos excepcional del 104.1%, pero es insostenible debido a un margen neto negativo de -48.6% y un ROE devastador de -178.6%. Además, su apalancamiento es extremadamente peligroso con una relación Deuda/Patrimonio de 7.51x, lo que justifica plenamente su **RECHAZO** bajo estrictos criterios de salud financiera en el sector Utilities.
+**Orden ejecutiva:** Dictamen Final (NRGV): VENTA FUERTE. Sin asignación de cartera. Rechazado en el filtro fundamental. Como Analista Fundamental Gatekeeper, el veredicto para NRGV es **RECHAZADO** debido a que su impresionante crecimiento de ingresos del 104.1% no logra compensar una destrucción masiva de valor, evidenciada por un margen neto del -48.6% y un ROE profundamente negativo de -178.6%. Adicionalmente, la compañía presenta un riesgo financiero crítico con un apalancamiento de Deuda/Patrimonio de 7.51x, lo que la hace insostenible bajo nuestros filtros de salud financiera en el sector Utilities.
 
 ---
 
@@ -400,7 +402,7 @@ _Sin asignación: no supera el filtro fundamental._
 
 - ℹ️ 5 discrepancia(s) entre proveedores; confianza rebajada al 67%.
 
-**Lectura:** Como Analista Fundamental Gatekeeper, BE demuestra una excelente salud financiera impulsada por un impresionante crecimiento de ingresos del 165.5% y una sólida rentabilidad con un ROE del 22.2% y margen neto positivo de 7.9%. A pesar de un apalancamiento elevado con una relación Deuda/Patrimonio de 1.72x, la empresa supera con éxito los estándares de calidad, justificando su veredicto de APROBADO.
+**Lectura:** Como Analista Fundamental Gatekeeper, BE (sector Industrials) demuestra una salud financiera sobresaliente, impulsada por un excepcional crecimiento de ingresos del 165.5% y un sólido ROE del 22.2% con rentabilidad neta positiva. Aunque su apalancamiento es elevado con una razón Deuda/Patrimonio de 1.72x, el conjunto de sus fundamentales justifica firmemente el veredicto de APROBADO.
 
 #### 2. Calidad y valoración
 
@@ -464,11 +466,11 @@ _Convicción bruta 36.5 × cobertura de datos 1.0 × confianza en fuentes 0.674 
 
 _Cobertura de datos: 92% (OK)._
 
-**Lectura:** Como Analista de Calidad y Valoración, esta es la síntesis de la tesis para **BE**:
+**Lectura:** Como Analista de Calidad y Valoración, esta es mi síntesis de la tesis para **BE**:
 
-1. **Calidad y Destrucción de Valor:** El negocio opera con fundamentales muy débiles (calidad 40.2/100 y ROIC negativo de -1.8%), lo que evidencia una destrucción crónica de valor sobre el capital empleado y una incapacidad operativa para cubrir sus costes de financiación (cobertura de intereses de -0.57x).
-2. **Efecto Dilutivo:** Aunque presenta un perfil especulativo y cierto crecimiento bruto (50/100), este se ve severamente castigado por una agresiva dilución anual del 22.2%, provocando que el crecimiento real por acción sea muy inferior al agregado.
-3. **Desajuste en Valoración:** A pesar de mostrar una puntuación de valoración aparentemente baja (8.9/100) y un PEG de 1.63, el precio **no** refleja adecuadamente la baja calidad del negocio ni el elevado riesgo de solvencia implícito en sus banderas rojas, desaconsejando su inclusión bajo criterios fundamentales estrictos.
+1. **Calidad Operativa Deficiente:** El negocio presenta fundamentales muy frágiles (Calidad 40.2/100 y Piotroski 4/9), operando con un ROIC negativo del -1.8% que destruye valor sobre el capital empleado y una cobertura de intereses insuficiente (-0.57x).
+2. **Severa Destrucción de Valor para el Accionista:** A pesar de mostrar cierto dinamismo en crecimiento (50.0/100), este se ve socavado por una alarmante dilución anual del 22.2%, lo que provoca que el crecimiento real por acción sea muy inferior al agregado.
+3. **Desconexión en la Valoración:** Aunque el modelo arroja una puntuación de valoración baja (8.9/100) y un PEG de 1.63, el precio actual no compensa el elevado perfil de riesgo especulativo ni los graves problemas de solvencia y dilución que arrastra la compañía.
 
 #### 3. Análisis técnico
 
@@ -496,7 +498,7 @@ _Cobertura de datos: 92% (OK)._
 - Precio en el 40% del canal de Bollinger
 - Momentum 12m (excl. último mes) +384.7% frente al +21.3% de SPY: exceso +363.4%
 
-**Lectura:** El precio de BE cotiza en $202.48, manteniéndose por encima de su media móvil de 200 periodos ($186.28) dentro de una estructura alcista en fase de corrección. Aunque el RSI se encuentra neutral en 48.6, el histograma MACD positivo (+0.721) y la puntuación de momentum de +34.0 reflejan un sesgo moderadamente alcista sin mostrar sobrecompra ni sobreventa.
+**Lectura:** Bloom Energy (BE) mantiene una estructura de tendencia alcista en fase de corrección, cotizando por debajo de su SMA50 ($242.89) pero respaldada por su SMA200 ($186.28) y un histograma MACD positivo (+0.721). Con un RSI neutral en 48.6 y un momentum moderadamente alcista (+34.0/100), el activo muestra una pausa temporal en su rango medio de 52 semanas sin invalidar su sesgo de fondo positivo.
 
 #### 4. Analista de noticias — **capa asesora, no altera el dictamen**
 
@@ -510,9 +512,9 @@ Cobertura: 13 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 - `2026-07-28` · **RESULTADOS** · NEUTRA · p=0.04 · _SEC EDGAR (8-K)_ (1 fuente/s) — [Bloom Energy Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)](https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/be-20260728.htm)
 - `2026-07-28` · **RESULTADOS** · ALCISTA · p=0.03 · _Business Wire_ (1 fuente/s) — [Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance - Business Wire](https://news.google.com/rss/articles/CBMi7gFBVV95cUxPUkFyaGU3UXlMaVgyemdycmcxZmh5cHJCaGNBVE4yOWhCdmVnWXV4a0VlNnFOT09ZOGE0ZWFuaDRnVTlNcXM5ZzB4VTU4T0duR1dobTFBR21MVXhkaUtKd1h4bHJ4ZlJ4SVV2a01tY0RUbF92QWFQNm13TS1RTTd5eDJhMEVaWGFXaE5NNV91dDlBRFVqRGxlNDZPQnNaS0VtSFhkQXpGanR1dUJOVW9samN3MjBBV18zLXV4X2hlR0VwanZULVVkbWQzZ1Z3dW1DRUhZbFVPYXczZ25uXzlTVk9BT2psRjg2S1haV09n?oc=5)
 
-**Lectura:** **Qué ha pasado:** Bloom Energy ha reportado unos resultados récord en el segundo trimestre de 2026 y elevado sus previsiones anuales, aunque simultáneamente se enfrenta a una demanda colectiva por presunto fraude de valores anunciada por el bufete Bernstein Liebhard LLP. 
+**Lectura:** **Lectura de actualidad de Bloom Energy Corporation (BE):**
 
-**Por qué puede mover la acción:** La incertidumbre legal y el riesgo reputacional derivado de la demanda por fraude introducen presión vendedora en el valor, contrarrestando el optimismo generado por los sólidos fundamentales y el incremento de guía financiera.
+Bloom Energy Corporation ha presentado sus resultados financieros del segundo trimestre de 2026 junto con una mejora en sus previsiones anuales, mientras enfrenta simultáneamente una demanda colectiva por presunto fraude de valores interpuesta por el bufete Bernstein Liebhard LLP. Esta combinación de sólidos hitos operativos y el riesgo legal asociado genera incertidumbre regulatoria y de inversores, lo que justifica una perspectiva **BAJISTA** con una probabilidad de impacto en precio **BAJA (0.18)**.
 
 > **Por qué las noticias no mueven el dictamen.** Dos de las tres fuentes son buscadores «de hoy» y no hay forma asequible de reconstruir qué era visible en una fecha pasada. Conectarlas a la decisión invalidaría el backtest hasta disponer de un almacén de noticias point-in-time. Un litigio o una investigación regulatoria relevante debe activar una **revisión manual**, no un recálculo automático del peso.
 
@@ -535,13 +537,13 @@ Cobertura: 13 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 **⚖️ Síntesis:** **Síntesis del Debate de Inversión: BE (Industrials)**
 
 **Tesis Alcista**
-Bloom Energy destaca por un crecimiento de ingresos excepcional del 165.5%, aplastando la mediana del sector industrial (7%). Este dinamismo se apoya en un margen neto aceptable del 7.9% —en línea con el sector—, un momentum favorable de +34.0/100 y un RSI neutral de 48.6. 
+Bloom Energy destaca por un crecimiento de ingresos excepcional del 165.5%, aplastando la mediana del sector industrial (7%). Este dinamismo se apoya en un margen neto aceptable del 7.9% —en línea con el sector—, un momentum favorable (+34.0/100) y un RSI neutral de 48.6. 
 
 **Tesis Bajista**
-El entusiasmo operativo choca con riesgos financieros y de valoración extremos. El ratio P/E se sitúa en unas desorbitadas 270.0x frente a la mediana sectorial de 20x (13.5 veces la norma), exigiendo una ejecución impecable. A esto se suma una deuda sobre patrimonio de 1.72x (casi el doble del sector) y una severa dilución anual del 22.2% que reduce el valor real para el accionista existente. Las discrepancias de datos (confianza del 67%) y una demanda por fraude de valores (aunque sin impacto actual según el asesor) completan un panorama de alta vulnerabilidad.
+No obstante, la valoración es extremadamente exigente: opera a un P/E de 270.0x frente a la mediana sectorial de 20x (13.5 veces la norma), lo que exige una ejecución impecable. A esto se suma una carga financiera moderada con una deuda sobre patrimonio de 1.72x (superior al 0.9x del sector), una alta dilución anual del 22.2% que reduce el valor capturado por el accionista, y discrepancias de datos entre proveedores que sitúan la confianza en el 67%. El entorno informativo añade presión bajista con baja probabilidad de impacto (0.18), destacando una demanda por fraude de valores (aunque la capa asesora indica que no altera el dictamen).
 
 **Conclusión Imparcial**
-BE ofrece un crecimiento de ingresos del 165.5% y un margen neto del 7.9% que contrastan fuertemente con una valoración excesiva (P/E de 270.0x) y una alta dilución anual del 22.2%. La elevada deuda (1.72x) y la incertidumbre legal añaden riesgo a un perfil donde el momentum favorable (+34.0) y la neutralidad técnica (RSI 48.6) apenas compensan el desequilibrio financiero. Por tanto, se trata de una apuesta especulativa sujeta a que la compañía justifique múltiplos 13.5 veces superiores a los de su sector industrial.
+BE presenta un crecimiento de ingresos extraordinario del 165.5% y un margen neto del 7.9% alineado con el sector, respaldados por un momentum favorable y un RSI neutral. Sin embargo, estas fortalezas se ven ensombrecidas por una valoración extrema de 270.0x en P/E, una deuda sobre patrimonio de 1.72x y una fuerte dilución anual del 22.2%, además de riesgos legales pendientes. Por lo tanto, el atractivo potencial de su crecimiento operativo se equilibra con riesgos financieros y de valoración muy elevados, exigiendo extrema cautela.
 
 **Condiciones que invalidarían la tesis** — sin ellas, esto sería una opinión, no una tesis:
 
@@ -581,7 +583,11 @@ _Sin asignación: VENTA FUERTE no genera asignación en una cartera solo larga._
 
 **Orden ejecutiva:** **ORDEN EJECUTIVA DE INVERSIÓN – BE**
 
-Se emite un dictamen de **VENTA FUERTE (ESTPECULATIVA)** con una asignación del **0.00%** de la cartera, sustentado en una convicción fundamental de 0.0/100, un momentum de 33.98/100 y vetos estrictos aplicados por dilución del 22.2% anual, cobertura de intereses insuficiente (-0.57x) y un ROIC negativo (-1.8%) que destruye valor. Operativamente, se establece un precio actual de $202.48, un stop en $171.16 y un objetivo de $265.12, contemplando una relación Riesgo:Beneficio de 2.0. Esta postura táctica debe evaluarse estrictamente dentro de un horizonte de 42 sesiones, priorizando la salida total ante la persistencia de las banderas rojas estructurales.
+Se emite un dictamen de **VENTA FUERTE (Estilo ESPECULATIVA)** con una asignación del **0.00%** de la cartera, limitado estrictamente por nuestras políticas de riesgo y un perfil fundamental nulo (convicción de **0.0/100**) agravado por una dilución anual del 22.2%, cobertura de intereses deficitaria (-0.57x) y un ROIC negativo del -1.8%. 
+
+A pesar de registrar un momentum de **33.98/100** y un escenario técnico referencial con stop en $171.16 y objetivo en $265.12 (ratio R:R de 2.0 sobre el precio actual de $202.48), las tres banderas rojas estructurales anulan cualquier tesis compradora para el horizonte establecido de **42 sesiones**. 
+
+Ejecútese la salida total inmediata de la posición, vetando cualquier exposición al activo debido a la destrucción neta de valor sobre el capital empleado.
 
 ---
 
@@ -601,7 +607,7 @@ Se emite un dictamen de **VENTA FUERTE (ESTPECULATIVA)** con una asignación del
 
 - ℹ️ 4 discrepancia(s) entre proveedores; confianza rebajada al 91%.
 
-**Lectura:** Como Analista Fundamental Gatekeeper, el sólido desempeño de Alphabet (GOOGL) está respaldado por un sobresaliente crecimiento de ingresos del 24.2% y un margen neto excepcional del 54.8%. Asimismo, su alta rentabilidad con un ROE de 48.7% y un bajo apalancamiento financiero de 0.19x justifican su **APROBACIÓN** bajo nuestros filtros de calidad.
+**Lectura:** Como Analista Fundamental Gatekeeper, otorgo el **APROBADO** a GOOGL gracias a un robusto crecimiento de ingresos del 24.2% combinado con una excepcional rentabilidad, evidenciada por un margen neto del 54.8% y un ROE del 48.7%. Asimismo, la compañía presenta una sólida salud financiera respaldada por una baja razón de deuda a patrimonio de 0.19x.
 
 #### 2. Calidad y valoración
 
@@ -659,13 +665,9 @@ _Convicción bruta 73.8 × cobertura de datos 1.0 × confianza en fuentes 0.909 
 
 _Cobertura de datos: 100% (OK)._
 
-**Lectura:** Como Analista de Calidad y Valoración, aquí tienes el resumen de la tesis para **Alphabet (GOOGL)**:
+**Lectura:** Como Analista de Calidad y Valoración, aquí tienes el resumen de la tesis para **GOOGL**:
 
-Alphabet destaca como un negocio de **excepcional calidad y solvencia** (ambas por encima de 90), respaldado por un ROIC sobresaliente del 29,9% y una salud financiera blindada en zona segura según el Altman Z-Score. 
-
-A pesar de ser una máquina de crecimiento con métricas dinámicas (PEG de 0,06 y un pilar de crecimiento de 91), el mercado ofrece una **valoración muy atractiva** (36,2/100), lo que sugiere que el precio actual no refleja plenamente su tremendo potencial operativo ni su reciente e incipiente perfil de dividendo. 
-
-Al no presentar banderas rojas y mantener una sólida consistencia fundamental (Piotroski 6/9), la compañía se consolida como una **compra de alta convicción** bajo nuestro estilo de Calidad Compuesta y Lynch.
+Alphabet (GOOGL) exhibe un negocio de **excepcional calidad compuesta** (80.4/100) respaldado por una sólida solvencia financiera (91.8/100), una alta eficiencia en el capital con un ROIC cercano al 30% y un perfil de crecimiento extraordinario (91.0/100) libre de banderas rojas operativas. A pesar de mostrar una puntuación de valoración baja (36.2/100), esta cifra está fuertemente sesgada a la baja por su **insólito PEG de 0.06**, lo que evidencia que el mercado está infravalorando masivamente su potencial de expansión actual. En consecuencia, el precio actual no refleja en absoluto sus formidables fundamentales, ofreciendo una oportunidad de compra excepcional donde la alta calidad y el crecimiento rápido cotizan con descuento.
 
 #### 3. Análisis técnico
 
@@ -693,7 +695,7 @@ Al no presentar banderas rojas y mantener una sólida consistencia fundamental (
 - Precio en el 39% del canal de Bollinger
 - Momentum 12m (excl. último mes) +59.5% frente al +21.3% de SPY: exceso +38.2%
 
-**Lectura:** GOOGL mantiene una estructura de tendencia alcista en corrección, cotizando por debajo de su SMA de 50 periodos ($352.0) pero manteniéndose firmemente sobre su SMA de 200 periodos ($332.46). Con un RSI neutral en 39.3 y un histograma MACD negativo, el impulso actual es moderado y refleja una fase de consolidación dentro de su rango anual.
+**Lectura:** GOOGL mantiene una estructura de tendencia alcista en corrección, cotizando por debajo de su SMA de 50 periodos ($352.0) pero manteniéndose firmemente por encima de su SMA de 200 periodos ($332.46). Con un RSI neutral en 39.3 y un histograma MACD negativo, el momentum actual es moderado y refleja un proceso de consolidación dentro de su rango anual.
 
 #### 4. Analista de noticias — **capa asesora, no altera el dictamen**
 
@@ -707,7 +709,7 @@ Cobertura: 13 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 - `2026-08-06` · **OTROS** · NEUTRA · p=0.02 · _Reuters_ (1 fuente/s) — [Alphabet looks to raise up to $25 billion from latest bond sale, source says - Reuters](https://news.google.com/rss/articles/CBMiuAFBVV95cUxPWUk1NnFMWVUwZEJJTmpvWExsa0hoNWhpbUJXMlpFWUpoY2xtNDk4VGFBTEZORlRQSWVCd3ZsYXBtSTh1ZlJDX2E0OWtFMk5nWW5WV0VNUkJ5REpad2VMMTNrZVBqbERDYWg2QUs2N1hFcHRKRkloQ090VG9lQ3lrLTYyb3otQ243ZzhrQ1pRckZqUmpTMTJoMjVGc1IzQUJpd3BZemd2RHVZRF9WcVg1c2lDdWdia1dU?oc=5)
 - `2026-07-24` · **RESULTADOS** · NEUTRA · p=0.01 · _morning-times.com_ (1 fuente/s) — [Google's Q2 earnings of $112.11B beat Wall Street's expectations on AI boom - morning-times.com](https://news.google.com/rss/articles/CBMi9wFBVV95cUxPNUp3bVNaajJHNjlNRXR3c1MtUjB4ZXNvc0VkTUs3SjNBN1lDSkdac1BnWDN0eFY3NHFtemgyS0dkOWZ4RUxFSmg1dm50dTUwMkNrc1NxTDgtOXlPVGxwNEdXTnBiQ1ZsTzNENVVxTmU5d3diSkFsRG8zUDlNR2xkYi1VeUloLVl2eE9qMnh3aTUwb0lDM2Y1el9nMl85SFg4REt4YmNqVE1Oc0hBVWVOWnNrSl9UOHhMS1NOMGRrMmFoSkZPbU04OWlORmNYd0Q2aTB5dmU5RS1Mek1WekZvRjJLT3lnR2ZLajBERUhRUmI0TVg5eUln?oc=5)
 
-**Lectura:** Alphabet ha publicado sus resultados financieros del segundo trimestre con unos ingresos de 112.110 millones de dólares que superaron las expectativas gracias al auge de la inteligencia artificial, además de convocar una macroemisión de bonos de hasta 25.000 millones de dólares. Estos acontecimientos mantienen una **dirección probable incierta** y una **baja probabilidad de impacto en el precio (0.07)**, ya que el entusiasmo por los sólidos resultados y la IA se equilibra con la cautela del mercado ante un posible incremento significativo de la deuda corporativa.
+**Lectura:** Alphabet ha publicado sus resultados financieros trimestrales batiendo las expectativas de Wall Street gracias al auge de la inteligencia artificial y ha anunciado una macroemisión de bonos de hasta 25.000 millones de dólares. Estos acontecimientos empresariales clave pueden mover la cotización de la acción, aunque el impacto previsto en el precio se mantiene en niveles bajos y con una dirección incierta.
 
 > **Por qué las noticias no mueven el dictamen.** Dos de las tres fuentes son buscadores «de hoy» y no hay forma asequible de reconstruir qué era visible en una fecha pasada. Conectarlas a la decisión invalidaría el backtest hasta disponer de un almacén de noticias point-in-time. Un litigio o una investigación regulatoria relevante debe activar una **revisión manual**, no un recálculo automático del peso.
 
@@ -727,7 +729,7 @@ Cobertura: 13 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 
 - 4 discrepancia(s) entre proveedores de datos; confianza del 91%.
 
-**⚖️ Síntesis:** Alphabet (GOOGL) presenta unos fundamentales extraordinarios, destacados por un crecimiento de ingresos del 24.2% muy superior al sector, un margen neto del 54.8%, un ROIC del 29.9% que supera su coste de capital del 9% y un atractivo PEG de 0.06. Por otro lado, la tesis bajista se limita técnicamente a cuatro discrepancias entre proveedores de datos (con una confianza del 91%), mientras que el contexto de noticias neutrales y de baja probabilidad de impacto no altera el dictamen financiero. En conclusión, la abrumadora solidez de sus métricas de creación de valor, margen bruto del 61% y un balance con una solvencia de 91.8/100 eclipsa las dudas metodológicas de los proveedores, situando al valor en una posición de alta calidad fundamental a pesar del neutral momento técnico (RSI 39.3 y momentum de 26.2/100).
+**⚖️ Síntesis:** Alphabet (GOOGL) presenta unos fundamentales excepcionales, respaldados por un crecimiento de ingresos del 24.2% que supera ampliamente la mediana del sector (8%), un margen neto del 54.8% y un ROIC del 29.9% que confirma la creación de valor sobre el coste de capital del 9%. A esto se suman un margen bruto del 61%, un atractivo PEG de 0.06 y una sólida solvencia (91.8/100) junto a un balance robusto, mientras que la tesis bajista se limita a cuatro discrepancias entre proveedores de datos (con una confianza del 91%) y un flujo de noticias reciente de impacto bajo e incierto que no altera el dictamen. Por tanto, ponderando la abrumadora solidez financiera y el atractivo múltiplo de crecimiento frente a las mínimas discrepancias técnicas y informativas, el perfil de calidad compuesta de la compañía se mantiene altamente favorable para la inversión.
 
 **Condiciones que invalidarían la tesis** — sin ellas, esto sería una opinión, no una tesis:
 
@@ -777,7 +779,7 @@ _riesgo por posición 0.69% sobre un stop al 6.9%, escalado por volatilidad ×0.
 
 > Stop y objetivo se evalúan sobre 252 sesiones (~12 meses). Fuera de ese plazo la posición se revisa, no se mantiene por inercia.
 
-**Orden ejecutiva:** Como Director de Inversiones, emito una orden ejecutiva de **COMPRA** bajo el estilo de Calidad Compuesta para GOOGL con una asignación del 6.07% de la cartera, respaldada por una convicción fundamental moderada de 67.0/100 y un momentum técnico de 26.19/100, libre de vetos y banderas rojas. La operativa se establece a un precio de $340.67, protegiendo el capital con un stop loss en $317.3 y buscando un objetivo de $387.42, lo que ofrece una relación riesgo-recompensa favorable de 2.0. Este posicionamiento estratégico contempla un horizonte temporal de 252 sesiones de mercado para consolidar la tesis de inversión.
+**Orden ejecutiva:** Bajo la tesis de Calidad Compuesta, se emite una orden de **COMPRA** para Alphabet Inc. (GOOGL) con una asignación del 6.07% de la cartera, respaldada por una sólida convicción fundamental de 67.0/100 y un momentum técnico moderado de 26.19/100, tras constatarse la ausencia total de vetos y banderas rojas. La operación se ejecutará al precio actual de $340.67, estableciendo un stop-loss en $317.3 y un objetivo de precio en $387.42, lo que define una relación riesgo-recompensa óptima de 2.0. Este posicionamiento estratégico contempla un horizonte temporal de inversión de 252 sesiones de mercado para materializar el valor compuesto de la compañía.
 
 ---
 
@@ -797,7 +799,7 @@ _riesgo por posición 0.69% sobre un stop al 6.9%, escalado por volatilidad ×0.
 
 - ℹ️ 2 discrepancia(s) entre proveedores; confianza rebajada al 97%.
 
-**Lectura:** Newmont Corporation (NEM) demuestra una salud financiera sobresaliente en el sector de Materiales Básicos, destacando por un sólido crecimiento de ingresos del 15.1% y una alta rentabilidad con un margen neto del 33.4% y un ROE del 25.9%. Además, presenta un riesgo de apalancamiento mínimo gracias a una relación Deuda/Patrimonio de 0.16x, lo que justifica firmemente su **APROBACIÓN** como *Gatekeeper*.
+**Lectura:** Como Analista Fundamental Gatekeeper, **APRUEBO** a NEM debido a una sólida salud financiera respaldada por un atractivo crecimiento de ingresos del 15.1% y una excelente rentabilidad sobre el capital (ROE) del 25.9%. Además, destaca por su alta eficiencia con un margen neto del 33.4% y un bajo riesgo de apalancamiento, reflejado en una relación Deuda/Patrimonio de 0.16x.
 
 #### 2. Calidad y valoración
 
@@ -857,7 +859,7 @@ _Cobertura de datos: 100% (OK)._
 
 **Lectura:** Como Analista de Calidad y Valoración, esta es la síntesis de la tesis para **Newmont (NEM)**:
 
-La compañía exhibe una **calidad excepcional (79.2/100)** respaldada por una solidez financiera inquebrugable (99.1/100, Altman segura), la máxima puntuación en salud operativa según Piotroski (9/9) y una sólida eficiencia en el capital con un ROIC del 21.6%, operando sin banderas rojas que comprometan su tesis. En cuanto al precio, una valoración moderada (61.8/100) combinada con un PEG razonable de 1.38 sugiere que el mercado no está sobreexigiendo el valor, ofreciendo una atractiva oportunidad para capturar exposición al sector de materiales básicos con un perfil defensivo y de dividendo bien respaldado.
+Newmont exhibe una **solidez financiera excepcional (99.1/100) y fundamentales impecables**, avalados por un puntaje perfecto de Piotroski (9/9), un ROIC del 21.6% y una total ausencia de banderas rojas en su modelo de minería de oro. Aunque el estilo principal es de **Calidad Compuesta**, el negocio mantiene una naturaleza cíclica y un atractivo perfil de dividendo respaldado por una zona de **Altman firmemente segura**. Con una **valoración atractiva (61.8/100) y un PEG razonable de 1.38**, el precio actual del mercado no refleja plenamente su excepcional calidad operativa, ofreciendo un punto de entrada interesante dentro del sector de materiales básicos.
 
 #### 3. Análisis técnico
 
@@ -886,7 +888,7 @@ La compañía exhibe una **calidad excepcional (79.2/100)** respaldada por una s
 - Precio en el 91% del canal de Bollinger
 - Momentum 12m (excl. último mes) +36.6% frente al +21.3% de SPY: exceso +15.2%
 
-**Lectura:** NEM cotiza en $127.64, ubicándose de manera sólida por encima de sus medias móviles de 50 y 200 periodos con un histograma MACD positivo (+2.025), lo que refleja una estructura de tendencia mixta pero respaldada por un momentum alcista (+27.3/100). No obstante, el RSI se encuentra en un nivel de sobrecompra extrema (83.9) y el activo opera en el 90% de su rango de 52 semanas, advirtiendo sobre una condición técnica muy estirada a corto plazo.
+**Lectura:** Newmont (NEM) cotiza a $127.64, ubicándose sólidamente por encima de sus medias móviles de 50 y 200 periodos y cerca del extremo superior de su rango anual, lo que refleja una estructura de tendencia mixta pero con un sesgo de continuidad alcista respaldado por un histograma MACD positivo (+2.025). No obstante, el valor presenta condiciones de sobrecompra extrema con un RSI en 83.9, advirtiendo sobre un agotamiento potencial en el corto plazo a pesar de mantener una puntuación de momentum alcista moderada (+27.3/100).
 
 #### 4. Analista de noticias — **capa asesora, no altera el dictamen**
 
@@ -900,7 +902,7 @@ Cobertura: 13 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 - `2026-08-18` · **OTROS** · NEUTRA · p=0.04 · _Yahoo Finance_ (1 fuente/s) — [StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane, from Newmont Corporation - Yahoo Finance](https://news.google.com/rss/articles/CBMiwwFBVV95cUxNNGZId1l6V2VJM0JxbkxrTjFxLVIyLTJqNHR0Q25sM2dWT0tTX2d6UlVPdlVDajBLemtSdUQzcVl0cGhDOTU0N0RRYkRWZVhOQkczQkxPcjFENkdSRFl5RkFHaTJsZmZPdDMzd0VoQmhSSWU2SWJCaE5qbXd0WW5ZNzlkU2IzOUNXMGZpcWU3MktlUlozdV9Ma2Fnb254Qnd2UVVTWk51WDVEYmRZWlJwaXVGaWEwQS1zSERxZWdyQUtXbTA?oc=5)
 - `2026-07-23` · **RESULTADOS** · NEUTRA · p=0.03 · _SEC EDGAR (8-K)_ (1 fuente/s) — [Newmont Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)](https://www.sec.gov/Archives/edgar/data/1164727/000116472726000034/nem-20260723.htm)
 
-**Lectura:** Newmont Corporation ha reforzado su estructura corporativa con la incorporación de Peter Beaven a su Consejo de Administración y ha reportado sus recientes resultados financieros mediante el formulario 8-K, en un contexto de transacciones estratégicas en Nevada. Estos movimientos corporativos y operativos optimizan la gobernanza y la confianza del mercado, actúan como catalizadores de **dirección ALCISTA** y presentan una **probabilidad de impacto en el precio MEDIA (0.32)**.
+**Lectura:** Newmont Corporation ha reforzado su gobernanza con el nombramiento de Peter Beaven en su Junta Directiva y ha reportado sus últimos resultados financieros, mientras optimiza su cartera con la venta del proyecto Northumberland en Nevada. Estos movimientos estratégicos y corporativos generan un catalizador positivo para la compañía, sustentando una **dirección probable ALCISTA** con una **probabilidad de impacto en el precio MEDIA (0.32)**.
 
 > **Por qué las noticias no mueven el dictamen.** Dos de las tres fuentes son buscadores «de hoy» y no hay forma asequible de reconstruir qué era visible en una fecha pasada. Conectarlas a la decisión invalidaría el backtest hasta disponer de un almacén de noticias point-in-time. Un litigio o una investigación regulatoria relevante debe activar una **revisión manual**, no un recálculo automático del peso.
 
@@ -923,7 +925,12 @@ Cobertura: 13 nota(s) en 30 días · fuentes con respuesta: sec_8k, google_news_
 - RSI en 83.9 (sobrecompra extrema): la entrada en este nivel asume riesgo de reversión a corto plazo.
 - 2 discrepancia(s) entre proveedores de datos; confianza del 97%.
 
-**⚖️ Síntesis:** Newmont (NEM) presenta una sólida tesis alcista respaldada por un crecimiento de ingresos del 15.1% frente al 6% del sector, un margen neto del 33.4%, un margen bruto del 68% y un ROIC del 21.6% que supera el coste de capital del 9%, además de un F-Score de Piotroski perfecto de 9/9 y una solvencia de 99.1/100. En contraposición, los riesgos bajistas se centran en una sobrecompra extrema con un RSI de 83.9 que advierte un riesgo de reversión a corto plazo, sumado a 2 discrepancias entre proveedores de datos que sitúan la confianza en el 97%. Ponderando ambas posturas, la excelente creación de valor y solidez financiera de la compañía contrastan con la prudencia exigida por su actual sobrecompra técnica y las discrepancias de datos, en un contexto donde el flujo de noticias alcista de impacto medio no altera el dictamen fundamental.
+**⚖️ Síntesis:** **Síntesis del Debate de Inversión: Newmont Corporation (NEM)**
+
+Newmont (NEM) presenta una tesis alcista fundamentada en un crecimiento de ingresos del 15.1% —que supera la mediana del sector del 6%—, un margen neto del 33.4%, un margen bruto del 68% y un ROIC del 21.6% que excede el coste de capital del 9%, respaldado además por un F-Score de Piotroski perfecto de 9/9 y una puntuación de solvencia de 99.1/100. En contraposición, la tesis bajista advierte sobre el riesgo de una reversión a corto plazo debido a un RSI en 83.9 que denota sobrecompra extrema, sumado a 2 discrepancias entre proveedores de datos que sitúan la confianza en el 97% y un flujo de noticias de sesgo alcista y probabilidad de impacto media (0.32) cuyo principal catalizador no altera el dictamen. 
+
+**Conclusión Imparcial**
+Newmont demuestra una creación de valor excepcional y una sólida salud financiera, reflejadas en su elevado ROIC, su F-Score perfecto y sus superiores márgenes de rentabilidad frente al sector de materiales básicos. Sin embargo, el inversor debe sopesar estos fundamentales con la prudencia que exigen el nivel de sobrecompra extrema en el RSI (83.9) y las discrepancias menores entre proveedores de datos. En definitiva, la solidez estructural del negocio mitiga los riesgos a corto plazo, pero aconseja gestionar con cautela el momento de entrada.
 
 **Condiciones que invalidarían la tesis** — sin ellas, esto sería una opinión, no una tesis:
 
@@ -973,9 +980,9 @@ _riesgo por posición 0.82% sobre un stop al 9.6%, escalado por volatilidad ×0.
 
 > Stop y objetivo se evalúan sobre 252 sesiones (~12 meses). Fuera de ese plazo la posición se revisa, no se mantiene por inercia.
 
-**Orden ejecutiva:** **ORDEN EJECUTIVA DE INVERSIÓN: NEM**
+**Orden ejecutiva:** **ORDEN EJECUTIVA DE INVERSIÓN – NEM**
 
-Tras una evaluación exhaustiva sin vetos ni banderas rojas, se emite un dictamen de **COMPRA** bajo el estilo de calidad compuesta, respaldado por una sólida convicción fundamental de 73.8/100 y un momentum de 27.32/100. Se autoriza una asignación del 2.89% de la cartera al precio actual de $127.64, estableciendo un *stop-loss* en $115.41 y un objetivo de precio en $152.09 para mantener una relación riesgo-recompensa de 2.0. Esta posición táctica está diseñada para desarrollarse en un horizonte temporal de 252 sesiones de mercado.
+Tras una evaluación exhaustiva sin vetos ni banderas rojas, se emite un dictamen de **COMPRA** bajo el estilo de calidad compuesta, respaldado por una sólida convicción fundamental de 73.8/100 y un momentum de 27.32/100. Se autoriza una asignación del 2.89% de la cartera, estableciendo un precio de entrada en $127.64, un nivel de protección (stop-loss) en $115.41 y un objetivo de beneficio en $152.09, lo que define una relación riesgo-recompensa de 2.0. Esta posición táctica queda estructurada para ejecutarse bajo un horizonte temporal de 252 sesiones bursátiles.
 
 ---
 
@@ -1026,13 +1033,21 @@ Ningún dictamen es mejor que los datos que lo sostienen. Esta sección declara 
 
 ## 6. Limitaciones y track record
 
-**El sistema no ha batido históricamente a comprar y mantener el índice.** El backtest point-in-time sobre 2015-2025 (`output/backtest_report.md`) documenta un CAGR del 2.11% frente al 13.51% del SPY, un Sharpe de 0.35 frente a 0.80 y un alfa anualizado de −0.41% (t = −0.24). Frente a carteras aleatorias con el mismo perfil de exposición, la estrategia queda en el percentil 1.9.
+**El sistema NO bate a comprar y mantener el índice.** Backtest en régimen `pit` sobre 2015-01-02 → 2025-12-30 (generado el 2026-08-21T12:00, ver `output/backtest_report.md`):
 
-Más grave que el rendimiento: **en aquella versión el rating no ordenaba el rendimiento futuro en la dirección que afirmaba** — los valores calificados VENTA FUERTE rindieron de media un 35.06% a doce meses frente al 21.02% de los COMPRA FUERTE. La lectura prudente es que el rating no separaba ganadores de perdedores; afirmar que la señal estaba *invertida* exigiría composiciones históricas del índice para descartar el sesgo de supervivencia.
+| Métrica | Estrategia | SPY |
+| :--- | ---: | ---: |
+| CAGR | 3.9% | 13.5% |
+| Volatilidad anualizada | 6.0% | 17.8% |
+| Sharpe | 0.68 | 0.80 |
+| Sortino | 0.86 | 0.98 |
+| Máximo drawdown | -13.8% | -33.7% |
 
-Las mejoras incorporadas en esta versión —convicción fundamental en la decisión, dimensionamiento por riesgo, corrección del clasificador de momentum— **no han sido revalidadas todavía en el backtest**. Hasta que se ejecute de nuevo `backtest_cli.py --regime pit`, el track record vigente es el anterior y las cifras de arriba son las que aplican.
+Frente a la selección aleatoria, la estrategia queda en el **percentil 7.4** — **por debajo** de la mediana de carteras aleatorias con el mismo perfil de exposición, lo que significa que la selección de valores no aporta.
 
-**Limitaciones metodológicas que siguen vigentes:**
+> **Cuidado al comparar el CAGR.** La estrategia opera con una volatilidad del 6.0% frente al 17.8% del índice, porque el presupuesto de riesgo la mantiene estructuralmente poco invertida. Comparar rentabilidades absolutas entre carteras con perfiles de riesgo tan distintos favorece mecánicamente a la más expuesta; el Sharpe y el Sortino son la comparación pertinente.
+
+**Limitaciones metodológicas vigentes:**
 
 - **Universo con sesgo de supervivencia.** Solo se analizan valores que existen hoy.
 - **Normas sectoriales estáticas.** Las medianas de comparación son de largo plazo, no la mediana viva del sector. Ordenan y contextualizan; no valoran.

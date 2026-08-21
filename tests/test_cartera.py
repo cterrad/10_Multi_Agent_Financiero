@@ -228,3 +228,84 @@ def test_la_cartera_serializa_a_json_plano():
                       "riesgo_total_pct", "por_sector_pct", "diagnostico",
                       "restricciones_activadas"}
     assert d["posiciones"][0]["peso_final_pct"] == pytest.approx(4.0)
+
+
+# --------------------------------------------------------------------------- #
+# 5. Posiciones ya abiertas (integración con el motor histórico)
+# --------------------------------------------------------------------------- #
+def existente(ticker, *, peso, sector="Technology", precio=100.0, stop=90.0,
+              volatilidad=0.25):
+    return {"ticker": ticker, "sector": sector, "peso": peso, "rating": "COMPRA",
+            "estilo": "CALIDAD_COMPUESTA", "conviccion": 70.0, "precio": precio,
+            "stop": stop, "volatilidad": volatilidad}
+
+
+def test_las_posiciones_abiertas_consumen_presupuesto_sectorial():
+    """
+    Sin esto, cada rebalanceo respetaría el tope del 30% por sector y aun así
+    la cartera acabaría con el 90% en un solo sector tras tres rebalanceos.
+    """
+    c = PortfolioConstructor().construir(
+        [resultado("NUEVO", peso=0.10, sector="Technology")],
+        None,
+        posiciones_existentes=[existente("VIEJO", peso=0.25, sector="Technology")],
+    )
+    assert c.por_sector["Technology"] <= LIMITE_POR_SECTOR + 1e-9
+    nuevo = next(p for p in c.posiciones if p.ticker == "NUEVO")
+    viejo = next(p for p in c.posiciones if p.ticker == "VIEJO")
+    # La abierta no se reescala; el recorte recae íntegro sobre la nueva.
+    assert viejo.peso_final == pytest.approx(0.25)
+    assert nuevo.peso_final == pytest.approx(0.05, abs=1e-6)
+
+
+def test_un_sector_ya_lleno_no_admite_incorporaciones():
+    c = PortfolioConstructor().construir(
+        [resultado("NUEVO", peso=0.08, sector="Technology")],
+        None,
+        posiciones_existentes=[existente("VIEJO", peso=LIMITE_POR_SECTOR, sector="Technology")],
+    )
+    assert [p.ticker for p in c.posiciones] == ["VIEJO"]
+    assert c.excluidas[0]["ticker"] == "NUEVO"
+
+
+def test_las_posiciones_abiertas_no_se_reescalan_nunca():
+    """
+    Reajustar la cartera entera en cada rebalanceo generaría rotación constante
+    cuyo coste se comería cualquier ventaja del ajuste.
+    """
+    existentes = [existente(f"V{i}", peso=0.20, sector=f"S{i}", precio=100.0, stop=60.0)
+                  for i in range(5)]
+    c = PortfolioConstructor().construir(
+        [resultado("NUEVO", peso=0.10, sector="Healthcare", precio=100.0, stop=60.0)],
+        None, posiciones_existentes=existentes,
+    )
+    abiertas = [p for p in c.posiciones if p.fija]
+    assert len(abiertas) == 5
+    assert all(p.peso_final == pytest.approx(0.20) for p in abiertas)
+    # El presupuesto de riesgo ya está agotado por las abiertas: la nueva cae.
+    nuevas = [p for p in c.posiciones if not p.fija]
+    assert nuevas == []
+
+
+def test_el_tope_de_posiciones_cuenta_las_ya_abiertas():
+    existentes = [existente(f"V{i}", peso=0.01, sector=f"S{i}")
+                  for i in range(MAXIMO_POSICIONES)]
+    c = PortfolioConstructor().construir(
+        [resultado("NUEVO", peso=0.05, sector="Healthcare")],
+        None, posiciones_existentes=existentes,
+    )
+    assert all(p.fija for p in c.posiciones)
+    assert any(e["ticker"] == "NUEVO" for e in c.excluidas)
+
+
+def test_la_cartera_agregada_incluye_abiertas_y_nuevas():
+    c = PortfolioConstructor().construir(
+        [resultado("NUEVO", peso=0.04, sector="Healthcare")],
+        None,
+        posiciones_existentes=[existente("VIEJO", peso=0.06, sector="Technology")],
+    )
+    assert {p.ticker for p in c.posiciones} == {"VIEJO", "NUEVO"}
+    assert c.exposicion_bruta == pytest.approx(0.10)
+    assert c.diagnostico["n_posiciones"] == 2
+    d = c.a_dict()
+    assert [p["ya_en_cartera"] for p in d["posiciones"]] == [True, False]

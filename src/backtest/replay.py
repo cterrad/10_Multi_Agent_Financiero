@@ -337,6 +337,9 @@ class Signal:
     estilo: Optional[str] = None
     conviccion: Optional[float] = None
     banderas_rojas: int = 0
+    # Volatilidad anualizada realizada. La capa de cartera la necesita para
+    # estimar la matriz de covarianzas y el ratio de diversificación.
+    volatilidad: Optional[float] = None
 
     @property
     def is_buy(self) -> bool:
@@ -551,6 +554,7 @@ class HistoricalReplayer:
             estilo=quality.get("style_classification"),
             conviccion=(quality.get("conviccion_fundamental") or {}).get("valor"),
             banderas_rojas=len(quality.get("banderas_rojas", [])),
+            volatilidad=tech.get("volatilidad_anual"),
         )
 
     def signals_for_date(self, tickers: List[str], date) -> List[Signal]:

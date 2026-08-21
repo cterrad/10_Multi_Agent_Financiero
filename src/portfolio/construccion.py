@@ -74,6 +74,12 @@ class PosicionPropuesta:
     correlacion_media: Optional[float] = None
     riesgo_aportado: float = 0.0    # peso × distancia al stop
     ajustes: List[str] = field(default_factory=list)
+    # Una posición ya abierta consume presupuesto —de sector, de riesgo y de
+    # exposición— pero NO se reescala: reajustar cada cartera entera en cada
+    # rebalanceo generaría rotación constante cuyo coste se comería cualquier
+    # ventaja del ajuste. Las restricciones se aplican, por tanto, solo sobre
+    # las candidatas nuevas, contra el presupuesto que dejan libre las fijas.
+    fija: bool = False
 
     def a_dict(self) -> Dict[str, Any]:
         return {
@@ -92,6 +98,7 @@ class PosicionPropuesta:
             "correlacion_media": self.correlacion_media,
             "riesgo_aportado_pct": round(self.riesgo_aportado * 100, 3),
             "ajustes": self.ajustes,
+            "ya_en_cartera": self.fija,
         }
 
 
@@ -129,11 +136,25 @@ class PortfolioConstructor:
 
     # ------------------------------------------------------------------ #
     def construir(self, resultados: List[Dict[str, Any]],
-                  series_precios: Optional[Dict[str, pd.Series]] = None) -> CarteraPropuesta:
+                  series_precios: Optional[Dict[str, pd.Series]] = None,
+                  posiciones_existentes: Optional[List[Dict[str, Any]]] = None
+                  ) -> CarteraPropuesta:
+        """
+        Cartera objetivo a partir de los dictámenes individuales.
+
+        `posiciones_existentes` permite usar esta capa desde el motor histórico,
+        donde en cada rebalanceo ya hay posiciones abiertas. Se incorporan como
+        peso FIJO —no se reescalan— pero consumen presupuesto sectorial, de
+        riesgo y de exposición, de modo que los límites se aplican sobre la
+        cartera completa y no solo sobre las incorporaciones. Sin esto, cada
+        rebalanceo podría respetar el tope del 30% por sector y aun así acabar
+        con el 90% en un solo sector tras tres rebalanceos.
+        """
         candidatas, excluidas = self._candidatas(resultados)
+        fijas = self._existentes(posiciones_existentes or [])
         restricciones: List[str] = []
 
-        if not candidatas:
+        if not candidatas and not fijas:
             return CarteraPropuesta(
                 posiciones=[], excluidas=excluidas, exposicion_bruta=0.0, liquidez=1.0,
                 riesgo_total=0.0, por_sector={}, correlaciones=None,
@@ -141,16 +162,24 @@ class PortfolioConstructor:
                 restricciones_activadas=["Ninguna señal de compra: cartera íntegramente en liquidez."],
             )
 
-        matriz = self._correlaciones(candidatas, series_precios)
+        # Las correlaciones se calculan sobre TODAS las posiciones —abiertas y
+        # candidatas— porque lo que importa es el solapamiento de la cartera
+        # resultante, no el de las incorporaciones entre sí.
+        matriz = self._correlaciones(candidatas + fijas, series_precios)
         self._penalizar_correlacion(candidatas, matriz, restricciones)
-        self._limitar_por_sector(candidatas, restricciones)
-        candidatas = self._limitar_numero(candidatas, excluidas, restricciones)
-        self._limitar_riesgo_total(candidatas, restricciones)
-        self._limitar_exposicion(candidatas, restricciones)
+        self._limitar_por_sector(candidatas + fijas, restricciones)
+        candidatas = self._limitar_numero(candidatas, excluidas, restricciones,
+                                          n_fijas=len(fijas))
+        self._calcular_riesgo(candidatas + fijas)
+        self._limitar_riesgo_total(candidatas + fijas, restricciones)
+        self._limitar_exposicion(candidatas + fijas, restricciones)
 
         # Descarte final de residuos por debajo del mínimo operable.
         vivas: List[PosicionPropuesta] = []
         for p in candidatas:
+            if p.fija:
+                vivas.append(p)
+                continue
             if p.peso_final < PESO_MINIMO_OPERABLE:
                 excluidas.append({
                     "ticker": p.ticker, "rating": p.rating,
@@ -160,24 +189,52 @@ class PortfolioConstructor:
             else:
                 vivas.append(p)
 
-        exposicion = sum(p.peso_final for p in vivas)
+        # Las posiciones ya abiertas forman parte de la cartera resultante y de
+        # todos sus agregados; solo se distinguen por la marca `ya_en_cartera`.
+        todas = vivas + fijas
+        exposicion = sum(p.peso_final for p in todas)
         por_sector: Dict[str, float] = {}
-        for p in vivas:
+        for p in todas:
             por_sector[p.sector] = por_sector.get(p.sector, 0.0) + p.peso_final
 
         return CarteraPropuesta(
-            posiciones=sorted(vivas, key=lambda x: x.peso_final, reverse=True),
+            posiciones=sorted(todas, key=lambda x: x.peso_final, reverse=True),
             excluidas=excluidas,
             exposicion_bruta=exposicion,
             liquidez=max(0.0, 1.0 - exposicion),
-            riesgo_total=sum(p.riesgo_aportado for p in vivas),
+            riesgo_total=sum(p.riesgo_aportado for p in todas),
             por_sector=por_sector,
             correlaciones=matriz,
-            diagnostico=self._diagnostico(vivas, matriz),
+            diagnostico=self._diagnostico(todas, matriz),
             restricciones_activadas=restricciones,
         )
 
     # ------------------------------------------------------------------ #
+    @staticmethod
+    def _existentes(posiciones: List[Dict[str, Any]]) -> List[PosicionPropuesta]:
+        """Traduce las posiciones abiertas del motor a la representación interna."""
+        fijas = []
+        for p in posiciones:
+            peso = float(p.get("peso") or 0.0)
+            if peso <= 0:
+                continue
+            fijas.append(PosicionPropuesta(
+                ticker=p.get("ticker", "?"),
+                empresa=p.get("empresa", p.get("ticker", "?")),
+                sector=p.get("sector") or "Desconocido",
+                rating=p.get("rating", "EN CARTERA"),
+                estilo=p.get("estilo", "n/d"),
+                conviccion=p.get("conviccion"),
+                peso_solicitado=peso,
+                peso_final=peso,
+                precio=p.get("precio"),
+                stop=p.get("stop"),
+                objetivo=p.get("objetivo"),
+                volatilidad=p.get("volatilidad"),
+                fija=True,
+            ))
+        return fijas
+
     @staticmethod
     def _candidatas(resultados: List[Dict[str, Any]]):
         candidatas: List[PosicionPropuesta] = []
@@ -298,25 +355,36 @@ class PortfolioConstructor:
             total = sum(p.peso_final for p in posiciones)
             if total <= LIMITE_POR_SECTOR:
                 continue
-            factor = LIMITE_POR_SECTOR / total
-            for p in posiciones:
+            ajustables = [p for p in posiciones if not p.fija]
+            comprometido = sum(p.peso_final for p in posiciones if p.fija)
+            disponible = max(0.0, LIMITE_POR_SECTOR - comprometido)
+            total_ajustable = sum(p.peso_final for p in ajustables)
+            factor = (disponible / total_ajustable) if total_ajustable > 0 else 0.0
+            for p in ajustables:
                 p.peso_final *= factor
                 p.ajustes.append(
                     f"Peso escalado ×{factor:.2f}: el sector {sector} sumaba {total:.1%} "
-                    f"frente al tope del {LIMITE_POR_SECTOR:.0%}.")
+                    f"frente al tope del {LIMITE_POR_SECTOR:.0%}"
+                    + (f", de los que {comprometido:.1%} ya estaban en cartera"
+                       if comprometido else "") + ".")
             restricciones.append(
-                f"Tope sectorial activado en {sector}: {total:.1%} → {LIMITE_POR_SECTOR:.0%}.")
+                f"Tope sectorial activado en {sector}: {total:.1%} → "
+                f"{comprometido + total_ajustable * factor:.1%}.")
 
     @staticmethod
     def _limitar_numero(candidatas: List[PosicionPropuesta], excluidas: List[Dict[str, Any]],
-                        restricciones: List[str]) -> List[PosicionPropuesta]:
-        if len(candidatas) <= MAXIMO_POSICIONES:
+                        restricciones: List[str],
+                        n_fijas: int = 0) -> List[PosicionPropuesta]:
+        # Los huecos disponibles son los que dejan libres las posiciones ya
+        # abiertas: el tope es de la cartera, no de las incorporaciones.
+        huecos = max(0, MAXIMO_POSICIONES - n_fijas)
+        if len(candidatas) <= huecos:
             return candidatas
         ordenadas = sorted(candidatas,
                            key=lambda p: (p.conviccion if p.conviccion is not None else 0.0,
                                           p.peso_final),
                            reverse=True)
-        conservadas, descartadas = ordenadas[:MAXIMO_POSICIONES], ordenadas[MAXIMO_POSICIONES:]
+        conservadas, descartadas = ordenadas[:huecos], ordenadas[huecos:]
         for p in descartadas:
             excluidas.append({
                 "ticker": p.ticker, "rating": p.rating,
@@ -324,33 +392,48 @@ class PortfolioConstructor:
                            f"({p.conviccion})"),
             })
         restricciones.append(
-            f"Límite de {MAXIMO_POSICIONES} posiciones: {len(descartadas)} candidata(s) descartada(s).")
+            f"Límite de {MAXIMO_POSICIONES} posiciones ({n_fijas} ya en cartera): "
+            f"{len(descartadas)} candidata(s) descartada(s).")
         return conservadas
 
     @staticmethod
-    def _limitar_riesgo_total(candidatas: List[PosicionPropuesta],
-                              restricciones: List[str]) -> None:
+    def _calcular_riesgo(posiciones: List[PosicionPropuesta]) -> None:
         """
-        Presupuesto de riesgo agregado.
+        Riesgo aportado = peso × distancia relativa al stop.
 
-        Riesgo aportado por posición = peso × distancia relativa al stop, es
-        decir, cuánto patrimonio se pierde si esa posición toca su stop. La
-        suma es la pérdida si TODAS los tocan a la vez — el escenario que
-        importa, porque las correlaciones tienden a 1 en las caídas.
+        Es cuánto patrimonio se pierde si esa posición toca su stop. Sin stop
+        conocido se asume un 10%, que es deliberadamente conservador: presumir
+        una distancia menor infravaloraría el riesgo justo donde hay menos
+        información.
         """
-        for p in candidatas:
+        for p in posiciones:
             if p.precio and p.stop and p.precio > 0:
                 distancia = max(0.0, (p.precio - p.stop) / p.precio)
             else:
                 distancia = 0.10
             p.riesgo_aportado = p.peso_final * distancia
 
-        total = sum(p.riesgo_aportado for p in candidatas)
+    @staticmethod
+    def _limitar_riesgo_total(posiciones: List[PosicionPropuesta],
+                              restricciones: List[str]) -> None:
+        """
+        Presupuesto de riesgo agregado.
+
+        La suma de los riesgos aportados es la pérdida si TODAS las posiciones
+        tocan su stop a la vez — el escenario que importa, porque las
+        correlaciones tienden a 1 en las caídas.
+        """
+        total = sum(p.riesgo_aportado for p in posiciones)
         if total <= RIESGO_TOTAL_CARTERA_PCT or total <= 0:
             return
 
-        factor = RIESGO_TOTAL_CARTERA_PCT / total
-        for p in candidatas:
+        ajustables = [p for p in posiciones if not p.fija]
+        comprometido = sum(p.riesgo_aportado for p in posiciones if p.fija)
+        disponible = max(0.0, RIESGO_TOTAL_CARTERA_PCT - comprometido)
+        total_ajustable = sum(p.riesgo_aportado for p in ajustables)
+        factor = (disponible / total_ajustable) if total_ajustable > 0 else 0.0
+
+        for p in ajustables:
             p.peso_final *= factor
             p.riesgo_aportado *= factor
             p.ajustes.append(
@@ -358,21 +441,27 @@ class PortfolioConstructor:
                 f"({RIESGO_TOTAL_CARTERA_PCT:.1%} del patrimonio).")
         restricciones.append(
             f"Presupuesto de riesgo agregado activado: riesgo simultáneo de {total:.2%} "
-            f"reducido al {RIESGO_TOTAL_CARTERA_PCT:.2%}.")
+            f"reducido al {comprometido + total_ajustable * factor:.2%}.")
 
     @staticmethod
-    def _limitar_exposicion(candidatas: List[PosicionPropuesta],
+    def _limitar_exposicion(posiciones: List[PosicionPropuesta],
                             restricciones: List[str]) -> None:
-        total = sum(p.peso_final for p in candidatas)
+        total = sum(p.peso_final for p in posiciones)
         if total <= EXPOSICION_BRUTA_MAXIMA or total <= 0:
             return
-        factor = EXPOSICION_BRUTA_MAXIMA / total
-        for p in candidatas:
+        ajustables = [p for p in posiciones if not p.fija]
+        comprometido = sum(p.peso_final for p in posiciones if p.fija)
+        disponible = max(0.0, EXPOSICION_BRUTA_MAXIMA - comprometido)
+        total_ajustable = sum(p.peso_final for p in ajustables)
+        factor = (disponible / total_ajustable) if total_ajustable > 0 else 0.0
+
+        for p in ajustables:
             p.peso_final *= factor
             p.riesgo_aportado *= factor
             p.ajustes.append(f"Peso escalado ×{factor:.2f} por el tope de exposición bruta.")
         restricciones.append(
-            f"Tope de exposición bruta activado: {total:.1%} → {EXPOSICION_BRUTA_MAXIMA:.0%}.")
+            f"Tope de exposición bruta activado: {total:.1%} → "
+            f"{comprometido + total_ajustable * factor:.1%}.")
 
     # ------------------------------------------------------------------ #
     def _diagnostico(self, posiciones: List[PosicionPropuesta],

@@ -567,3 +567,134 @@ def test_backtest_is_deterministic():
                            BacktestConfig(), verbose=False)
         curves.append(res["equity"])
     pd.testing.assert_series_equal(curves[0], curves[1])
+
+
+# --------------------------------------------------------------------------- #
+# 9. Integración de la capa de cartera en el motor histórico
+# --------------------------------------------------------------------------- #
+def _señal(ticker, *, sector="Technology", peso=0.10, close=100.0, stop=90.0,
+           estilo="CALIDAD_COMPUESTA", conviccion=70.0, vol=0.25,
+           fecha="2021-06-30"):
+    return Signal(
+        ticker=ticker, date=pd.Timestamp(fecha), rating="COMPRA",
+        momentum="ALCISTA", passed_gatekeeper=True, close=close, atr=close * 0.02,
+        rsi=55.0, stop_loss=stop, take_profit=close * 1.2, target_weight=peso,
+        sector=sector, estilo=estilo, conviccion=conviccion, volatilidad=vol,
+    )
+
+
+def _motor(tickers, fecha="2021-06-30"):
+    from src.backtest.engine import BacktestConfig, PortfolioEngine
+    precios = {t: make_prices(n=400, start="2020-01-01", seed=i + 1)
+               for i, t in enumerate(tickers)}
+    # El calendario sintético no contiene la fecha exacta: se usa la última
+    # sesión disponible, que es lo que hace el bucle real.
+    fecha = precios[tickers[0]].index[-1]
+    return PortfolioEngine(precios, BacktestConfig()), precios, fecha
+
+
+def test_el_motor_aplica_el_tope_sectorial_de_la_capa_de_cartera():
+    """
+    Antes el backtest escalaba los pesos proporcionalmente hasta llenar la
+    exposición bruta y nada más: sin límite sectorial, la cartera simulada
+    podía concentrar todo el capital en un sector y las métricas describían una
+    estrategia distinta de la que el sistema recomienda en vivo.
+    """
+    from src.backtest.engine import BacktestConfig, build_orders
+    from src.config import LIMITE_POR_SECTOR
+    from src.portfolio import PortfolioConstructor
+
+    tickers = list("ABCDE")
+    engine, precios, fecha = _motor(tickers)
+    señales = [_señal(t, sector="Technology", peso=0.10, fecha=fecha) for t in tickers]
+
+    ordenes = build_orders(señales, engine, fecha, BacktestConfig(),
+                           PortfolioConstructor())
+    equity = engine.equity_at(fecha)
+    peso_total = sum(o["notional"] for o in ordenes if o["side"] == "BUY") / equity
+    assert peso_total <= LIMITE_POR_SECTOR + 1e-6
+
+
+def test_sin_constructor_el_motor_conserva_el_reparto_proporcional():
+    """`technical_only` no tiene convicciones que ordenar: se mantiene el reparto."""
+    from src.backtest.engine import BacktestConfig, build_orders
+    from src.config import LIMITE_POR_SECTOR
+
+    tickers = list("ABCDE")
+    engine, precios, fecha = _motor(tickers)
+    señales = [_señal(t, sector="Technology", peso=0.10, fecha=fecha) for t in tickers]
+
+    ordenes = build_orders(señales, engine, fecha, BacktestConfig(), None)
+    equity = engine.equity_at(fecha)
+    peso_total = sum(o["notional"] for o in ordenes if o["side"] == "BUY") / equity
+    assert peso_total > LIMITE_POR_SECTOR  # el reparto antiguo no conoce sectores
+
+
+def test_las_correlaciones_del_motor_se_calculan_solo_con_el_pasado():
+    """
+    Una matriz de correlaciones calculada con datos posteriores a `t` sería
+    look-ahead del más difícil de detectar: no cambia ninguna señal, solo los
+    pesos. `_series_hasta` corta en `t` inclusive.
+    """
+    from src.backtest.engine import _series_hasta
+
+    tickers = list("AB")
+    engine, precios, fecha = _motor(tickers)
+    corte = precios["A"].index[250]
+
+    series = _series_hasta(precios, tickers, corte, 120)
+    assert series, "sin series no se puede verificar el corte"
+    for t, serie in series.items():
+        assert serie.index.max() <= corte
+
+
+def test_las_operaciones_arrastran_el_estilo_para_atribucion():
+    """
+    Sin el estilo en el registro de operaciones no se puede responder si el
+    sistema pierde dinero en valor, en crecimiento o de forma transversal — la
+    hipótesis que el informe anterior planteaba sin poder medir.
+    """
+    from src.backtest.engine import BacktestConfig, PortfolioEngine, build_orders
+    from src.portfolio import PortfolioConstructor
+
+    engine, precios, fecha = _motor(["A"])
+    ordenes = build_orders([_señal("A", peso=0.05, fecha=fecha)], engine, fecha,
+                           BacktestConfig(), PortfolioConstructor())
+    compra = next(o for o in ordenes if o["side"] == "BUY")
+    assert compra["estilo"] == "CALIDAD_COMPUESTA"
+    assert compra["conviccion"] == 70.0
+    assert compra["volatilidad"] == 0.25
+
+    # Y llegan a la posición y de ahí al Trade.
+    siguiente = precios["A"].index[precios["A"].index.get_loc(fecha)]
+    engine.schedule(ordenes)
+    engine.process_open(siguiente)
+    pos = engine.positions.get("A")
+    if pos is not None:
+        assert pos.estilo == "CALIDAD_COMPUESTA"
+        engine.liquidate(siguiente)
+        assert engine.trades[0].estilo == "CALIDAD_COMPUESTA"
+
+
+def test_las_posiciones_abiertas_consumen_presupuesto_en_el_motor():
+    """El tope sectorial debe contar lo que ya está en cartera, no solo lo nuevo."""
+    from src.backtest.engine import BacktestConfig, build_orders, Position
+    from src.config import LIMITE_POR_SECTOR
+    from src.portfolio import PortfolioConstructor
+
+    tickers = ["A", "B"]
+    engine, precios, fecha = _motor(tickers)
+    precio_a = float(precios["A"].loc[fecha, "Close"])
+    # Posición abierta que ya ocupa el 25% del patrimonio en Technology.
+    engine.cash = 75_000.0
+    engine.positions["A"] = Position(
+        ticker="A", shares=25_000.0 / precio_a, entry_price=precio_a,
+        entry_date=fecha, stop=precio_a * 0.9, target=precio_a * 1.2,
+        rating="COMPRA", sector="Technology", cost_basis=25_000.0,
+        estilo="CALIDAD_COMPUESTA", conviccion=70.0, volatilidad=0.25)
+
+    ordenes = build_orders([_señal("B", sector="Technology", peso=0.10, fecha=fecha)],
+                           engine, fecha, BacktestConfig(), PortfolioConstructor())
+    equity = engine.equity_at(fecha)
+    nuevo = sum(o["notional"] for o in ordenes if o["side"] == "BUY") / equity
+    assert nuevo <= LIMITE_POR_SECTOR - 0.25 + 1e-6
