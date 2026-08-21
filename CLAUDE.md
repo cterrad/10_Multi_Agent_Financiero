@@ -32,13 +32,15 @@ Los imports son de la forma `from src...`, así que todo se ejecuta **desde la r
 <python> -m pytest tests/                            # suite completa
 <python> -m pytest tests/test_backtest.py            # suite sin red
 <python> -m pytest tests/test_news_analyst.py        # suite sin red (Analista de Noticias)
+<python> -m pytest tests/test_llm_texto.py           # suite sin red (contrato de texto del LLM)
 <python> -m pytest tests/test_backtest.py::test_no_lookahead_future_prices_do_not_change_past_signal -v
+<python> -m pytest tests/test_news_analyst.py -k ruido -v          # filtrar por nombre
 
 # Docker
 docker-compose up --build
 ```
 
-`tests/test_backtest.py`, `tests/test_reconciler.py` y `tests/test_news_analyst.py` son offline y deterministas. `tests/test_fetcher.py` y `tests/test_workflow.py` **golpean yfinance en vivo** y fallan sin red o si yfinance cambia el esquema de `info` — no son fiables en CI.
+`tests/test_backtest.py`, `tests/test_reconciler.py`, `tests/test_news_analyst.py` y `tests/test_llm_texto.py` son offline y deterministas (los que tocan al LLM usan dobles). `tests/test_fetcher.py` y `tests/test_workflow.py` **golpean yfinance en vivo** y fallan sin red o si yfinance cambia el esquema de `info` — no son fiables en CI.
 
 La primera ejecución de `backtest_cli.py` descarga precios y `companyfacts` de la SEC a `data/cache/` (~250 MB, ignorado por git). A partir de ahí `--offline` reproduce el estudio bit a bit.
 
@@ -63,6 +65,12 @@ El corte del gatekeeper es la razón de ser del diseño: un valor rechazado salt
 
 `workflow.py` instancia los agentes y compila el grafo **a nivel de módulo** (`financial_app`), así que importar el módulo tiene efectos secundarios.
 
+### Ingesta y reconciliación (`src/data/`)
+
+`node_ingest_and_reconcile` consulta tres proveedores para el mismo ticker — `DataFetcher` (yfinance: precios + `info`), `SECEdgarClient` (`companyfacts` XBRL) y `FinnhubClient` (opcional, requiere `FINNHUB_API_KEY`) — y los pasa por `DataReconciler.reconcile()`, que cruza las magnitudes coincidentes y penaliza las discrepancias hasta un `confidence_score` acotado en `[0.4, 1.0]`. Los agentes consumen el estado **ya reconciliado**: ninguno vuelve a la red.
+
+Ninguna fuente es obligatoria salvo yfinance. La ausencia de Finnhub o un fallo de la SEC baja la confianza y se declara en `sources_consulted`, pero no detiene el flujo.
+
 ### La invariante que sostiene todo el proyecto
 
 **Ninguna variable de decisión depende del LLM.** Los cinco agentes calculan su dictamen con reglas deterministas y, si hay LLM configurado, este solo sobrescribe campos de texto (`summary` en fundamental/technical/news/fund_manager, `synthesis` en debate). Sin token de API, `get_llm()` devuelve `None` y el sistema produce exactamente los mismos ratings.
@@ -76,6 +84,16 @@ Reglas de decisión concretas (documentadas exhaustivamente en `output/AUDIT.md`
 - Momentum: sistema de puntos alcistas/bajistas sobre RSI, MACD, cruce SMA 50/200 y Bandas de Bollinger → `ALCISTA_FUERTE` / `ALCISTA` / `NEUTRAL` / `BAJISTA`.
 - Rating final: tabla momentum×RSI en `src/agents/fund_manager.py`; stop = `close − 2.0·ATR`, objetivo = `close + 3.5·ATR`.
 - Noticias: `src/agents/news.py` sobre el dosier que recolecta `src/data/news/`. Por ítem, `p = NEWS_ITEM_PROB_MAX · peso_categoría · credibilidad_de_la_fuente · decaimiento(antigüedad) · corroboración · penalización_de_ruido`; el conjunto se agrega con OR ruidoso sobre los `NEWS_TOP_K_ITEMS` mayores → `impact_probability` y bucket ALTA/MEDIA/BAJA. Categoría y dirección salen de diccionarios cerrados, nunca del LLM. Todas las constantes están en `src/config.py`.
+
+#### Contrato del único campo que sí toca el LLM
+
+La respuesta del proveedor **nunca** se asigna directamente. Los cinco agentes hacen `texto = texto_de_respuesta_llm(llm.invoke(prompt))` (`src/config.py`) y solo sobrescriben el campo si `texto` no es `None`:
+
+- Los proveedores modernos devuelven `content` como **lista de bloques** (`[{"type": "text", "text": "..."}]`), no como cadena. Asignarlo tal cual metía una lista de diccionarios de Python en el informe y en `daily_selection.json` — el defecto que motivó el helper.
+- Devuelve `None` (no cadena vacía) cuando no hay texto utilizable, precisamente para que el agente **conserve su resumen determinista** en lugar de perder información ya calculada.
+- La llamada va siempre dentro de un `try/except`: un fallo del proveedor degrada al texto heurístico, nunca tumba al agente.
+
+`tests/test_llm_texto.py` fija ese contrato para los cinco agentes: `summary`/`synthesis` son `str` pase lo que pase.
 
 ### Analista de Noticias (`src/agents/news.py` + `src/data/news/`) — capa ASESORA
 
@@ -127,6 +145,16 @@ Todos los outputs del régimen `biased` llevan marca de sesgo. No los presentes 
 
 `backtest_cli.py` mantiene a mano las listas `build_limitations()` y `NEXT_STEPS`, que se vuelcan al informe. Si un cambio altera una limitación o corrige un defecto listado, actualiza esas listas: el informe declara sus sesgos residuales explícitamente (supervivencia del universo, ausencia de Finnhub histórico, sin datos intradía, contrastes múltiples sin corregir) y esa franqueza es intencional. El resultado publicado es que **el sistema no bate a comprar y mantener el índice** y que el rendimiento a 12 meses ordena las categorías al revés de lo que el sistema afirma; no suavices esa conclusión al editar los informes.
 
+## Configuración del proveedor de LLM
+
+`LLM_PROVIDER` solo tiene rama implementada para `huggingface`, `openai` y `gemini` en `get_llm()`. `ollama` y `heuristic` —anunciados en `README.md` y `.env.example`— caen por el final y devuelven `None`, que es exactamente el motor heurístico determinista. **No es un bug pendiente**: sin LLM el sistema produce los mismos ratings, así que `None` es un modo de operación de primera clase, no un fallback degradado.
+
+Cualquier error al instanciar el proveedor se captura y también devuelve `None`. Por eso "el sistema funciona" nunca prueba que el LLM esté conectado; para eso hay que mirar los `summary` del informe.
+
+Los umbrales del gatekeeper de `.env.example` (`MIN_NET_MARGIN=0.05`, `MAX_DEBT_TO_EQUITY=3.0`) **no coinciden** con los valores por defecto de `src/config.py` (`0.03` y `3.5`). Si comparas resultados entre máquinas, comprueba primero cuál de los dos está activo.
+
 ## Notas de plataforma
+
+`src/notebooks/` contiene prototipos, no código del pipeline: `agent_search_web.ipynb` es el borrador del que salió el Analista de Noticias (pedía criterio al LLM, algo que la versión de producción sustituye por diccionarios cerrados) y `plotter_graph.ipynb` dibuja el grafo. Nada de `src/` los importa.
 
 `cli.py` y `backtest_cli.py` fuerzan `sys.stdout.reconfigure(encoding="utf-8")` porque los informes y los prints llevan acentos y emoji, y la consola de Windows fallaría con cp1252. Manténlo en cualquier entrypoint nuevo.
