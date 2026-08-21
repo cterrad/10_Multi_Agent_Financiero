@@ -1,5 +1,6 @@
 from typing import Dict, Any
-from src.config import MIN_REVENUE_GROWTH, MIN_NET_MARGIN, MAX_DEBT_TO_EQUITY, get_llm
+from src.config import (MIN_REVENUE_GROWTH, MIN_NET_MARGIN, MAX_DEBT_TO_EQUITY,
+                        get_llm, texto_de_respuesta_llm)
 from src.state import FinancialAnalysisState
 
 class FundamentalAnalystAgent:
@@ -60,11 +61,9 @@ class FundamentalAnalystAgent:
                     f"- Filtro Gatekeeper: {status_text}\n"
                     f"Escribe una justificación concisa en 2 frases."
                 )
-                llm_res = llm.invoke(prompt)
-                if hasattr(llm_res, 'content'):
-                    summary = llm_res.content
-                elif isinstance(llm_res, str):
-                    summary = llm_res
+                texto = texto_de_respuesta_llm(llm.invoke(prompt))
+                if texto:
+                    summary = texto
             except Exception as e:
                 err_str = str(e)
                 if "Expecting ',' delimiter" in err_str or "JSONDecodeError" in err_str:

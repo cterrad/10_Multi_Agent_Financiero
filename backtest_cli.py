@@ -162,6 +162,18 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
         "la Fase 1 que no altera ninguna decisión (solo añade texto), pero es una divergencia real.")
 
     lims.append(
+        "**Analista de Noticias excluido del backtest.** El grafo de producción ejecuta un "
+        "nodo `news_analysis` que este replay NO recorre. Dos de sus tres fuentes (Google News "
+        "RSS y Tavily) son buscadores \"de hoy\": no existe forma asequible de recuperar qué "
+        "estaba publicado y visible en una fecha pasada, y sus corpus indexados hoy omiten lo "
+        "que se borró y fechan por republicación, no por el hecho. Solo el 8-K con Ítem 2.02 "
+        "tiene `filed` exacto y sería reconstruible. Por eso las noticias son hoy una CAPA "
+        "ASESORA: aparecen en el informe diario y alimentan el debate, pero no tocan `rating` "
+        "ni `position_size_pct`, de modo que su ausencia aquí no altera ni una sola señal. "
+        "La contrapartida es que el valor predictivo de esa capa está SIN MEDIR: no hay "
+        "ninguna evidencia en este informe de que las noticias aporten nada.")
+
+    lims.append(
         "**Sin datos intradía.** Cuando stop y objetivo se tocan en la misma sesión se asume "
         "que saltó el stop. Es conservador, pero desconoce el orden real y sesga el resultado "
         "a la baja en una cuantía desconocida.")
@@ -209,6 +221,16 @@ NEXT_STEPS = [
     "orden entre stop y objetivo dentro de la misma sesión.",
     "Corregir `_extract_recent_fact()` en `src/data/sec_edgar.py` para que ordene por `filed` "
     "y no por `end`: hoy es un look-ahead latente que también afecta a producción en tiempo real.",
+    "Construir un `NewsStore` point-in-time antes de dejar que las noticias entren en la "
+    "decisión. El único camino barato es el histórico completo de 8-K/10-Q de EDGAR filtrado "
+    "por `filed <= t` (mismo patrón que `FundamentalStore`), que cubre resultados y hechos "
+    "relevantes pero no prensa general; el resto exigiría un proveedor de archivo de noticias "
+    "con marca temporal (RavenPack, Dow Jones DNA). Hasta entonces, subir el Analista de "
+    "Noticias de capa asesora a variable de decisión dejaría el sistema sin backtest válido.",
+    "Medir la capa de noticias por separado con un event study sobre los 8-K con Ítem 2.02, "
+    "que sí son reconstruibles point-in-time: comparar el rendimiento a 1, 5 y 20 sesiones "
+    "tras la presentación frente al resto del universo. Es la forma de saber si la "
+    "`impact_probability` correlaciona con algo antes de darle peso en el rating.",
     "Ampliar el universo más allá de las megacaps estadounidenses y comprobar si el resultado "
     "sobrevive en small caps, donde los costes y el slippage son materialmente mayores.",
     "Ejecutar paper trading en directo durante 6-12 meses y comparar las señales reales con "

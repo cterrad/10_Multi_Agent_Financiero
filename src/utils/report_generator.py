@@ -21,8 +21,8 @@ class ReportGenerator:
             "",
             "## 📊 Resumen Ejecutivo de Tickers",
             "",
-            "| Ticker | Empresa | Filtro Fundamental | Momentum Técnico | Dictamen Final | Tamaño Posición | Stop-Loss | Take-Profit |",
-            "| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |"
+            "| Ticker | Empresa | Filtro Fundamental | Momentum Técnico | Impacto Noticias | Dictamen Final | Tamaño Posición | Stop-Loss | Take-Profit |",
+            "| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |"
         ]
 
         for res in results:
@@ -36,8 +36,13 @@ class ReportGenerator:
             pos_size = final.get("position_size_pct", "0%")
             sl = f"${final.get('stop_loss_atr')}" if final.get('stop_loss_atr') else "N/A"
             tp = f"${final.get('take_profit_atr')}" if final.get('take_profit_atr') else "N/A"
+            news = res.get("news_report", {})
+            noticias = (
+                f"{news.get('impact_classification')} ({news.get('impact_probability', 0.0):.2f}) / "
+                f"{news.get('direction_classification')}"
+            ) if news else "N/A"
 
-            md_lines.append(f"| **{ticker}** | {company} | {fund_passed} | {momentum} | **{rating}** | {pos_size} | {sl} | {tp} |")
+            md_lines.append(f"| **{ticker}** | {company} | {fund_passed} | {momentum} | {noticias} | **{rating}** | {pos_size} | {sl} | {tp} |")
 
         md_lines.extend([
             "",
@@ -52,6 +57,7 @@ class ReportGenerator:
             company = res.get("company_name", ticker)
             fund = res.get("fundamental_report", {})
             tech = res.get("technical_report", {})
+            news = res.get("news_report", {})
             debate = res.get("debate_report", {})
             final = res.get("final_decision", {})
             rec = res.get("reconciliation_data", {})
@@ -67,14 +73,39 @@ class ReportGenerator:
                 ""
             ])
 
+            if news:
+                fallidas = ", ".join(f["buscador"] for f in news.get("sources_failed", [])) or "ninguna"
+                md_lines.extend([
+                    "#### 2. Analista de Noticias (capa ASESORA — no altera el dictamen)",
+                    f"- **Probabilidad de impacto:** `{news.get('impact_classification')}` "
+                    f"(`{news.get('impact_probability', 0.0):.2f}`) | "
+                    f"**Dirección probable:** `{news.get('direction_classification')}`",
+                    f"- **Cobertura:** {news.get('n_items', 0)} nota(s) en {news.get('window_days', 0)} días · "
+                    f"fuentes con respuesta: {', '.join(news.get('sources_ok', [])) or 'ninguna'} · "
+                    f"sin respuesta: {fallidas}",
+                    f"- **Resumen:** {news.get('summary', 'N/A')}",
+                    ""
+                ])
+                if news.get("catalysts"):
+                    md_lines.append("- **Catalizadores principales:**")
+                    for c in news["catalysts"]:
+                        titular = f"[{c['titular']}]({c['url']})" if c.get("url") else c["titular"]
+                        md_lines.append(
+                            f"  - `{c.get('fecha') or 's/f'}` · **{c['categoria']}** · "
+                            f"{c['direccion']} · p=`{c['probabilidad_impacto']:.2f}` · "
+                            f"_{c.get('fuente', '')}_ ({c.get('tipo_fuente')}, "
+                            f"{c.get('n_corroboraciones', 1)} fuente/s) — {titular}"
+                        )
+                    md_lines.append("")
+
             if res.get("passed_fundamental_gatekeeper"):
                 md_lines.extend([
-                    "#### 2. Analista Técnico de Momentum",
+                    "#### 3. Analista Técnico de Momentum",
                     f"- **Clasificación:** `{tech.get('momentum_classification')}`",
                     f"- **RSI (14):** `{tech.get('rsi')}` | **MACD Hist:** `{tech.get('macd_hist')}` | **ATR:** `${tech.get('atr')}`",
                     f"- **Resumen:** {tech.get('summary', 'N/A')}",
                     "",
-                    "#### 3. Capa de Debate y Mitigación de Sesgos",
+                    "#### 4. Capa de Debate y Mitigación de Sesgos",
                     f"- 🐂 **Tesis Alcista:** {debate.get('bullish_case', 'N/A')}",
                     f"- 🐻 **Tesis Bajista:** {debate.get('bearish_case', 'N/A')}",
                     f"- ⚖️ **Síntesis del Debate:** {debate.get('synthesis', 'N/A')}",
@@ -82,7 +113,7 @@ class ReportGenerator:
                 ])
 
             md_lines.extend([
-                "#### 4. Dictamen Final del Fund Manager",
+                "#### 5. Dictamen Final del Fund Manager",
                 f"- 🎯 **Recomendación:** `{final.get('rating')}`",
                 f"- 💰 **Asignación Recomendada:** `{final.get('position_size_pct')}`",
                 f"- 🛡️ **Parámetros de Riesgo ATR:** Stop-Loss: `${final.get('stop_loss_atr', 'N/A')}` | Take-Profit: `${final.get('take_profit_atr', 'N/A')}`",

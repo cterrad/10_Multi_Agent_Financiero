@@ -1,6 +1,29 @@
-from typing import Dict, Any
-from src.config import get_llm
+from typing import Any, Dict, Optional
+from src.config import get_llm, texto_de_respuesta_llm
 from src.state import FinancialAnalysisState
+
+def _argumento_de_noticias(news_report: Dict[str, Any]) -> Optional[str]:
+    """
+    Traduce el informe del Analista de Noticias a una frase para el debate.
+
+    Es un ARGUMENTO, no una decisión: la probabilidad y la dirección ya vienen
+    calculadas y aquí solo se redactan. Devuelve None cuando no hay noticias,
+    y en ese caso el debate produce exactamente el mismo texto que antes de
+    existir esta capa — que es lo que mantiene el backtest comparable.
+    """
+    if not news_report or not news_report.get("n_items"):
+        return None
+
+    catalizador = (news_report.get("catalysts") or [{}])[0].get("titular", "")
+    return (
+        f"Flujo de noticias con probabilidad de impacto "
+        f"{news_report.get('impact_classification', 'N/A')} "
+        f"({news_report.get('impact_probability', 0.0):.2f}) y sesgo "
+        f"{news_report.get('direction_classification', 'N/A')} sobre "
+        f"{news_report.get('n_items', 0)} nota(s); principal catalizador: "
+        f"\"{catalizador[:120]}\" (capa asesora: no altera el dictamen)."
+    )
+
 
 class DebateUnitAgent:
     """
@@ -23,12 +46,18 @@ class DebateUnitAgent:
         rsi = tech.get("rsi", 50.0)
         momentum = tech.get("momentum_classification", "NEUTRAL")
 
+        news = state.get("news_report", {}) or {}
+        news_frase = _argumento_de_noticias(news)
+        news_direccion = news.get("direction_classification")
+
         # 1. Tesis Bullish (Alcista)
         bullish_arguments = [
             f"Excelente crecimiento de ingresos ({rev_growth:.1%}) demostrando expansión de mercado.",
             f"Margen neto sólido del {net_margin:.1%}, garantizando rentabilidad y generación de caja.",
             f"Estructura técnica con clasificación {momentum} y RSI de {rsi:.1f} en zona de fuerte impulso."
         ]
+        if news_frase and news_direccion == "ALCISTA":
+            bullish_arguments.append(news_frase)
         bullish_case = f"TESIS ALCISTA ({ticker}): " + " ".join(bullish_arguments)
 
         # 2. Tesis Bearish (Bajista / Abogado del Diablo)
@@ -45,6 +74,8 @@ class DebateUnitAgent:
         if not bearish_arguments:
             bearish_arguments.append("Riesgo de desaceleración macroeconómica sectorial y volatilidad del mercado general.")
 
+        if news_frase and news_direccion == "BAJISTA":
+            bearish_arguments.append(news_frase)
         bearish_case = f"TESIS BAJISTA ({ticker}): " + " ".join(bearish_arguments)
 
         # 3. Síntesis del Debate
@@ -52,6 +83,8 @@ class DebateUnitAgent:
             f"DEBATE BALANCEADO: La empresa presenta fundamentos sólidos (Crecimiento {rev_growth:.1%}, Margen {net_margin:.1%}), "
             f"pero enfrenta los siguientes factores de riesgo destacados por el analista bajista: {bearish_arguments[0]}."
         )
+        if news_frase:
+            synthesis += f" Lectura del Analista de Noticias: {news_frase}"
 
         llm = get_llm()
         if llm:
@@ -60,13 +93,12 @@ class DebateUnitAgent:
                     f"Realiza la síntesis de un debate de inversión sobre {ticker}:\n"
                     f"- Argumentos Alcistas: {bullish_case}\n"
                     f"- Argumentos Bajistas: {bearish_case}\n"
-                    f"Escribe una conclusión imparcial de 3 frases ponderando ambas posturas."
+                    + (f"- Contexto de noticias (asesor): {news_frase}\n" if news_frase else "")
+                    + f"Escribe una conclusión imparcial de 3 frases ponderando ambas posturas."
                 )
-                llm_res = llm.invoke(prompt)
-                if hasattr(llm_res, 'content'):
-                    synthesis = llm_res.content
-                elif isinstance(llm_res, str):
-                    synthesis = llm_res
+                texto = texto_de_respuesta_llm(llm.invoke(prompt))
+                if texto:
+                    synthesis = texto
             except Exception as e:
                 print(f"[DebateUnit] Error LLM: {e}")
 

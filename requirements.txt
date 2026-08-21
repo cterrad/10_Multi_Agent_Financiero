@@ -5,6 +5,9 @@ langchain-community>=0.2.0
 langchain-huggingface>=0.0.3
 langchain-openai>=0.1.0
 langchain-google-genai>=0.1.0
+# Opcional: buscador de noticias Tavily. Sin el paquete (o sin TAVILY_API_KEY)
+# el Analista de Noticias degrada esa fuente y sigue funcionando con las otras dos.
+langchain-tavily>=0.1.0
 huggingface_hub>=0.23.0
 yfinance>=0.2.38
 pandas>=2.0.0

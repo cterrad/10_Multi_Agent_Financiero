@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from src.config import get_llm
+from src.config import get_llm, texto_de_respuesta_llm
 from src.state import FinancialAnalysisState
 
 class FundManagerAgent:
@@ -89,11 +89,9 @@ class FundManagerAgent:
                     f"- Justificación: {rationale}\n"
                     f"Entrega una recomendación profesional y formal en 3 frases."
                 )
-                llm_res = llm.invoke(prompt)
-                if hasattr(llm_res, 'content'):
-                    summary = llm_res.content
-                elif isinstance(llm_res, str):
-                    summary = llm_res
+                texto = texto_de_respuesta_llm(llm.invoke(prompt))
+                if texto:
+                    summary = texto
             except Exception as e:
                 print(f"[FundManager] Error LLM: {e}")
 

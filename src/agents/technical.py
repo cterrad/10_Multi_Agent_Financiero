@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from src.config import get_llm
+from src.config import get_llm, texto_de_respuesta_llm
 from src.state import FinancialAnalysisState
 
 class TechnicalAnalystAgent:
@@ -90,11 +90,9 @@ class TechnicalAnalystAgent:
                     f"- Clasificación Momentum: {momentum}\n"
                     f"Sintetiza la estructura técnica en 2 oraciones."
                 )
-                llm_res = llm.invoke(prompt)
-                if hasattr(llm_res, 'content'):
-                    summary = llm_res.content
-                elif isinstance(llm_res, str):
-                    summary = llm_res
+                texto = texto_de_respuesta_llm(llm.invoke(prompt))
+                if texto:
+                    summary = texto
             except Exception as e:
                 print(f"[TechnicalAgent] Error LLM: {e}")
 

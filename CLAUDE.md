@@ -30,14 +30,15 @@ Los imports son de la forma `from src...`, así que todo se ejecuta **desde la r
 
 # Tests
 <python> -m pytest tests/                            # suite completa
-<python> -m pytest tests/test_backtest.py            # única suite sin red
+<python> -m pytest tests/test_backtest.py            # suite sin red
+<python> -m pytest tests/test_news_analyst.py        # suite sin red (Analista de Noticias)
 <python> -m pytest tests/test_backtest.py::test_no_lookahead_future_prices_do_not_change_past_signal -v
 
 # Docker
 docker-compose up --build
 ```
 
-`tests/test_backtest.py` y `tests/test_reconciler.py` son offline y deterministas. `tests/test_fetcher.py` y `tests/test_workflow.py` **golpean yfinance en vivo** y fallan sin red o si yfinance cambia el esquema de `info` — no son fiables en CI.
+`tests/test_backtest.py`, `tests/test_reconciler.py` y `tests/test_news_analyst.py` son offline y deterministas. `tests/test_fetcher.py` y `tests/test_workflow.py` **golpean yfinance en vivo** y fallan sin red o si yfinance cambia el esquema de `info` — no son fiables en CI.
 
 La primera ejecución de `backtest_cli.py` descarga precios y `companyfacts` de la SEC a `data/cache/` (~250 MB, ignorado por git). A partir de ahí `--offline` reproduce el estudio bit a bit.
 
@@ -48,19 +49,25 @@ La primera ejecución de `backtest_cli.py` descarga precios y `companyfacts` de 
 Máquina de estados LangGraph sobre `FinancialAnalysisState` (`src/state.py`, un `TypedDict` que cada nodo actualiza parcialmente):
 
 ```
-ingest → gatekeeper → [route_after_gatekeeper] ─┬─ aprobado → technical → debate → fund_manager → END
-                                                └─ rechazado ─────────────────────→ fund_manager → END
+        ┌─ gatekeeper ────┐
+ingest ─┤                 ├─ join_analisis → [route_after_gatekeeper] ─┬─ aprobado → technical → debate → fund_manager → END
+        └─ news_analysis ─┘                                            └─ rechazado ─────────────────────→ fund_manager → END
 ```
 
 El corte del gatekeeper es la razón de ser del diseño: un valor rechazado salta el análisis técnico y el debate, y el `fund_manager` le asigna VENTA / VENTA FUERTE directamente.
+
+`gatekeeper` y `news_analysis` corren en paralelo (fan-out desde `ingest`) y convergen en `join_analisis` **antes** del enrutado condicional. Dos restricciones de LangGraph obligan a esa forma exacta, ambas verificadas empíricamente:
+
+- `news_analysis` devuelve solo `news_data` y `news_report`. Si escribiera `logs` o `workflow_status` chocaría con el gatekeeper en el mismo superstep: `FinancialAnalysisState` no declara reductores y LangGraph aborta con `InvalidUpdateError: can receive only one value per step`. Sus trazas las vuelca `node_join_analisis`.
+- Colgar el enrutado condicional del `gatekeeper` y llevar `news_analysis` directamente a `debate_unit` **no funciona**: las ramas tendrían longitudes distintas y `debate_unit` coincidiría con `fund_manager` en un superstep, con el mismo error. Unir antes de ramificar lo resuelve y además deja `news_report` disponible en las dos ramas, incluida la de rechazo.
 
 `workflow.py` instancia los agentes y compila el grafo **a nivel de módulo** (`financial_app`), así que importar el módulo tiene efectos secundarios.
 
 ### La invariante que sostiene todo el proyecto
 
-**Ninguna variable de decisión depende del LLM.** Los cuatro agentes calculan su dictamen con reglas deterministas y, si hay LLM configurado, este solo sobrescribe campos de texto (`summary` en fundamental/technical/fund_manager, `synthesis` en debate). Sin token de API, `get_llm()` devuelve `None` y el sistema produce exactamente los mismos ratings.
+**Ninguna variable de decisión depende del LLM.** Los cinco agentes calculan su dictamen con reglas deterministas y, si hay LLM configurado, este solo sobrescribe campos de texto (`summary` en fundamental/technical/news/fund_manager, `synthesis` en debate). Sin token de API, `get_llm()` devuelve `None` y el sistema produce exactamente los mismos ratings.
 
-Esto no es un detalle de estilo: es lo que permite que el backtest reproduzca la lógica real de forma determinista y a coste cero. Se verifica en tiempo de ejecución con `assert_llm_is_decision_neutral()` (`src/backtest/replay.py`), que ejecuta los agentes con y sin un LLM falso y compara `passed_gatekeeper`, `momentum_classification`, `rating`, `position_size_pct` y los niveles de stop/objetivo. `backtest_cli.py` aborta si la verificación falla, y `test_llm_is_decision_neutral` la cubre en la suite.
+Esto no es un detalle de estilo: es lo que permite que el backtest reproduzca la lógica real de forma determinista y a coste cero. Se verifica en tiempo de ejecución con `assert_llm_is_decision_neutral()` (`src/backtest/replay.py`), que ejecuta los agentes con y sin un LLM falso y compara `passed_gatekeeper`, `momentum_classification`, `rating`, `position_size_pct`, los niveles de stop/objetivo y el dictamen de noticias (`impact_probability`, `impact_classification`, `direction_classification`, `catalysts`). `backtest_cli.py` aborta si la verificación falla, y `test_llm_is_decision_neutral` la cubre en la suite.
 
 **Si añades lógica a un agente, el resultado del LLM no puede entrar en ninguna rama ni en ningún número.** Solo en texto.
 
@@ -68,6 +75,18 @@ Reglas de decisión concretas (documentadas exhaustivamente en `output/AUDIT.md`
 - Gatekeeper: umbrales `MIN_NET_MARGIN`, `MIN_REVENUE_GROWTH`, `MAX_DEBT_TO_EQUITY` de `src/config.py` (leídos del entorno **en tiempo de import**).
 - Momentum: sistema de puntos alcistas/bajistas sobre RSI, MACD, cruce SMA 50/200 y Bandas de Bollinger → `ALCISTA_FUERTE` / `ALCISTA` / `NEUTRAL` / `BAJISTA`.
 - Rating final: tabla momentum×RSI en `src/agents/fund_manager.py`; stop = `close − 2.0·ATR`, objetivo = `close + 3.5·ATR`.
+- Noticias: `src/agents/news.py` sobre el dosier que recolecta `src/data/news/`. Por ítem, `p = NEWS_ITEM_PROB_MAX · peso_categoría · credibilidad_de_la_fuente · decaimiento(antigüedad) · corroboración · penalización_de_ruido`; el conjunto se agrega con OR ruidoso sobre los `NEWS_TOP_K_ITEMS` mayores → `impact_probability` y bucket ALTA/MEDIA/BAJA. Categoría y dirección salen de diccionarios cerrados, nunca del LLM. Todas las constantes están en `src/config.py`.
+
+### Analista de Noticias (`src/agents/news.py` + `src/data/news/`) — capa ASESORA
+
+Estima la probabilidad de que la actualidad de una empresa mueva su cotización. Reparto de responsabilidades idéntico al del resto del sistema: `src/data/news/` ingiere y normaliza, `src/agents/news.py` decide.
+
+- Tres buscadores en paralelo (`ThreadPoolExecutor`), cada uno con su propio try/except: `sec_8k` (8-K con Ítem 2.02, vía `SECEdgarClient.get_recent_8k_earnings`), `google_news` (RSS público) y `tavily` (requiere `TAVILY_API_KEY` **y** el paquete `langchain-tavily`; sin cualquiera de los dos degrada a esa fuente y lo declara en el informe). Ninguna caída tumba el nodo: el peor caso es `status="SIN_DATOS"` con los motivos.
+- El agregador deduplica por URL y por índice de Jaccard entre titulares normalizados. La corroboración se cuenta en **dominios distintos**, no en buscadores distintos.
+- Caché en `data/cache/news/{TICKER}_{YYYY-MM-DD}.json`. La clave incluye el día porque las noticias son un dato "de hoy".
+- El agente es **puro**: consume `state["news_data"]` y no toca la red, igual que el gatekeeper consume los fundamentales ya reconciliados.
+
+**Es una capa asesora, no un input de decisión.** Aparece en el informe y aporta un argumento al `debate_unit`, pero no toca `rating` ni `position_size_pct`. El motivo es el backtest: dos de sus tres fuentes son buscadores "de hoy" y no hay forma asequible de reconstruir qué era visible en una fecha pasada, así que el nodo **se excluye del `HistoricalReplayer`** (documentado en el encabezado de `src/backtest/replay.py` y en `build_limitations()`). Mientras siga siendo asesora, su ausencia en el replay no altera ni una señal. `test_news_report_does_not_alter_decision` protege exactamente esa premisa: **si conectas las noticias a la decisión, ese test debe fallar y el backtest deja de ser válido hasta que exista un `NewsStore` point-in-time.**
 
 ### Capa de backtest (`src/backtest/`) — solo lectura sobre los agentes
 

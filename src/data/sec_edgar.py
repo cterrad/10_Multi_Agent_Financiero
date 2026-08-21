@@ -1,10 +1,18 @@
 import requests
 import json
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Optional
 from src.config import SEC_EDGAR_USER_AGENT
 
 SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 SEC_FACTS_URL_TEMPLATE = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+SEC_SUBMISSIONS_URL_TEMPLATE = "https://data.sec.gov/submissions/CIK{cik}.json"
+SEC_ARCHIVES_URL_TEMPLATE = "https://www.sec.gov/Archives/edgar/data/{cik_int}/{accesion}/{documento}"
+
+# Ítem del formulario 8-K que corresponde a la publicación de resultados.
+# Es el ancla de fuente primaria del Analista de Noticias: a diferencia de
+# cualquier feed de prensa, trae fecha `filed` exacta y contenido no editorial.
+ITEM_8K_RESULTADOS = "2.02"
 
 class SECEdgarClient:
     """Cliente para la API oficial de la SEC (EDGAR) que obtiene reportes auditados 10-K / 10-Q."""
@@ -80,3 +88,71 @@ class SECEdgarClient:
                             if sorted_items:
                                 return float(sorted_items[0].get("val", 0))
         return None
+
+    def get_recent_8k_earnings(self, ticker: str, dias: int = 30,
+                               max_items: int = 10) -> Dict[str, Any]:
+        """
+        Formularios 8-K recientes con el Ítem 2.02 ("Results of Operations and
+        Financial Condition"), es decir, publicaciones de resultados.
+
+        Por qué esta fuente es distinta de las otras dos del Analista de
+        Noticias: el campo `filingDate` de EDGAR es la fecha real en que el
+        hecho se hizo público, no una estimación editorial. Es la única de las
+        tres con potencial point-in-time, y por eso encabeza el ranking de
+        credibilidad (`NEWS_SOURCE_CREDIBILITY["SEC_8K"] = 1.0`).
+
+        Devuelve siempre un dict con `status`; nunca lanza. El agregador
+        distingue SUCCESS de los demás estados para declarar qué fuentes
+        respondieron.
+        """
+        cik = self.get_cik(ticker)
+        if not cik:
+            return {"status": "NOT_FOUND", "source": "SEC EDGAR 8-K", "filings": []}
+
+        url = SEC_SUBMISSIONS_URL_TEMPLATE.format(cik=cik)
+        try:
+            response = requests.get(url, headers=self.headers, timeout=10)
+            if response.status_code != 200:
+                return {"status": "ERROR", "source": "SEC EDGAR 8-K",
+                        "http_status": response.status_code, "filings": []}
+
+            recientes = response.json().get("filings", {}).get("recent", {})
+            corte = (datetime.now(timezone.utc).date() - timedelta(days=dias)).isoformat()
+            cik_int = str(int(cik))  # las rutas de Archives no llevan ceros a la izquierda
+
+            filings = []
+            formularios = recientes.get("form", [])
+            for i in range(len(formularios)):
+                if formularios[i] != "8-K":
+                    continue
+                items = recientes.get("items", [""] * len(formularios))[i] or ""
+                if ITEM_8K_RESULTADOS not in [x.strip() for x in items.split(",")]:
+                    continue
+
+                filed = recientes.get("filingDate", [""] * len(formularios))[i]
+                if not filed or filed < corte:
+                    continue
+
+                accesion = recientes.get("accessionNumber", [""] * len(formularios))[i]
+                documento = recientes.get("primaryDocument", [""] * len(formularios))[i]
+                filings.append({
+                    "accession_number": accesion,
+                    "filed": filed,
+                    "report_date": recientes.get("reportDate", [""] * len(formularios))[i] or None,
+                    "items": items,
+                    "description": recientes.get("primaryDocDescription",
+                                                 [""] * len(formularios))[i] or "",
+                    "url": SEC_ARCHIVES_URL_TEMPLATE.format(
+                        cik_int=cik_int,
+                        accesion=accesion.replace("-", ""),
+                        documento=documento,
+                    ) if accesion and documento else "https://www.sec.gov/cgi-bin/browse-edgar",
+                })
+                if len(filings) >= max_items:
+                    break
+
+            return {"status": "SUCCESS", "source": "SEC EDGAR 8-K", "cik": cik,
+                    "filings": filings}
+        except Exception as e:
+            print(f"[SEC EDGAR] Error al consultar 8-K de {ticker}: {e}")
+            return {"status": "ERROR", "source": "SEC EDGAR 8-K", "filings": []}

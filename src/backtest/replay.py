@@ -9,14 +9,44 @@ mismo camino que `build_financial_workflow()`:
 
     ingest → gatekeeper → [route_after_gatekeeper] → technical → debate → fund_manager
 
+EXCLUSIÓN DELIBERADA DEL ANALISTA DE NOTICIAS
+---------------------------------------------
+El grafo de producción incorpora un nodo `news_analysis` en paralelo al
+gatekeeper. **El replay NO lo ejecuta, y esto es una decisión de diseño, no un
+olvido.**
+
+Dos de sus tres fuentes (Google News RSS y Tavily) son buscadores "de hoy": no
+existe forma asequible de preguntarles qué se publicaba y era visible en una
+fecha `t` de 2017. Reconstruir un dosier de prensa histórico con ellos
+inyectaría look-ahead por dos vías simultáneas — el corpus indexado hoy excluye
+lo que se borró y ordena por relevancia actual, y las fechas de los agregadores
+son de republicación, no del hecho. Solo el 8-K con Ítem 2.02 tiene `filed`
+exacto y sería reconstruible; con una sola de las tres fuentes el informe no
+sería el que produce producción.
+
+Por eso el Analista de Noticias es una CAPA ASESORA: informa al debate y al
+informe final, pero no toca `rating` ni `position_size_pct`. Mientras eso se
+mantenga, su ausencia en el replay no altera ni una sola señal, y el backtest
+sigue midiendo exactamente la lógica que decide en producción. Si alguna vez se
+conecta a la decisión, este backtest deja de ser válido hasta que exista un
+`NewsStore` point-in-time. Queda declarado en `build_limitations()` y en
+`NEXT_STEPS` de `backtest_cli.py`.
+
 Hallazgo de la Fase 1 en el que se apoya todo lo demás
 ------------------------------------------------------
-En los cuatro agentes el LLM solo sobrescribe campos de texto:
+En los cinco agentes el LLM solo sobrescribe campos de texto, y siempre DESPUÉS
+de que las variables de decisión estén fijadas:
 
-    fundamental.py:65   summary = llm_res.content     (passed_gatekeeper ya calculado, l.29-39)
-    technical.py:95     summary = llm_res.content     (momentum_classification ya calculado, l.68-75)
-    debate.py:67        synthesis = llm_res.content   (solo texto)
-    fund_manager.py:94  summary = llm_res.content     (rating/size/SL/TP ya calculados, l.31-65)
+    fundamental.py:66   summary = texto      (passed_gatekeeper ya calculado, l.30-40)
+    technical.py:95     summary = texto      (momentum_classification ya calculado, l.68-75)
+    news.py:370         summary = texto      (probabilidad/categoría/dirección ya calculadas)
+    debate.py:101       synthesis = texto    (solo texto)
+    fund_manager.py:94  summary = texto      (rating/size/SL/TP ya calculados, l.31-65)
+
+`texto` sale de `src.config.texto_de_respuesta_llm()`, que aplana la respuesta
+del proveedor a cadena y devuelve None si no hay nada utilizable — en ese caso
+se conserva el resumen determinista. Es un ajuste de formato, no de contenido:
+no puede introducir dependencia del LLM en ninguna decisión.
 
 Ninguna variable de decisión depende del LLM. Por tanto ejecutar con
 `get_llm() -> None` produce EXACTAMENTE los mismos ratings que producción, de
@@ -37,6 +67,7 @@ import pandas as pd
 import src.agents.debate as debate_mod
 import src.agents.fund_manager as fm_mod
 import src.agents.fundamental as fund_mod
+import src.agents.news as news_mod
 import src.agents.technical as tech_mod
 from src.data.fetcher import DataFetcher
 from src.data.reconciler import DataReconciler
@@ -59,8 +90,12 @@ def disable_llm() -> None:
     Se parchea el símbolo `get_llm` importado en cada módulo de agente (no
     `src.config.get_llm`), porque `from src.config import get_llm` fija el
     nombre en el espacio del módulo importador.
+
+    Incluye a `src.agents.news` aunque el replay no ejecute su nodo: la
+    verificación de neutralidad sí lo recorre, y dejarlo sin parchear abriría
+    una llamada de red y de coste a mitad de un backtest offline.
     """
-    for mod in (fund_mod, tech_mod, debate_mod, fm_mod):
+    for mod in (fund_mod, tech_mod, news_mod, debate_mod, fm_mod):
         mod.get_llm = lambda: None
 
 
@@ -72,6 +107,23 @@ def assert_llm_is_decision_neutral() -> Dict[str, Any]:
     `get_llm() -> None` y otra con un LLM falso que devuelve texto constante y
     reconocible. Si alguna variable de decisión cambia, la hipótesis es falsa y
     el backtest no puede correr en modo heurístico.
+
+    Cobertura del Analista de Noticias
+    ---------------------------------
+    El recorrido incluye al `NewsAnalystAgent` aunque el replay no ejecute su
+    nodo, y lo hace por dos motivos distintos:
+
+      1. Verificar que su propio dictamen (`impact_probability`,
+         `impact_classification`, `direction_classification`, `catalysts`) es
+         independiente del LLM, igual que el de los otros cuatro.
+      2. Verificar la premisa que justifica excluirlo del backtest: con un
+         `news_report` presente en el estado, `rating`, `position_size_pct` y
+         los niveles de stop/objetivo tienen que salir IGUALES que sin él. La
+         comparación directa con y sin informe de noticias la hace
+         `test_news_report_does_not_alter_decision` en tests/test_news_analyst.py.
+
+    El agente de noticias es puro: consume `state["news_data"]`, que aquí se
+    fabrica sintéticamente. No toca la red.
     """
     import copy
 
@@ -82,15 +134,20 @@ def assert_llm_is_decision_neutral() -> Dict[str, Any]:
             return _R()
 
     state = _synthetic_state()
-    originals = {mod.__name__: mod.get_llm for mod in (fund_mod, tech_mod, debate_mod, fm_mod)}
+    modulos = (fund_mod, tech_mod, news_mod, debate_mod, fm_mod)
+    originals = {mod.__name__: mod.get_llm for mod in modulos}
 
     def _run(llm_factory):
-        for mod in (fund_mod, tech_mod, debate_mod, fm_mod):
+        for mod in modulos:
             mod.get_llm = llm_factory
         s = copy.deepcopy(state)
         fr = fund_mod.FundamentalAnalystAgent().analyze(s)
         s["fundamental_report"] = fr
         s["passed_fundamental_gatekeeper"] = fr["passed_gatekeeper"]
+        # En producción el nodo de noticias corre en paralelo al gatekeeper, así
+        # que su informe ya está en el estado cuando se ramifica.
+        nr = news_mod.NewsAnalystAgent().analyze(s)
+        s["news_report"] = nr
         if route_after_gatekeeper(s) == "technical_analysis":
             s["technical_report"] = tech_mod.TechnicalAnalystAgent().analyze(s)
             s["debate_report"] = debate_mod.DebateUnitAgent().analyze(s)
@@ -102,14 +159,23 @@ def assert_llm_is_decision_neutral() -> Dict[str, Any]:
             "position_size_pct": fd["position_size_pct"],
             "stop_loss_atr": fd["stop_loss_atr"],
             "take_profit_atr": fd["take_profit_atr"],
+            "news_impact_probability": nr["impact_probability"],
+            "news_impact_classification": nr["impact_classification"],
+            "news_direction_classification": nr["direction_classification"],
+            "news_direction_imbalance": nr["direction_imbalance"],
+            "news_catalysts": tuple(
+                (c["titular"], c["categoria"], c["direccion"], c["probabilidad_impacto"])
+                for c in nr["catalysts"]
+            ),
         }
 
     try:
         heuristic = _run(lambda: None)
         with_llm = _run(lambda: _FakeLLM())
     finally:
+        por_nombre = {m.__name__: m for m in modulos}
         for name, fn in originals.items():
-            {m.__name__: m for m in (fund_mod, tech_mod, debate_mod, fm_mod)}[name].get_llm = fn
+            por_nombre[name].get_llm = fn
 
     diffs = {k: (heuristic[k], with_llm[k]) for k in heuristic if heuristic[k] != with_llm[k]}
     return {
@@ -136,6 +202,30 @@ def _synthetic_state() -> Dict[str, Any]:
             "status": "SINGLE_VENDOR_FALLBACK", "ticker": "TEST", "confidence_score": 1.0,
             "sources_consulted": ["yfinance"], "discrepancies": [],
             "reconciled_metrics": dict(fundamentals),
+        },
+        # Dosier de prensa sintético: fechas fijas y `as_of` fijo, para que la
+        # antigüedad (y por tanto el decaimiento) no dependa del día en que se
+        # ejecute la verificación.
+        "news_data": {
+            "status": "SUCCESS", "ticker": "TEST", "empresa": "Test Corp",
+            "as_of": "2024-03-15", "ventana_dias": 30,
+            "fuentes_ok": ["sec_8k", "google_news_rss"], "fuentes_fallidas": [],
+            "desde_cache": False,
+            "items": [
+                {"titulo": "Test Corp presenta el formulario 8-K (Item 2.02: Results of "
+                           "Operations and Financial Condition)",
+                 "url": "https://www.sec.gov/Archives/edgar/data/1/x.htm",
+                 "fuente": "SEC EDGAR (8-K)", "fecha": "2024-03-14",
+                 "extracto": "Presentacion oficial ante la SEC.", "tipo_fuente": "SEC_8K",
+                 "buscadores": ["sec_8k"], "n_corroboraciones": 1,
+                 "categoria_forzada": "RESULTADOS"},
+                {"titulo": "Test Corp beats estimates and raises full-year guidance",
+                 "url": "https://www.reuters.com/test", "fuente": "Reuters",
+                 "fecha": "2024-03-13", "extracto": "Record revenue and strong demand.",
+                 "tipo_fuente": "MEDIO_TIER1", "buscadores": ["google_news_rss"],
+                 "n_corroboraciones": 2},
+            ],
+            "n_brutos": 2, "n_items": 2,
         },
         "logs": [], "passed_fundamental_gatekeeper": False,
     }
@@ -267,6 +357,10 @@ class HistoricalReplayer:
             "finnhub_data": fh_data,
             "reconciliation_data": rec,
             "workflow_status": "INGESTED",
+            # Sin `news_data` ni `news_report`: el nodo de noticias queda fuera
+            # del replay a propósito (ver el encabezado del módulo). Los agentes
+            # que los consultan lo hacen con `.get()` y un valor por defecto, de
+            # modo que su ausencia reproduce el comportamiento previo exacto.
             "passed_fundamental_gatekeeper": False,
             "logs": [],
             "_fundamentals_meta": {

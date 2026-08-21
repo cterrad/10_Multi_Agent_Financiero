@@ -14,8 +14,12 @@
       "total_liabilities": 2192322000.0
     },
     "finnhub_data": {
-      "status": "ERROR",
-      "source": "Finnhub"
+      "status": "SUCCESS",
+      "source": "Finnhub",
+      "pe_ratio": 66.1225,
+      "roe_ttm": 5.63,
+      "net_margin_ttm": 23.27,
+      "revenue_growth_5y": 23.14
     },
     "yfinance_data": {
       "status": "SUCCESS",
@@ -23,33 +27,33 @@
       "company_name": "DigitalOcean Holdings, Inc.",
       "sector": "Technology",
       "industry": "Software - Infrastructure",
-      "current_price": 116.66000366210938,
+      "current_price": 114.72000122070312,
       "fundamentals": {
         "revenue_growth": 0.286,
         "net_margin": 0.23265,
         "debt_to_equity": 2.12506,
         "roe": 0.62273,
-        "pe_ratio": 56.907322,
-        "market_cap": 13638499328
+        "pe_ratio": 52.145454,
+        "market_cap": 13411696640
       },
       "technical": {
-        "close": 116.66000366210938,
-        "rsi": 47.68,
-        "macd": -1.943,
-        "macd_signal": -2.666,
-        "macd_hist": 0.723,
-        "bb_upper": 138.66,
-        "bb_lower": 109.56,
-        "atr": 11.56,
-        "sma_50": 137.91,
-        "sma_200": 93.11,
-        "volume_rel": 0.83
+        "close": 114.72000122070312,
+        "rsi": 48.18,
+        "macd": -2.708,
+        "macd_signal": -2.674,
+        "macd_hist": -0.034,
+        "bb_upper": 138.02,
+        "bb_lower": 108.56,
+        "atr": 10.99,
+        "sma_50": 136.84,
+        "sma_200": 93.48,
+        "volume_rel": 0.17
       },
       "price_history_summary": {
         "min_52w": 29.6200008392334,
         "max_52w": 187.5,
-        "close_today": 116.66000366210938,
-        "change_1m_pct": -0.11048410910191754
+        "close_today": 114.72000122070312,
+        "change_1m_pct": -0.07139387752518352
       }
     },
     "reconciliation_data": {
@@ -58,7 +62,8 @@
       "confidence_score": 1.0,
       "sources_consulted": [
         "yfinance",
-        "SEC EDGAR (Oficial)"
+        "SEC EDGAR (Oficial)",
+        "Finnhub"
       ],
       "discrepancies": [],
       "reconciled_metrics": {
@@ -66,8 +71,225 @@
         "net_margin": 0.23265,
         "debt_to_equity": 2.12506,
         "roe": 0.62273,
-        "pe_ratio": 56.907322
+        "pe_ratio": 52.145454
       }
+    },
+    "news_data": {
+      "status": "DEGRADADO",
+      "ticker": "DOCN",
+      "empresa": "DigitalOcean Holdings, Inc.",
+      "as_of": "2026-08-20",
+      "ventana_dias": 30,
+      "items": [
+        {
+          "titulo": "The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidance - simplywall.st",
+          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPRkZ2c1dnclFXbXdaQnZsTmhNSnVKNnhCR01HZkJJSS1Rb0ZzNnZnUEYxeEZKZ1RrRzN4dHVjcVg1TEQ2Wm92VjgzN1JCVXZCbWw4T2VMXzBaUmI3OXdDRzhuSFJvMUhtUTRjUHRFWVNZLXVVaUMxYUZlVmVFMmdQZUF3ZFhLVGxTRWxYX1EzZUE5TXJzTUxoUE1iWU9UMk5kZGk2T3FhTVd1REotTFF4cEQ2d2wzTC1fQzNpV3RrbHBGYUppRE41aHJ0dTFaSENja0hfT9IB2gFBVV95cUxOdGdhQ0xLNUJ0Rld4M3F5azFXUy16YTJtVHRsZEptRzM3SjNLWHlMa3VFMVZiNW9feFlURVRtMGhqMVI1Tm5ueVBOUTFPUnNqOG1faTNUakFvbjlZM25CWXpVX3NBaU45WnV1azdvN3J2aTJYRFBQUHpEaU5BaGVKMGFrZkphaFppMWg4Z19TeEM3UV9hcnZUUkFVSTAwbVc5TkJQcGhuR2Q4LVdWdWExUnpsUW45SUhqcUFzYVk4a2l1OFpQR3ZkeU85RGZpZktXT0QxUDNyTlpsUQ?oc=5",
+          "fuente": "simplywall.st",
+          "fecha": "2026-08-17",
+          "extracto": "The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidance simplywall.st",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidance - simplywall.st The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidance simplywall.st"
+        },
+        {
+          "titulo": "DigitalOcean (DOCN) Is Up 5.7% After Q2 Revenue Climbs But Earnings Slip On Asset Impairment - simplywall.st",
+          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxQWlB0Q3BDTGVqZU9TYXJfYUNZMnBaYW04cVh3WFQ3SFNXVDNGMVhDbkwtODlrc3REV3o4cXFpT1RyYW9VWkFJb09OX2tJd0U3bkkzbmhYa1o3clZtRHFDV0JOOHkweV91T2F3Nkd6N2I1cHVVZTVBNFhUUExMQXU4WDIzTUNyVWgyRW00dWxuMy1pa2N3b3M0Rnk2R0hkdWdWTExSMy1iWjg0S0hzYnVfdjFaTm1KbVhlNTl4RVVRb3doUklyeU5qX3BrNDhaaDV6UTNJa9IB2gFBVV95cUxNUGJ3RkZEOHZWYmE0VlR0bElVRDlCYnF1X0UzVFdQTV9MeW5zR0p4cmY5S2hqbFZhZWNjZE5mbHRDS25zZF9pTldfblJ4TkpzZzV2Sjg2VnlROExaT0JmTXRjckg5dGVyck9DMFk4NXY3TE5MdFplRkRhVUl2c0RlTEZtTElPZ1pMYVZZMHR0MzBzM1V2N3plSTYxb3FtZGxubkNJUmxPRnQ2V3JQdmpwaUk2U1JQc25aVXRUNjJUNHFXNVY2dGp2bi1Qamp0QkV2Q0FHVlFPNlQ3UQ?oc=5",
+          "fuente": "simplywall.st",
+          "fecha": "2026-08-08",
+          "extracto": "DigitalOcean (DOCN) Is Up 5.7% After Q2 Revenue Climbs But Earnings Slip On Asset Impairment simplywall.st",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean (DOCN) Is Up 5.7% After Q2 Revenue Climbs But Earnings Slip On Asset Impairment - simplywall.st DigitalOcean (DOCN) Is Up 5.7% After Q2 Revenue Climbs But Earnings Slip On Asset Impairment simplywall.st"
+        },
+        {
+          "titulo": "DigitalOcean tops second quarter expectations amid surging AI demand - SiliconANGLE",
+          "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOMmM3RWZPcXB4ODdkaERTS3hNRjhlTkFVYlVRNkhvdEl6UGw5SURySjNuelF0ckgzdXhnSmh2NUszRW56Vlp0TkdYZHlzb2p4Wkk2ZjFrUHhxTDM2bnVqLW5xRU1vay1VN213ODZINU5PRVplbC1jLWFteFZfRGdiVGRUZlhCQ0VhTTU5cjZkelkxb003c1BsTXBHR01TcE5WUjBlZzdNbXE?oc=5",
+          "fuente": "SiliconANGLE",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean tops second quarter expectations amid surging AI demand SiliconANGLE",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean tops second quarter expectations amid surging AI demand - SiliconANGLE DigitalOcean tops second quarter expectations amid surging AI demand SiliconANGLE"
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1582961/000162828026052135/docn-20260804.htm",
+          "fuente": "SEC EDGAR (8-K)",
+          "fecha": "2026-08-04",
+          "extracto": "Presentación oficial ante la SEC el 2026-08-04, periodo de referencia 2026-08-04. 8-K Ítems declarados: 2.02,9.01.",
+          "tipo_fuente": "SEC_8K",
+          "buscadores": [
+            "sec_8k"
+          ],
+          "filed": "2026-08-04",
+          "accession_number": "0001628280-26-052135",
+          "categoria_forzada": "RESULTADOS",
+          "fuentes_corroborantes": [
+            "sec.gov"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean Holdings, Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition) Presentación oficial ante la SEC el 2026-08-04, periodo de referencia 2026-08-04. 8-K Ítems declarados: 2.02,9.01."
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. Reports Earnings Results for the Second Quarter and Six Months Ended June 30, 2026 - marketscreener.com",
+          "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxQV25qSnhHTjk3d05FNENQY3g4S2tNOW00U1hxTFFxWXNkbUhTNUJvYXlQSVZpa2Rrd2NFYVJoMDhGdDYwaUhRc1lTT25LM3JoSUh2OFhodUxNb1ptVjJsQkpyM0RZQkJpS29UdTRrd0FRUVJocjlOV09IZk52YkNhOVAtaTdsbTRGUl9ha0x6bjBkMGlhYlh6aS1kX3NBZHdsS2pEOGlCME9lNkZ1ZFUyd0U1R3h5WUhCY2Z0eHlCY3g4djdCUU9CQmlNZnRVeUZzanZjZlA3SncwLUZEUmlRLUpKR25Udw?oc=5",
+          "fuente": "marketscreener.com",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Holdings, Inc. Reports Earnings Results for the Second Quarter and Six Months Ended June 30, 2026 marketscreener.com",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean Holdings, Inc. Reports Earnings Results for the Second Quarter and Six Months Ended June 30, 2026 - marketscreener.com DigitalOcean Holdings, Inc. Reports Earnings Results for the Second Quarter and Six Months Ended June 30, 2026 marketscreener.com"
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. 2026: Revenue $281.18M, EPS $0.29— 10-Q Summary - TradingView",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPa19Kd19BajA4b2R4MFBJV0FjdDcxLXFsRUtDRmtLZHRqb1lJdlFSNmlXVVVqdklDMHU1UUxjaWtNTTYwdTZTYXZBVnEzRXM0SkhqUllXa0dXeFhMRWxoSUFBbjBKNGM5dDdfRUx2MkU5d2FEN3ozb1hBaWxEN09pUDRKbTExN1JrT1dac0xkUTRsUS1DeGt1OGczXzhtZ1RBcDNrU3djWDAtYVJfOGU4WFhjV0czWENHdVp1OFFkWFZZS1lkSEw0TVlB?oc=5",
+          "fuente": "TradingView",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Holdings, Inc. 2026: Revenue $281.18M, EPS $0.29— 10-Q Summary TradingView",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean Holdings, Inc. 2026: Revenue $281.18M, EPS $0.29— 10-Q Summary - TradingView DigitalOcean Holdings, Inc. 2026: Revenue $281.18M, EPS $0.29— 10-Q Summary TradingView"
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. 2026 Q2 - Results - Earnings Call Presentation (NYSE:DOCN) 2026-08-04 - Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQOGdLX0wwUE9aWVlUM0E3REN1TnFzX1NHRmNlM1NXZUZkRVM1MXl6R0dSeTg2T1l4UkFKQnVselNwNk4yTTRnSEt1Tk16eXgtXzlZQTZabWZzZnp1UDNlenRfeDh6dkFZZnY2QzRmSXdtV3JfWE92RVNSMC1ibG9Fbmg0VUFOMFJyVzVCN3p5MW9MM0hDaE9FVEhBZDRwelBObU1sQ1UtSnZfNGZ5RFE?oc=5",
+          "fuente": "Seeking Alpha",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Holdings, Inc. 2026 Q2 - Results - Earnings Call Presentation (NYSE:DOCN) 2026-08-04 Seeking Alpha",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean Holdings, Inc. 2026 Q2 - Results - Earnings Call Presentation (NYSE:DOCN) 2026-08-04 - Seeking Alpha DigitalOcean Holdings, Inc. 2026 Q2 - Results - Earnings Call Presentation (NYSE:DOCN) 2026-08-04 Seeking Alpha"
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. (DOCN) Beats Q2 Earnings and Revenue Estimates - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNb25RUDg1WTdzLW1BMmpucG9OczZNNVpHQ3ZJWmFOMmxzc1IxaHRtSVhUVVFDXzJsN054VkM0aUN1VVZhY3RhMWgyZlhHZ2JweVNWakoyMlluV2ctUExkbVFSODFGSm9Jb1RLN2dod2s2U3haTXVXS3Nfb3I2QXNXUjN3dlhJZHlMS3VjeHQ3LTFCbV9LTFFvcEJlZW1ybGV2VHZB?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Holdings, Inc. (DOCN) Beats Q2 Earnings and Revenue Estimates Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean Holdings, Inc. (DOCN) Beats Q2 Earnings and Revenue Estimates - Yahoo Finance DigitalOcean Holdings, Inc. (DOCN) Beats Q2 Earnings and Revenue Estimates Yahoo Finance"
+        },
+        {
+          "titulo": "DigitalOcean Announces Second Quarter 2026 Financial Results - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPSVBXcE11TVNXRVhnZW5GUjJBdWlSSmM3dGlrYzVTWVQycjNQVXpOaUFvNDNROWxfR1RmZ2FnZlhGXzJnbXNDNmlJNUx5REFSUm9kYmFaQmVscFBJb3NYdVJTbktCdEN4OElyQ2xiNWVBZ2poWXVIcG94SjhQRVlPWEJvT1BfZUhZQXpBa3ZyQVNwV3hWQ3JvNHh2TUZDUlBKTFJrbVQwZW1uY1VZN0l3aVFwdXAyaW1E?oc=5",
+          "fuente": "Business Wire",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Announces Second Quarter 2026 Financial Results Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean Announces Second Quarter 2026 Financial Results - Business Wire DigitalOcean Announces Second Quarter 2026 Financial Results Business Wire"
+        },
+        {
+          "titulo": "Analysts Estimate DigitalOcean Holdings, Inc. (DOCN) to Report a Decline in Earnings: What to Look Out for - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNOTFaNkpnVEVHamlTMy1CQUdzSVhkdzZkR0poaFhGekhDdG5ZUXMxd003MEJNemx0cG1RUF9EOU1hZTRaOGNBaUpaMXNKSXg5Y09qYTlaZFpQUkNVb3JhNjRFaEZsX21MR2tuM19vbkpBZTdTTVNvaUljQ1ZyWXRsbGx3YXJCb0dJdlAtVUFDZUFKV1FNX0I4aElxUG0yNjdJaEgyM2F4dE5MdExN?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-28",
+          "extracto": "Analysts Estimate DigitalOcean Holdings, Inc. (DOCN) to Report a Decline in Earnings: What to Look Out for Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Analysts Estimate DigitalOcean Holdings, Inc. (DOCN) to Report a Decline in Earnings: What to Look Out for - Yahoo Finance Analysts Estimate DigitalOcean Holdings, Inc. (DOCN) to Report a Decline in Earnings: What to Look Out for Yahoo Finance"
+        },
+        {
+          "titulo": "JPMorgan Chase & Co. (DOCN) discloses 13.0% beneficial stake in DigitalOcean - Stock Titan",
+          "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNZm40QjRETmZ1ckp2U3QwNllteTVwUmNleGNJYXdsRXpoeTEwcmJBOGJ6cHliejZMSURwTjBuTEE5NjQ5XzJRUHpMNFpyY3JCcTI2WXFZckQ4QnF1dlVkNVl5bGJUVHpiRUluUHRPTUpDSUpBWHpVSjZQemIyR0FoNmc2d2ZldVFvb19aUi1PUGZUNWNIbmZtZF9PM3I5cEY3TER3b2VGdlBiR0tpVllPMVVaNVY0NVZ4MXo3V2NmQjB6ZWhiUEJ5TTd2QQ?oc=5",
+          "fuente": "Stock Titan",
+          "fecha": "2026-07-27",
+          "extracto": "JPMorgan Chase & Co. (DOCN) discloses 13.0% beneficial stake in DigitalOcean Stock Titan",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "BlackRock (DOCN holder) discloses 7.6% beneficial stake in DigitalOcean - Stock Titan JPMorgan Chase & Co. (DOCN) discloses 13.0% beneficial stake in DigitalOcean - Stock Titan BlackRock (DOCN holder) discloses 7.6% beneficial stake in DigitalOcean Stock Titan JPMorgan Chase & Co. (DOCN) discloses 13.0% beneficial stake in DigitalOcean Stock Titan"
+        },
+        {
+          "titulo": "DigitalOcean Reduces Leverage with No Effective Dilution and Minimal Cash Usage, Creating Additional Capacity to Fuel Growth - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMijAJBVV95cUxOelM2VXd2RTdkS2ttY1g1RXNYMEFLQ1RsY0pRcWR0eHFpNllIQUprS1JwVTJMaFl3SzYtRXBhM1ZySGFEV21rSm5RdE5HSHRvQUxtZXdzbHpLOFlmeEhPUEhERmNySHRaMDRNV0dLeWMwQnYyZWMxYThtNDhsWGxWMWxzN25UNklpYzgyUHJPMVN2TXQtaXpDNWtvVVFtZGNPYmw2clN2bFVVT0ptSzc0bjhES3N0aXVKRHZVM1pVbjN1MFNiaG92NHltRTVvdE1ha2RKa3NmZTB5bTRyRTB6OVMtVWhUUVJDOGJGdmVUS3c1eEZVREpfWWxHVFEtNjBfTE5TMUZ3Ty1QM3ZM?oc=5",
+          "fuente": "Business Wire",
+          "fecha": "2026-07-24",
+          "extracto": "DigitalOcean Reduces Leverage with No Effective Dilution and Minimal Cash Usage, Creating Additional Capacity to Fuel Growth Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "DigitalOcean Reduces Leverage with No Effective Dilution and Minimal Cash Usage, Creating Additional Capacity to Fuel Growth - Business Wire DigitalOcean Reduces Leverage with No Effective Dilution and Minimal Cash Usage, Creating Additional Capacity to Fuel Growth Business Wire"
+        }
+      ],
+      "n_brutos": 13,
+      "n_items": 12,
+      "fuentes_ok": [
+        "sec_8k",
+        "google_news_rss"
+      ],
+      "fuentes_fallidas": [
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "desde_cache": false
     },
     "fundamental_report": {
       "passed_gatekeeper": true,
@@ -77,88 +299,2957 @@
         "net_margin": 0.23265,
         "debt_to_equity": 2.12506,
         "roe": 0.62273,
-        "pe_ratio": 56.907322
+        "pe_ratio": 52.145454
       },
       "reasons": [],
       "confidence_score": 1.0,
       "discrepancies": [],
-      "summary": [
-        {
-          "type": "text",
-          "text": "DOCN demuestra una salud financiera sobresaliente, respaldada por un crecimiento de ingresos del 28.6% y una alta rentabilidad reflejada en un margen neto del 23.3% y un ROE del 62.3%. Aunque presenta un apalancamiento elevado con una relación Deuda/Capital de 2.13, sus sólidos fundamentales justifican la superación del filtro y su aprobación como Gatekeeper.",
-          "extras": {
-            "signature": "El4KXAERTTIPV0thxtzZbNeHVEi+wDb1j6EfAN1PSahJskItW842btghq62HOYC6q1NCK+DDhddfayVw13KkbndpkB4BYWyLezbuWLWTQb1LTjg+IhPXTH5W3xsp9b+x"
-          }
-        }
-      ]
+      "summary": "DOCN demuestra una salud financiera sobresaliente, respaldada por un robusto crecimiento de ingresos del 28.6% y una excepcional rentabilidad reflejada en un margen neto del 23.3% y un ROE del 62.3%. Aunque presenta una estructura de apalancamiento elevada con una relación Deuda/Capital de 2.13, su sólida capacidad de generación de beneficios justifica con creces superar el filtro Gatekeeper."
     },
     "technical_report": {
       "momentum_classification": "NEUTRAL",
-      "rsi": 47.68,
-      "macd": -1.943,
-      "macd_signal": -2.666,
-      "macd_hist": 0.723,
-      "atr": 11.56,
-      "bb_upper": 138.66,
-      "bb_lower": 109.56,
-      "sma_50": 137.91,
-      "sma_200": 93.11,
+      "rsi": 48.18,
+      "macd": -2.708,
+      "macd_signal": -2.674,
+      "macd_hist": -0.034,
+      "atr": 10.99,
+      "bb_upper": 138.02,
+      "bb_lower": 108.56,
+      "sma_50": 136.84,
+      "sma_200": 93.48,
       "signals": [
         "RSI neutral (30-50)",
-        "MACD con cruce alcista y momentum positivo"
+        "MACD con sesgo bajista"
       ],
-      "summary": [
+      "summary": "DOCN cotiza a $114.72 con un RSI neutral de 48.2, lo que refleja una total ausencia de presión compradora o vendedora dominante en el corto plazo. Adicionalmente, el MACD muestra un leve cruce bajista al mantenerse por debajo de su línea de señal (-2.708 frente a -2.674), confirmando un sesgo lateral con ligera atonía técnica."
+    },
+    "news_report": {
+      "status": "DEGRADADO",
+      "company_name": "DigitalOcean Holdings, Inc.",
+      "as_of": "2026-08-20",
+      "window_days": 30,
+      "impact_probability": 0.3788,
+      "impact_classification": "MEDIA",
+      "direction_classification": "ALCISTA",
+      "direction_imbalance": 0.8355,
+      "catalysts": [
         {
-          "type": "text",
-          "text": "DigitalOcean (DOCN) cotiza en $116.66 con un RSI de 47.7, reflejando indecisión y ausencia de fuerza direccional dominante en el corto plazo. No obstante, el MACD (-1.943) se ubica por encima de su línea de señal (-2.666), sugiriendo un tímido sesgo alcista que podría dinamizar el momentum si logra romper la neutralidad actual.",
-          "extras": {
-            "signature": "El4KXAERTTIPnoumjFkF4MJxOT3zEVHi6yiiJ31tywuvR4lhRhQeHMl7PrUWZUcjjgAod035B9bZXwlH9QRsyJYBGHdLoBuXeG6WFRK5H5TIujnOfa66l9bjtiRaEKnD"
-          }
+          "titular": "The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidance - simplywall.st",
+          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPRkZ2c1dnclFXbXdaQnZsTmhNSnVKNnhCR01HZkJJSS1Rb0ZzNnZnUEYxeEZKZ1RrRzN4dHVjcVg1TEQ2Wm92VjgzN1JCVXZCbWw4T2VMXzBaUmI3OXdDRzhuSFJvMUhtUTRjUHRFWVNZLXVVaUMxYUZlVmVFMmdQZUF3ZFhLVGxTRWxYX1EzZUE5TXJzTUxoUE1iWU9UMk5kZGk2T3FhTVd1REotTFF4cEQ2d2wzTC1fQzNpV3RrbHBGYUppRE41aHJ0dTFaSENja0hfT9IB2gFBVV95cUxOdGdhQ0xLNUJ0Rld4M3F5azFXUy16YTJtVHRsZEptRzM3SjNLWHlMa3VFMVZiNW9feFlURVRtMGhqMVI1Tm5ueVBOUTFPUnNqOG1faTNUakFvbjlZM25CWXpVX3NBaU45WnV1azdvN3J2aTJYRFBQUHpEaU5BaGVKMGFrZkphaFppMWg4Z19TeEM3UV9hcnZUUkFVSTAwbVc5TkJQcGhuR2Q4LVdWdWExUnpsUW45SUhqcUFzYVk4a2l1OFpQR3ZkeU85RGZpZktXT0QxUDNyTlpsUQ?oc=5",
+          "categoria": "GUIDANCE",
+          "fecha": "2026-08-17",
+          "fuente": "simplywall.st",
+          "tipo_fuente": "AGREGADOR",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.1429
+        },
+        {
+          "titular": "DigitalOcean Holdings, Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1582961/000162828026052135/docn-20260804.htm",
+          "categoria": "RESULTADOS",
+          "fecha": "2026-08-04",
+          "fuente": "SEC EDGAR (8-K)",
+          "tipo_fuente": "SEC_8K",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0923
+        },
+        {
+          "titular": "DigitalOcean Announces Second Quarter 2026 Financial Results - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPSVBXcE11TVNXRVhnZW5GUjJBdWlSSmM3dGlrYzVTWVQycjNQVXpOaUFvNDNROWxfR1RmZ2FnZlhGXzJnbXNDNmlJNUx5REFSUm9kYmFaQmVscFBJb3NYdVJTbktCdEN4OElyQ2xiNWVBZ2poWXVIcG94SjhQRVlPWEJvT1BfZUhZQXpBa3ZyQVNwV3hWQ3JvNHh2TUZDUlBKTFJrbVQwZW1uY1VZN0l3aVFwdXAyaW1E?oc=5",
+          "categoria": "RESULTADOS",
+          "fecha": "2026-08-04",
+          "fuente": "Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0738
         }
-      ]
+      ],
+      "scored_items": [
+        {
+          "titulo": "The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidance - simplywall.st",
+          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPRkZ2c1dnclFXbXdaQnZsTmhNSnVKNnhCR01HZkJJSS1Rb0ZzNnZnUEYxeEZKZ1RrRzN4dHVjcVg1TEQ2Wm92VjgzN1JCVXZCbWw4T2VMXzBaUmI3OXdDRzhuSFJvMUhtUTRjUHRFWVNZLXVVaUMxYUZlVmVFMmdQZUF3ZFhLVGxTRWxYX1EzZUE5TXJzTUxoUE1iWU9UMk5kZGk2T3FhTVd1REotTFF4cEQ2d2wzTC1fQzNpV3RrbHBGYUppRE41aHJ0dTFaSENja0hfT9IB2gFBVV95cUxOdGdhQ0xLNUJ0Rld4M3F5azFXUy16YTJtVHRsZEptRzM3SjNLWHlMa3VFMVZiNW9feFlURVRtMGhqMVI1Tm5ueVBOUTFPUnNqOG1faTNUakFvbjlZM25CWXpVX3NBaU45WnV1azdvN3J2aTJYRFBQUHpEaU5BaGVKMGFrZkphaFppMWg4Z19TeEM3UV9hcnZUUkFVSTAwbVc5TkJQcGhuR2Q4LVdWdWExUnpsUW45SUhqcUFzYVk4a2l1OFpQR3ZkeU85RGZpZktXT0QxUDNyTlpsUQ?oc=5",
+          "fuente": "simplywall.st",
+          "fecha": "2026-08-17",
+          "extracto": "The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidance simplywall.st",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "GUIDANCE",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 0.95,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 3,
+          "decaimiento": 0.743,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.1429
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1582961/000162828026052135/docn-20260804.htm",
+          "fuente": "SEC EDGAR (8-K)",
+          "fecha": "2026-08-04",
+          "extracto": "Presentación oficial ante la SEC el 2026-08-04, periodo de referencia 2026-08-04. 8-K Ítems declarados: 2.02,9.01.",
+          "tipo_fuente": "SEC_8K",
+          "buscadores": [
+            "sec_8k"
+          ],
+          "filed": "2026-08-04",
+          "accession_number": "0001628280-26-052135",
+          "categoria_forzada": "RESULTADOS",
+          "fuentes_corroborantes": [
+            "sec.gov"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 1.0,
+          "dias_antiguedad": 16,
+          "decaimiento": 0.2051,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0923
+        },
+        {
+          "titulo": "DigitalOcean Announces Second Quarter 2026 Financial Results - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPSVBXcE11TVNXRVhnZW5GUjJBdWlSSmM3dGlrYzVTWVQycjNQVXpOaUFvNDNROWxfR1RmZ2FnZlhGXzJnbXNDNmlJNUx5REFSUm9kYmFaQmVscFBJb3NYdVJTbktCdEN4OElyQ2xiNWVBZ2poWXVIcG94SjhQRVlPWEJvT1BfZUhZQXpBa3ZyQVNwV3hWQ3JvNHh2TUZDUlBKTFJrbVQwZW1uY1VZN0l3aVFwdXAyaW1E?oc=5",
+          "fuente": "Business Wire",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Announces Second Quarter 2026 Financial Results Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 2,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 16,
+          "decaimiento": 0.2051,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0738
+        },
+        {
+          "titulo": "DigitalOcean (DOCN) Is Up 5.7% After Q2 Revenue Climbs But Earnings Slip On Asset Impairment - simplywall.st",
+          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxQWlB0Q3BDTGVqZU9TYXJfYUNZMnBaYW04cVh3WFQ3SFNXVDNGMVhDbkwtODlrc3REV3o4cXFpT1RyYW9VWkFJb09OX2tJd0U3bkkzbmhYa1o3clZtRHFDV0JOOHkweV91T2F3Nkd6N2I1cHVVZTVBNFhUUExMQXU4WDIzTUNyVWgyRW00dWxuMy1pa2N3b3M0Rnk2R0hkdWdWTExSMy1iWjg0S0hzYnVfdjFaTm1KbVhlNTl4RVVRb3doUklyeU5qX3BrNDhaaDV6UTNJa9IB2gFBVV95cUxNUGJ3RkZEOHZWYmE0VlR0bElVRDlCYnF1X0UzVFdQTV9MeW5zR0p4cmY5S2hqbFZhZWNjZE5mbHRDS25zZF9pTldfblJ4TkpzZzV2Sjg2VnlROExaT0JmTXRjckg5dGVyck9DMFk4NXY3TE5MdFplRkRhVUl2c0RlTEZtTElPZ1pMYVZZMHR0MzBzM1V2N3plSTYxb3FtZGxubkNJUmxPRnQ2V3JQdmpwaUk2U1JQc25aVXRUNjJUNHFXNVY2dGp2bi1Qamp0QkV2Q0FHVlFPNlQ3UQ?oc=5",
+          "fuente": "simplywall.st",
+          "fecha": "2026-08-08",
+          "extracto": "DigitalOcean (DOCN) Is Up 5.7% After Q2 Revenue Climbs But Earnings Slip On Asset Impairment simplywall.st",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 12,
+          "decaimiento": 0.3048,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0617
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. (DOCN) Beats Q2 Earnings and Revenue Estimates - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNb25RUDg1WTdzLW1BMmpucG9OczZNNVpHQ3ZJWmFOMmxzc1IxaHRtSVhUVVFDXzJsN054VkM0aUN1VVZhY3RhMWgyZlhHZ2JweVNWakoyMlluV2ctUExkbVFSODFGSm9Jb1RLN2dod2s2U3haTXVXS3Nfb3I2QXNXUjN3dlhJZHlMS3VjeHQ3LTFCbV9LTFFvcEJlZW1ybGV2VHZB?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Holdings, Inc. (DOCN) Beats Q2 Earnings and Revenue Estimates Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 16,
+          "decaimiento": 0.2051,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "ALCISTA",
+          "terminos_alcistas": 1,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0415
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. 2026 Q2 - Results - Earnings Call Presentation (NYSE:DOCN) 2026-08-04 - Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQOGdLX0wwUE9aWVlUM0E3REN1TnFzX1NHRmNlM1NXZUZkRVM1MXl6R0dSeTg2T1l4UkFKQnVselNwNk4yTTRnSEt1Tk16eXgtXzlZQTZabWZzZnp1UDNlenRfeDh6dkFZZnY2QzRmSXdtV3JfWE92RVNSMC1ibG9Fbmg0VUFOMFJyVzVCN3p5MW9MM0hDaE9FVEhBZDRwelBObU1sQ1UtSnZfNGZ5RFE?oc=5",
+          "fuente": "Seeking Alpha",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Holdings, Inc. 2026 Q2 - Results - Earnings Call Presentation (NYSE:DOCN) 2026-08-04 Seeking Alpha",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 16,
+          "decaimiento": 0.2051,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0415
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. 2026: Revenue $281.18M, EPS $0.29— 10-Q Summary - TradingView",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPa19Kd19BajA4b2R4MFBJV0FjdDcxLXFsRUtDRmtLZHRqb1lJdlFSNmlXVVVqdklDMHU1UUxjaWtNTTYwdTZTYXZBVnEzRXM0SkhqUllXa0dXeFhMRWxoSUFBbjBKNGM5dDdfRUx2MkU5d2FEN3ozb1hBaWxEN09pUDRKbTExN1JrT1dac0xkUTRsUS1DeGt1OGczXzhtZ1RBcDNrU3djWDAtYVJfOGU4WFhjV0czWENHdVp1OFFkWFZZS1lkSEw0TVlB?oc=5",
+          "fuente": "TradingView",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Holdings, Inc. 2026: Revenue $281.18M, EPS $0.29— 10-Q Summary TradingView",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 16,
+          "decaimiento": 0.2051,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0277
+        },
+        {
+          "titulo": "DigitalOcean Holdings, Inc. Reports Earnings Results for the Second Quarter and Six Months Ended June 30, 2026 - marketscreener.com",
+          "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxQV25qSnhHTjk3d05FNENQY3g4S2tNOW00U1hxTFFxWXNkbUhTNUJvYXlQSVZpa2Rrd2NFYVJoMDhGdDYwaUhRc1lTT25LM3JoSUh2OFhodUxNb1ptVjJsQkpyM0RZQkJpS29UdTRrd0FRUVJocjlOV09IZk52YkNhOVAtaTdsbTRGUl9ha0x6bjBkMGlhYlh6aS1kX3NBZHdsS2pEOGlCME9lNkZ1ZFUyd0U1R3h5WUhCY2Z0eHlCY3g4djdCUU9CQmlNZnRVeUZzanZjZlA3SncwLUZEUmlRLUpKR25Udw?oc=5",
+          "fuente": "marketscreener.com",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean Holdings, Inc. Reports Earnings Results for the Second Quarter and Six Months Ended June 30, 2026 marketscreener.com",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 2,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 16,
+          "decaimiento": 0.2051,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0277
+        },
+        {
+          "titulo": "DigitalOcean tops second quarter expectations amid surging AI demand - SiliconANGLE",
+          "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOMmM3RWZPcXB4ODdkaERTS3hNRjhlTkFVYlVRNkhvdEl6UGw5SURySjNuelF0ckgzdXhnSmh2NUszRW56Vlp0TkdYZHlzb2p4Wkk2ZjFrUHhxTDM2bnVqLW5xRU1vay1VN213ODZINU5PRVplbC1jLWFteFZfRGdiVGRUZlhCQ0VhTTU5cjZkelkxb003c1BsTXBHR01TcE5WUjBlZzdNbXE?oc=5",
+          "fuente": "SiliconANGLE",
+          "fecha": "2026-08-04",
+          "extracto": "DigitalOcean tops second quarter expectations amid surging AI demand SiliconANGLE",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 16,
+          "decaimiento": 0.2051,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "ALCISTA",
+          "terminos_alcistas": 1,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0277
+        },
+        {
+          "titulo": "Analysts Estimate DigitalOcean Holdings, Inc. (DOCN) to Report a Decline in Earnings: What to Look Out for - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNOTFaNkpnVEVHamlTMy1CQUdzSVhkdzZkR0poaFhGekhDdG5ZUXMxd003MEJNemx0cG1RUF9EOU1hZTRaOGNBaUpaMXNKSXg5Y09qYTlaZFpQUkNVb3JhNjRFaEZsX21MR2tuM19vbkpBZTdTTVNvaUljQ1ZyWXRsbGx3YXJCb0dJdlAtVUFDZUFKV1FNX0I4aElxUG0yNjdJaEgyM2F4dE5MdExN?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-28",
+          "extracto": "Analysts Estimate DigitalOcean Holdings, Inc. (DOCN) to Report a Decline in Earnings: What to Look Out for Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 23,
+          "decaimiento": 0.1025,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0208
+        },
+        {
+          "titulo": "DigitalOcean Reduces Leverage with No Effective Dilution and Minimal Cash Usage, Creating Additional Capacity to Fuel Growth - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMijAJBVV95cUxOelM2VXd2RTdkS2ttY1g1RXNYMEFLQ1RsY0pRcWR0eHFpNllIQUprS1JwVTJMaFl3SzYtRXBhM1ZySGFEV21rSm5RdE5HSHRvQUxtZXdzbHpLOFlmeEhPUEhERmNySHRaMDRNV0dLeWMwQnYyZWMxYThtNDhsWGxWMWxzN25UNklpYzgyUHJPMVN2TXQtaXpDNWtvVVFtZGNPYmw2clN2bFVVT0ptSzc0bjhES3N0aXVKRHZVM1pVbjN1MFNiaG92NHltRTVvdE1ha2RKa3NmZTB5bTRyRTB6OVMtVWhUUVJDOGJGdmVUS3c1eEZVREpfWWxHVFEtNjBfTE5TMUZ3Ty1QM3ZM?oc=5",
+          "fuente": "Business Wire",
+          "fecha": "2026-07-24",
+          "extracto": "DigitalOcean Reduces Leverage with No Effective Dilution and Minimal Cash Usage, Creating Additional Capacity to Fuel Growth Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 27,
+          "decaimiento": 0.069,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "BAJISTA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 1,
+          "probabilidad_impacto": 0.0062
+        },
+        {
+          "titulo": "JPMorgan Chase & Co. (DOCN) discloses 13.0% beneficial stake in DigitalOcean - Stock Titan",
+          "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNZm40QjRETmZ1ckp2U3QwNllteTVwUmNleGNJYXdsRXpoeTEwcmJBOGJ6cHliejZMSURwTjBuTEE5NjQ5XzJRUHpMNFpyY3JCcTI2WXFZckQ4QnF1dlVkNVl5bGJUVHpiRUluUHRPTUpDSUpBWHpVSjZQemIyR0FoNmc2d2ZldVFvb19aUi1PUGZUNWNIbmZtZF9PM3I5cEY3TER3b2VGdlBiR0tpVllPMVVaNVY0NVZ4MXo3V2NmQjB6ZWhiUEJ5TTd2QQ?oc=5",
+          "fuente": "Stock Titan",
+          "fecha": "2026-07-27",
+          "extracto": "JPMorgan Chase & Co. (DOCN) discloses 13.0% beneficial stake in DigitalOcean Stock Titan",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 24,
+          "decaimiento": 0.0929,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0031
+        }
+      ],
+      "n_items": 12,
+      "category_counts": {
+        "GUIDANCE": 1,
+        "RESULTADOS": 9,
+        "OTROS": 2
+      },
+      "sources_ok": [
+        "sec_8k",
+        "google_news_rss"
+      ],
+      "sources_failed": [
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "from_cache": false,
+      "advisory_only": true,
+      "signals": [
+        "GUIDANCE (2026-08-17, AGREGADOR, p=0.14): The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidanc",
+        "RESULTADOS (2026-08-04, SEC_8K, p=0.09): DigitalOcean Holdings, Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Conditi",
+        "RESULTADOS (2026-08-04, NEWSWIRE, p=0.07): DigitalOcean Announces Second Quarter 2026 Financial Results - Business Wire",
+        "RESULTADOS (2026-08-08, AGREGADOR, p=0.06): DigitalOcean (DOCN) Is Up 5.7% After Q2 Revenue Climbs But Earnings Slip On Asset Impairment - simplywall.st",
+        "RESULTADOS (2026-08-04, AGREGADOR, p=0.04): DigitalOcean Holdings, Inc. (DOCN) Beats Q2 Earnings and Revenue Estimates - Yahoo Finance"
+      ],
+      "summary": "DigitalOcean Holdings, Inc. (DOCN) ha presentado sus resultados del segundo trimestre de 2026 junto con una guía financiera optimista que ha equilibrado un trimestre de cifras mixtas. Este escenario de transición operativa y perspectivas favorables actúa como catalizador alcista, con una probabilidad moderada de impacto en el precio (0.38) al replantear las expectativas de crecimiento a medio plazo de la compañía."
     },
     "debate_report": {
-      "bullish_case": "TESIS ALCISTA (DOCN): Excelente crecimiento de ingresos (28.6%) demostrando expansión de mercado. Margen neto sólido del 23.3%, garantizando rentabilidad y generación de caja. Estructura técnica con clasificación NEUTRAL y RSI de 47.7 en zona de fuerte impulso.",
-      "bearish_case": "TESIS BAJISTA (DOCN): Múltiplo P/E elevado (56.9x) que sugiere sobrevaloración. Carga financiera moderada/alta con Deuda/Capital en 2.13.",
-      "synthesis": [
-        {
-          "type": "text",
-          "text": "A continuación, se presenta la síntesis del debate de inversión sobre **DigitalOcean (DOCN)**:\n\n### **Síntesis del Debate de Inversión: DOCN**\n\n*   **Tesis Alcista (Bull Case):** \n    La compañía destaca por un excelente crecimiento de sus ingresos del 28.6%, lo que evidencia una sólida expansión en su mercado objetivo. Este dinamismo comercial se traduce en un margen neto muy saludable del 23.3%, garantizando una alta rentabilidad y una fuerte capacidad de generación de caja. Desde el punto de vista técnico, el valor presenta una clasificación neutral con un RSI de 47.7, situándose en una zona propicia para un fuerte impulso alcista.\n\n*   **Tesis Bajista (Bear Case):** \n    Los principales riesgos se centran en su elevada valoración, reflejada en un múltiplo Precio/Beneficio (P/E) de 56.9x que sugiere que el precio actual ya incorpora grandes expectativas de crecimiento. Asimismo, preocupa su estructura de capital, la cual muestra una carga financiera moderada a alta con un ratio de Deuda/Capital de 2.13, limitando su flexibilidad financiera ante posibles escenarios adversos.\n\n---\n\n### **Conclusión Imparcial**\nDigitalOcean demuestra una combinación atractiva de fuerte crecimiento operativo y alta rentabilidad, respaldada por fundamentales financieros sólidos en su negocio principal. Sin embargo, esta calidad operativa viene acompañada de una valoración exigente y un apalancamiento financiero que incrementan el riesgo ante cualquier desviación en sus resultados futuros. Por lo tanto, los inversores deben ponderar si el dinamismo de sus ingresos compensa el precio pagado y la exposición a su actual estructura de deuda.",
-          "extras": {
-            "signature": "El4KXAERTTIPwSM/7TEcjAwPRwXQDvRADgAYVZM/iua4tALEni6J5oUN9skQbYngE6gjP6bJ313lYO6DHVZnGoteQYcPoAa7x7kCnyFoGRCfn4vLWTbvUPBlsdfMw65F"
-          }
-        }
-      ]
+      "bullish_case": "TESIS ALCISTA (DOCN): Excelente crecimiento de ingresos (28.6%) demostrando expansión de mercado. Margen neto sólido del 23.3%, garantizando rentabilidad y generación de caja. Estructura técnica con clasificación NEUTRAL y RSI de 48.2 en zona de fuerte impulso. Flujo de noticias con probabilidad de impacto MEDIA (0.38) y sesgo ALCISTA sobre 12 nota(s); principal catalizador: \"The Bull Case For DigitalOcean Holdings (DOCN) Could Change Following Mixed Q2 2026 Results And Upbeat Guidance - simply\" (capa asesora: no altera el dictamen).",
+      "bearish_case": "TESIS BAJISTA (DOCN): Múltiplo P/E elevado (52.1x) que sugiere sobrevaloración. Carga financiera moderada/alta con Deuda/Capital en 2.13.",
+      "synthesis": "Aquí tienes la síntesis del debate de inversión sobre **DigitalOcean Holdings (DOCN)**, estructurada en base a los argumentos presentados:\n\n### **Síntesis del Debate de Inversión: DigitalOcean Holdings (DOCN)**\n\n* **Argumentos Alcistas (Tesis Alcista):** \n  La compañía destaca por un excelente crecimiento de ingresos del 28.6% que evidencia una sólida expansión de mercado, acompañado de un margen neto del 23.3% que asegura rentabilidad y una robusta generación de caja. Desde el punto de vista técnico, presenta una clasificación NEUTRAL con un RSI de 48.2 ubicado en una zona de fuerte impulso. Además, cuenta con un flujo de noticias de sesgo alcista respaldado por 12 notas (destacando expectativas tras resultados mixtos del Q2 2026 y una guía optimista), aunque el asesor matiza que esto no altera por sí solo el dictamen fundamental.\n\n* **Argumentos Bajistas (Tesis Bajista):** \n  Los principales riesgos se centran en su elevada valoración, reflejada en un múltiplo P/E de 52.1x que sugiere que el precio actual ya incorpora grandes expectativas de crecimiento. Asimismo, enfrenta una carga financiera moderada a alta, evidenciada por una ratio de Deuda/Capital de 2.13 que limita su flexibilidad operativa frente a posibles volatilidades del mercado.\n\n---\n\n### **Conclusión Imparcial**\nDigitalOcean demuestra una salud financiera envidiable gracias a su fuerte crecimiento de ingresos y sólida rentabilidad, respaldada por un sentimiento de mercado favorable y un momento técnico neutral-positivo. No obstante, los inversores deben sopesar cuidadosamente estos fundamentales frente a una valoración exigente (P/E de 52.1x) y un apalancamiento financiero elevado (Deuda/Capital de 2.13). En definitiva, la acción ofrece un atractivo potencial de crecimiento, pero exige tolerancia al riesgo ante la posibilidad de que cualquier desviación operativa penalice su ajustado múltiplo de valoración."
     },
     "final_decision": {
       "rating": "MANTENER",
       "position_size_pct": "2.0% - 3.0%",
-      "current_price": 116.66000366210938,
-      "stop_loss_atr": 93.54,
-      "take_profit_atr": 157.12,
-      "rationale": "Fundamentales aprobados con éxito. Momentum técnico classified como NEUTRAL. Síntesis de debate: [{'type': 'text', 'text': 'A continuación, se presenta la síntesis del debate de inversión sobre **DigitalOcean (DOCN)**:\\n\\n### **Síntesis del Debate de Inversión: DOCN**\\n\\n*   **Tesis Alcista (Bull Case):** \\n    La compañía destaca por un excelente crecimiento de sus ingresos del 28.6%, lo que evidencia una sólida expansión en su mercado objetivo. Este dinamismo comercial se traduce en un margen neto muy saludable del 23.3%, garantizando una alta rentabilidad y una fuerte capacidad de generación de caja. Desde el punto de vista técnico, el valor presenta una clasificación neutral con un RSI de 47.7, situándose en una zona propicia para un fuerte impulso alcista.\\n\\n*   **Tesis Bajista (Bear Case):** \\n    Los principales riesgos se centran en su elevada valoración, reflejada en un múltiplo Precio/Beneficio (P/E) de 56.9x que sugiere que el precio actual ya incorpora grandes expectativas de crecimiento. Asimismo, preocupa su estructura de capital, la cual muestra una carga financiera moderada a alta con un ratio de Deuda/Capital de 2.13, limitando su flexibilidad financiera ante posibles escenarios adversos.\\n\\n---\\n\\n### **Conclusión Imparcial**\\nDigitalOcean demuestra una combinación atractiva de fuerte crecimiento operativo y alta rentabilidad, respaldada por fundamentales financieros sólidos en su negocio principal. Sin embargo, esta calidad operativa viene acompañada de una valoración exigente y un apalancamiento financiero que incrementan el riesgo ante cualquier desviación en sus resultados futuros. Por lo tanto, los inversores deben ponderar si el dinamismo de sus ingresos compensa el precio pagado y la exposición a su actual estructura de deuda.', 'extras': {'signature': 'El4KXAERTTIPwSM/7TEcjAwPRwXQDvRADgAYVZM/iua4tALEni6J5oUN9skQbYngE6gjP6bJ313lYO6DHVZnGoteQYcPoAa7x7kCnyFoGRCfn4vLWTbvUPBlsdfMw65F'}}]",
-      "summary": [
-        {
-          "type": "text",
-          "text": "**ORDEN EJECUTIVA DE INVERSIÓN: DOCN**\n\nTras una revisión exhaustiva, se emite un dictamen de **MANTENER** para DigitalOcean (DOCN) a un precio actual de **$116.66**, estableciendo una asignación táctica de cartera entre el **2.0% y el 3.0%**. Esta decisión equilibra los sólidos fundamentales y el margen neto del 23.3% frente a una valoración exigente (P/E de 56.9x) y un momento técnico neutral, respaldados por una gestión de riesgo estricta fijada en un Stop-Loss ATR de **$93.54** y un Take-Profit ATR de **$157.12**.",
-          "extras": {
-            "signature": "El4KXAERTTIPVV0xiX4lsRjnXv9dA3D8MaIB0lc6yrqBUuiCv9KskLT1+uxq3O2ahSdFPNQRJkCCiMoSpKMrKhI9iRZR4qXnA/uheKSQJ3DUvLG6L7YZlb2Yk+fHSRIG"
-          }
-        }
-      ]
+      "current_price": 114.72000122070312,
+      "stop_loss_atr": 92.74,
+      "take_profit_atr": 153.19,
+      "rationale": "Fundamentales aprobados con éxito. Momentum técnico classified como NEUTRAL. Síntesis de debate: Aquí tienes la síntesis del debate de inversión sobre **DigitalOcean Holdings (DOCN)**, estructurada en base a los argumentos presentados:\n\n### **Síntesis del Debate de Inversión: DigitalOcean Holdings (DOCN)**\n\n* **Argumentos Alcistas (Tesis Alcista):** \n  La compañía destaca por un excelente crecimiento de ingresos del 28.6% que evidencia una sólida expansión de mercado, acompañado de un margen neto del 23.3% que asegura rentabilidad y una robusta generación de caja. Desde el punto de vista técnico, presenta una clasificación NEUTRAL con un RSI de 48.2 ubicado en una zona de fuerte impulso. Además, cuenta con un flujo de noticias de sesgo alcista respaldado por 12 notas (destacando expectativas tras resultados mixtos del Q2 2026 y una guía optimista), aunque el asesor matiza que esto no altera por sí solo el dictamen fundamental.\n\n* **Argumentos Bajistas (Tesis Bajista):** \n  Los principales riesgos se centran en su elevada valoración, reflejada en un múltiplo P/E de 52.1x que sugiere que el precio actual ya incorpora grandes expectativas de crecimiento. Asimismo, enfrenta una carga financiera moderada a alta, evidenciada por una ratio de Deuda/Capital de 2.13 que limita su flexibilidad operativa frente a posibles volatilidades del mercado.\n\n---\n\n### **Conclusión Imparcial**\nDigitalOcean demuestra una salud financiera envidiable gracias a su fuerte crecimiento de ingresos y sólida rentabilidad, respaldada por un sentimiento de mercado favorable y un momento técnico neutral-positivo. No obstante, los inversores deben sopesar cuidadosamente estos fundamentales frente a una valoración exigente (P/E de 52.1x) y un apalancamiento financiero elevado (Deuda/Capital de 2.13). En definitiva, la acción ofrece un atractivo potencial de crecimiento, pero exige tolerancia al riesgo ante la posibilidad de que cualquier desviación operativa penalice su ajustado múltiplo de valoración.",
+      "summary": "**ORDEN EJECUTIVA DE INVERSIÓN – DIGITALOCEAN HOLDINGS (DOCN)**\n\nTras evaluar favorablemente los sólidos fundamentales y la rentabilidad de la compañía, dictamino **MANTENER** la posición con una asignación de cartera entre el **2.0% y 3.0%**, fijando el precio actual en **$114.72**, un *Stop-Loss* técnico en **$92.74** y un *Take-Profit* en **$153.19**. Esta directriz equilibra el excelente crecimiento de ingresos (28.6%) frente a los riesgos inherentes de una valoración exigente (P/E 52.1x) y un apalancamiento moderado (Deuda/Capital 2.13), operando bajo un momentum técnico neutral (RSI 48.2)."
     },
     "passed_fundamental_gatekeeper": true,
     "workflow_status": "COMPLETED",
     "logs": [
       "[Ingesta] Recolectando datos multi-fuente para DOCN...",
-      "[Reconciliación] Puntuación de confianza: 1.0, Fuentes: ['yfinance', 'SEC EDGAR (Oficial)']",
+      "[Reconciliación] Puntuación de confianza: 1.0, Fuentes: ['yfinance', 'SEC EDGAR (Oficial)', 'Finnhub']",
       "[Gatekeeper Fundamental] Evaluando salud financiera para DOCN...",
       "[Gatekeeper Fundamental] Resultado: APROBADO -> Continuando a Análisis Técnico",
+      "[Analista de Noticias] 12 noticia(s) | Impacto: MEDIA (0.38) | Dirección: ALCISTA | Fuentes sin respuesta: tavily",
+      "[Analista de Noticias] Capa ASESORA: no altera el rating ni el sizing.",
       "[Analista Técnico] Evaluando indicadores de momentum para DOCN...",
       "[Analista Técnico] Momentum clasificado como: NEUTRAL",
       "[Capa de Debate] Ejecutando confrontación Bullish vs Bearish para DOCN...",
       "[Capa de Debate] Síntesis finalizada.",
       "[Fund Manager] Sintetizando informes y emitiendo recomendación final para DOCN...",
+      "[Fund Manager] DICTAMEN FINAL: MANTENER"
+    ]
+  },
+  {
+    "ticker": "NRVG",
+    "company_name": "NRVG",
+    "sector": "Desconocido",
+    "industry": "Desconocido",
+    "sec_edgar_data": {
+      "status": "NOT_FOUND",
+      "source": "SEC EDGAR"
+    },
+    "finnhub_data": {
+      "status": "SUCCESS",
+      "source": "Finnhub",
+      "pe_ratio": null,
+      "roe_ttm": null,
+      "net_margin_ttm": null,
+      "revenue_growth_5y": null
+    },
+    "yfinance_data": {
+      "status": "ERROR",
+      "error": "No se encontraron precios para el ticker NRVG",
+      "ticker": "NRVG"
+    },
+    "reconciliation_data": {
+      "status": "HIGH_CONFIDENCE",
+      "ticker": "NRVG",
+      "confidence_score": 1.0,
+      "sources_consulted": [
+        "yfinance",
+        "Finnhub"
+      ],
+      "discrepancies": [],
+      "reconciled_metrics": {
+        "revenue_growth": 0.0,
+        "net_margin": 0.0,
+        "debt_to_equity": 0.0,
+        "roe": 0.0,
+        "pe_ratio": 0.0
+      }
+    },
+    "news_data": {
+      "status": "DEGRADADO",
+      "ticker": "NRVG",
+      "empresa": "NRVG",
+      "as_of": "2026-08-20",
+      "ventana_dias": 30,
+      "items": [],
+      "n_brutos": 0,
+      "n_items": 0,
+      "fuentes_ok": [
+        "google_news_rss"
+      ],
+      "fuentes_fallidas": [
+        {
+          "buscador": "sec_8k",
+          "motivo": "SinCoberturaSEC: NRVG no tiene CIK en EDGAR"
+        },
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "desde_cache": false
+    },
+    "fundamental_report": {
+      "passed_gatekeeper": false,
+      "status": "RECHAZADO",
+      "metrics": {
+        "revenue_growth": 0.0,
+        "net_margin": 0.0,
+        "debt_to_equity": 0.0,
+        "roe": 0.0,
+        "pe_ratio": 0.0
+      },
+      "reasons": [
+        "Margen Neto (0.0%) por debajo del umbral mínimo (5.0%)",
+        "Crecimiento de Ingresos (0.0%) por debajo del umbral mínimo (5.0%)"
+      ],
+      "confidence_score": 1.0,
+      "discrepancies": [],
+      "summary": "**RECHAZADO.** NRVG presenta una inactividad operativa absoluta, reflejada en un crecimiento de ingresos, margen neto y ROE del 0.0%. Aunque no posee apalancamiento financiero (Deuda/Capital de 0.00), la ausencia total de generación de valor y rentabilidad descarta cualquier viabilidad de inversión."
+    },
+    "news_report": {
+      "status": "DEGRADADO",
+      "company_name": "NRVG",
+      "as_of": "2026-08-20",
+      "window_days": 30,
+      "impact_probability": 0.0,
+      "impact_classification": "BAJA",
+      "direction_classification": "INCIERTA",
+      "direction_imbalance": 0.0,
+      "catalysts": [],
+      "scored_items": [],
+      "n_items": 0,
+      "category_counts": {},
+      "sources_ok": [
+        "google_news_rss"
+      ],
+      "sources_failed": [
+        {
+          "buscador": "sec_8k",
+          "motivo": "SinCoberturaSEC: NRVG no tiene CIK en EDGAR"
+        },
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "from_cache": false,
+      "advisory_only": true,
+      "signals": [],
+      "summary": "**Lectura de actualidad de NRVG (NRVG):**\n\nDurante los últimos 30 días no se han registrado noticias relevantes ni catalizadores operativos en torno a NRVG, manteniendo el título en un periodo de absoluta atonía informativa. Esta total ausencia de novedades genera un escenario de dirección incierta y probabilidad de impacto nulo en el precio, ya que el valor carece actualmente de estímulos fundamentales que puedan alterar su cotización a corto plazo."
+    },
+    "final_decision": {
+      "rating": "VENTA",
+      "position_size_pct": "0.0%",
+      "current_price": 0.0,
+      "stop_loss_atr": null,
+      "take_profit_atr": null,
+      "rationale": "Rechazado en el filtro fundamental inicial. **RECHAZADO.** NRVG presenta una inactividad operativa absoluta, reflejada en un crecimiento de ingresos, margen neto y ROE del 0.0%. Aunque no posee apalancamiento financiero (Deuda/Capital de 0.00), la ausencia total de generación de valor y rentabilidad descarta cualquier viabilidad de inversión.",
+      "summary": "**ORDEN EJECUTIVA DE INVERSIÓN**\n\n**Activo:** NRVG | **Dictamen:** VENTA | **Asignación de Cartera:** 0.0%\n\nTras la evaluación en el comité de riesgos, se emite una orden de **VENTA** y exclusión definitiva de NRVG con una asignación del **0.0%** de la cartera, al haber sido rechazado en el filtro fundamental inicial por inactividad operativa absoluta. La compañía carece de viabilidad de inversión debido a su incapacidad total para generar valor y rentabilidad, evidenciada por un crecimiento de ingresos, margen neto y ROE del 0.0%. En consecuencia, y operando a un precio de **$0.00** —sin niveles aplicables de *Stop-Loss* o *Take-Profit* por ATR—, se descarta cualquier exposición al valor, priorizando la preservación del capital en activos con métricas fundamentales funcionales."
+    },
+    "passed_fundamental_gatekeeper": false,
+    "workflow_status": "COMPLETED",
+    "logs": [
+      "[Ingesta] Recolectando datos multi-fuente para NRVG...",
+      "[Reconciliación] Puntuación de confianza: 1.0, Fuentes: ['yfinance', 'Finnhub']",
+      "[Gatekeeper Fundamental] Evaluando salud financiera para NRVG...",
+      "[Gatekeeper Fundamental] Resultado: RECHAZADO -> Deteniendo flujo avanzado (Ahorro de Cómputo)",
+      "[Analista de Noticias] 0 noticia(s) | Impacto: BAJA (0.00) | Dirección: INCIERTA | Fuentes sin respuesta: sec_8k, tavily",
+      "[Analista de Noticias] Capa ASESORA: no altera el rating ni el sizing.",
+      "[Fund Manager] Sintetizando informes y emitiendo recomendación final para NRVG...",
+      "[Fund Manager] DICTAMEN FINAL: VENTA"
+    ]
+  },
+  {
+    "ticker": "BE",
+    "company_name": "Bloom Energy Corporation",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "sec_edgar_data": {
+      "status": "SUCCESS",
+      "source": "SEC EDGAR (Oficial)",
+      "cik": "0001664703",
+      "revenues": 751054000.0,
+      "net_income": -302116000.0,
+      "total_assets": 4664729000.0,
+      "total_liabilities": 3716721000.0
+    },
+    "finnhub_data": {
+      "status": "SUCCESS",
+      "source": "Finnhub",
+      "pe_ratio": 11588.5016,
+      "roe_ttm": 0.8200000000000001,
+      "net_margin_ttm": 0.25,
+      "revenue_growth_5y": 20.57
+    },
+    "yfinance_data": {
+      "status": "SUCCESS",
+      "ticker": "BE",
+      "company_name": "Bloom Energy Corporation",
+      "sector": "Industrials",
+      "industry": "Electrical Equipment & Parts",
+      "current_price": 199.13999938964844,
+      "fundamentals": {
+        "revenue_growth": 1.655,
+        "net_margin": 0.07868,
+        "debt_to_equity": 1.71578,
+        "roe": 0.22213,
+        "pe_ratio": 262.0263,
+        "market_cap": 58652176384
+      },
+      "technical": {
+        "close": 199.13999938964844,
+        "rsi": 47.25,
+        "macd": -5.767,
+        "macd_signal": -6.275,
+        "macd_hist": 0.507,
+        "bb_upper": 254.42,
+        "bb_lower": 167.36,
+        "atr": 20.81,
+        "sma_50": 242.82,
+        "sma_200": 186.26,
+        "volume_rel": 0.2
+      },
+      "price_history_summary": {
+        "min_52w": 40.560001373291016,
+        "max_52w": 351.2799987792969,
+        "close_today": 199.13999938964844,
+        "change_1m_pct": 0.07707285438391226
+      }
+    },
+    "reconciliation_data": {
+      "status": "RECONCILED_WITH_DISCREPANCIES",
+      "ticker": "BE",
+      "confidence_score": 0.75,
+      "sources_consulted": [
+        "yfinance",
+        "SEC EDGAR (Oficial)",
+        "Finnhub"
+      ],
+      "discrepancies": [
+        "Diferencia en Margen Neto: SEC (-40.2%) vs yfinance (7.9%)",
+        "Diferencia en Margen Finnhub: (25.0%) vs yfinance (7.9%)"
+      ],
+      "reconciled_metrics": {
+        "revenue_growth": 1.655,
+        "net_margin": 0.07868,
+        "debt_to_equity": 1.71578,
+        "roe": 0.22213,
+        "pe_ratio": 262.0263
+      }
+    },
+    "news_data": {
+      "status": "DEGRADADO",
+      "ticker": "BE",
+      "empresa": "Bloom Energy Corporation",
+      "as_of": "2026-08-20",
+      "ventana_dias": 30,
+      "items": [
+        {
+          "titulo": "Kaplan Fox Encourages Bloom Energy Corporation (NYSE: BE) Investo - The National Law Review",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOb19ITXNRc3lDdjhQZE1aNXZMSXd3TkU1VnJ6bFVZVmdPNGVNZmoyWU94cmNReEdJS1RCWmJFM1BkMmtEd1dZUGxZakNjWTdiaF9jX3lNaUxvbnZUQmVsRkRKYTNRODBCNHBwd0xMYWRsLUhWWUVxakFUN0dUOG9YSFRURW5tbkt4RE8zX1VleHJXeG8wZy0tNnY0UE9LUW53UWRXVEQ3S3Z2bUpOZE1RSEpSTlM?oc=5",
+          "fuente": "The National Law Review",
+          "fecha": "2026-08-20",
+          "extracto": "Kaplan Fox Encourages Bloom Energy Corporation (NYSE: BE) Investo The National Law Review",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Kaplan Fox Encourages Bloom Energy Corporation (NYSE: BE) Investo - The National Law Review Kaplan Fox Encourages Bloom Energy Corporation (NYSE: BE) Investo The National Law Review"
+        },
+        {
+          "titulo": "INVESTOR ALERT: Pomerantz Law Firm Reminds Investors with Losses on their Investment in Bloom Energy Corporation of Class Action Lawsuit and Upcoming Deadlines - BE - PR Newswire",
+          "url": "https://news.google.com/rss/articles/CBMivwJBVV95cUxQOW14ajJ4V05ZN1Y4VE1VUDJETGtUWlFRYUJmcFJqTmQ1M0NWZUlYOWdfb0VlTHNKUHQxeVRCYnlod2pvWnUyY3BkaldMSk5EX05TazZwYVBxTFdZNzZzb1ZpMHowazZ1Skg1WXcycmJmVUx6THpERXdxSGVqSktTa3RSODNEVE10TXJiYXdPU2dFUXNqYXV2Sjg3OUdMR04wVW05NGR2cm9Kb3B2MXlHVkFaWmtreUxmZ2NwZndtZDBqYUV0d1IzdGYwN2VISWRWM255Ti1jUEVJME50RE5sb2U2OGgydkVoaEZlRjY4R3V5ZlEyVmpaQXZUeVZTcndjMkVFa205X2V3X1Z2RUM1N3VjdERZa0hkLTBBTWlwMlhmTGxPZElGT2pUS3N1VUZnMHhQZDlKX1AyWGNpUFhF?oc=5",
+          "fuente": "PR Newswire",
+          "fecha": "2026-08-20",
+          "extracto": "INVESTOR ALERT: Pomerantz Law Firm Reminds Investors with Losses on their Investment in Bloom Energy Corporation of Class Action Lawsuit and Upcoming Deadlines - BE PR Newswire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "INVESTOR ALERT: Pomerantz Law Firm Reminds Investors with Losses on their Investment in Bloom Energy Corporation of Class Action Lawsuit and Upcoming Deadlines - BE - PR Newswire INVESTOR ALERT: Pomerantz Law Firm Reminds Investors with Losses on their Investment in Bloom Energy Corporation of Class Action Lawsuit and Upcoming Deadlines - BE PR Newswire"
+        },
+        {
+          "titulo": "BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit Before September 28, 2026 Deadline - TMX Newsfile",
+          "url": "https://news.google.com/rss/articles/CBMiqAJBVV95cUxPdFpnbGt2QS1rVEZMdEZMaS1meDQtb3RXQVpzREZJcTdXZXh3dmEyR09XQVRuZEZmR2QxZURKdElMZElvUV9TYVUtUG1qUEN5cWRIX25iODBTekE3bjhvUk5qXzJtLVR3bERZUEE3ZU1tM1RpaDQ5WV9HVGpGN0VXLXJ0SS1Ic3FJdnZwb3d0QTNOdkpzVG5jY2xNLWJlNGxhT2t3VzdjY2xJR3loTl9XcEZBV2VqWnVLUUVqSmtKLXZPa055akI3VFNHS054TmVmNGVYd2I3NThfLTFETVJ4MUVtTkdCMEdObGNEa3o4OFZ3Q0EtMUpwWk9meXV4d3BWc3NpQ19JNlR0eVJvalpwcG1tRjNEUVN5QlBoVFVwVUNHd25xUVg5Mw?oc=5",
+          "fuente": "TMX Newsfile",
+          "fecha": "2026-08-20",
+          "extracto": "BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit Before September 28, 2026 Deadline TMX Newsfile",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit Before September 28, 2026 Deadline - TMX Newsfile BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit Before September 28, 2026 Deadline TMX Newsfile"
+        },
+        {
+          "titulo": "SHAREHOLDER ALERT Bernstein Liebhard LLP Announces A Securities Fraud Class Action Lawsuit Has Been Filed Against Bloom Energy Corporation (BE) - TMX Newsfile",
+          "url": "https://news.google.com/rss/articles/CBMikwJBVV95cUxNYXZEVnpOTFl0NnhrQkx4NFQtQ3FaRFdLSkJmSGI0SmdRUzJsM3ZkY25XNWdVQW1BUmRDaEVDR3lHaDNBOEtMV0REcm9OVGNGOXdEdmFabDM1cnRtSVFGZHEyaUp0Y0VrNWZYSjlDVFpwdk1mWHAzTm5VVDZyTFhaY3llMUk2NzNsTHFGd0FaaE9QZkdIcjhjVDRFbXFEY0ltbFpYWmNmblpaVTdZTmMzd09GeFQzdzRadU0tNTJfUWpCZDZ3ZTE2ZmdCVjhIRXZ4cnNqV1ZDWVp3bTNsWTE5TE9CeUdmNXp5MXpHdmJpcXpRMUZaSk5fQXNWdGxFdndKclp4MFN0WlF3RUJLSW1MQXp6RQ?oc=5",
+          "fuente": "TMX Newsfile",
+          "fecha": "2026-08-18",
+          "extracto": "SHAREHOLDER ALERT Bernstein Liebhard LLP Announces A Securities Fraud Class Action Lawsuit Has Been Filed Against Bloom Energy Corporation (BE) TMX Newsfile",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "SHAREHOLDER ALERT Bernstein Liebhard LLP Announces A Securities Fraud Class Action Lawsuit Has Been Filed Against Bloom Energy Corporation (BE) - TMX Newsfile SHAREHOLDER ALERT Bernstein Liebhard LLP Announces A Securities Fraud Class Action Lawsuit Has Been Filed Against Bloom Energy Corporation (BE) TMX Newsfile"
+        },
+        {
+          "titulo": "BE INVESTOR ALERT: Bronstein, Gewirtz and Grossman, LLC Announces that Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit! - ACCESS Newswire",
+          "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxNRVJaVE1ZSno3ekx2TTlfenhWd2o1Q2NJc3Vweks3NjAzU1YxdV80NWEzQmFOek1iVWFCR0kwSFNiSXB0c1ZGR2MzQnE4UlNIUnlGM1pPR1pCdm9wS1RHR0Uwckg2eUUzRXdZNHd1V1YwRjNiS21tNkplNUZlYnUwMEpJVTBuQWJUUEI0QTliVUcweXJxVm1qWGpYaTlzNERGd1A2RTZrOXVOQThiaVo2eXljNTcwWnhwNE95UmhOTWxhLUhOcDQyOWZHaXFSbDFkY3ZhbUxVRjdvUW8tZWg1MWN6M0o?oc=5",
+          "fuente": "ACCESS Newswire",
+          "fecha": "2026-08-18",
+          "extracto": "BE INVESTOR ALERT: Bronstein, Gewirtz and Grossman, LLC Announces that Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit! ACCESS Newswire",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "BE INVESTOR ALERT: Bronstein, Gewirtz and Grossman, LLC Announces that Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit! - ACCESS Newswire BE INVESTOR ALERT: Bronstein, Gewirtz and Grossman, LLC Announces that Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit! ACCESS Newswire"
+        },
+        {
+          "titulo": "Portnoy Law Firm Announces Class Action on Behalf of Bloom Energy Corporation Investors - GlobeNewswire",
+          "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxNbmhkbFczdXJTT3J2UGdNNlNRZHMxNGNCNVh2RzZyelhqdDl6UC1IVF9Uc3JoOC1oajV1Vm5lcDlHYTFkZkUxU3BBUlY5Nzd2VEFXUzNfQjU5Nk9aaENkNVJFb3V6ZktOeG55XzFadm1vUEhWZTM0M21lN2FkZzdtblpHWTdwVVBRTDlJRnQzZ1drX1gtM0RYb3VYR3pZeDNVMTQ5Q2dhMWdXdXBfeVFsWmtFNGZuSEh4ZzJGRk40UzFCNVV3WlBiS29JUHRqM2lwSmt5eFF1alJ6d1N6UnRhUFZOaWV5VE85VUVDM0Jlblg?oc=5",
+          "fuente": "GlobeNewswire",
+          "fecha": "2026-08-10",
+          "extracto": "Portnoy Law Firm Announces Class Action on Behalf of Bloom Energy Corporation Investors GlobeNewswire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Portnoy Law Firm Announces Class Action on Behalf of Bloom Energy Corporation Investors - GlobeNewswire Portnoy Law Firm Announces Class Action on Behalf of Bloom Energy Corporation Investors GlobeNewswire"
+        },
+        {
+          "titulo": "Rosen Law Firm Urges Bloom Energy Corporation (NYSE: BE) Stockholders to Contact the Firm for Information About Their Rights - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMiigJBVV95cUxQOGNvTldXaV9FX2hIdDlDVEtJeWNqa2RjSExWTzdJZjJwVWtEejdDVUdMUTdPcmd3eDZlVWZncHBrQUVXVjB4d1h1ZHBrc2dVbGRHeHljeDFtWVRBaDU5UE90c0tHdWtMeDlqaDg0MDZPZGlLU1FvNnlzYjNyUVZJSkFWcTdOXzBzWDhqVWx4UFJuY0NQdlpWYkVvdXcxOU5ONmpSclZ1cnloZ3Y2V0hXb1BzSjZVOEl1UEpGZllBemZaaVlIWlBfQzBTcVlveVdBZ1Z0NUQ4a1lHTVluR2lPREFrWTB6dm1wRVlpUkU2emwtZWphVnlEX2ZqUTQzSDc3VDNTblhOSS1ZZw?oc=5",
+          "fuente": "Business Wire",
+          "fecha": "2026-07-31",
+          "extracto": "Rosen Law Firm Urges Bloom Energy Corporation (NYSE: BE) Stockholders to Contact the Firm for Information About Their Rights Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Rosen Law Firm Urges Bloom Energy Corporation (NYSE: BE) Stockholders to Contact the Firm for Information About Their Rights - Business Wire Rosen Law Firm Urges Bloom Energy Corporation (NYSE: BE) Stockholders to Contact the Firm for Information About Their Rights Business Wire"
+        },
+        {
+          "titulo": "BE Investors Have Opportunity to Lead Bloom Energy Corporation Securities Fraud Lawsuit - PR Newswire",
+          "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxPSDhRNmt3cFJyQXhJc0pFUFBHRW1xM01oNzdjeFFDWEl2Z043UEtYT0tlQWFYVk5pbndyVnFzcnBEVUVZY2FmTkIxTG5tZ2dRZ09NVUJ3eUF3RXZ3Mm5kUUxuLWI5dUFhM0NiOGxHOEUtV2hFa0VqcmdiUHlNTS15cnBiOEhOeG94VVVtR3pUamxhQU9kaU9xcEN3SEJmbnMyUmRFM0RQRlFIQXFXNEtyVENGOHhFWUJqTFB1c3Q0RjgyOG9mU3VFUlFZQVE5OHYxYmRkeG5HYlVjaEE?oc=5",
+          "fuente": "PR Newswire",
+          "fecha": "2026-07-31",
+          "extracto": "BE Investors Have Opportunity to Lead Bloom Energy Corporation Securities Fraud Lawsuit PR Newswire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Bloom Energy Corporation (BE) Shareholders Who Lost Money Have Opportunity to Lead Securities Fraud Lawsuit - PR Newswire BE Investors Have Opportunity to Lead Bloom Energy Corporation Securities Fraud Lawsuit - PR Newswire Bloom Energy Corporation (BE) Shareholders Who Lost Money Have Opportunity to Lead Securities Fraud Lawsuit PR Newswire BE Investors Have Opportunity to Lead Bloom Energy Corporation Securities Fraud Lawsuit PR Newswire"
+        },
+        {
+          "titulo": "Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxPUkFyaGU3UXlMaVgyemdycmcxZmh5cHJCaGNBVE4yOWhCdmVnWXV4a0VlNnFOT09ZOGE0ZWFuaDRnVTlNcXM5ZzB4VTU4T0duR1dobTFBR21MVXhkaUtKd1h4bHJ4ZlJ4SVV2a01tY0RUbF92QWFQNm13TS1RTTd5eDJhMEVaWGFXaE5NNV91dDlBRFVqRGxlNDZPQnNaS0VtSFhkQXpGanR1dUJOVW9samN3MjBBV18zLXV4X2hlR0VwanZULVVkbWQzZ1Z3dW1DRUhZbFVPYXczZ25uXzlTVk9BT2psRjg2S1haV09n?oc=5",
+          "fuente": "Business Wire",
+          "fecha": "2026-07-28",
+          "extracto": "Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance - Business Wire Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance Business Wire"
+        },
+        {
+          "titulo": "Bloom Energy Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/be-20260728.htm",
+          "fuente": "SEC EDGAR (8-K)",
+          "fecha": "2026-07-28",
+          "extracto": "Presentación oficial ante la SEC el 2026-07-28, periodo de referencia 2026-07-28. 8-K Ítems declarados: 2.02,7.01,9.01.",
+          "tipo_fuente": "SEC_8K",
+          "buscadores": [
+            "sec_8k"
+          ],
+          "filed": "2026-07-28",
+          "accession_number": "0001628280-26-050150",
+          "categoria_forzada": "RESULTADOS",
+          "fuentes_corroborantes": [
+            "sec.gov"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Bloom Energy Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition) Presentación oficial ante la SEC el 2026-07-28, periodo de referencia 2026-07-28. 8-K Ítems declarados: 2.02,7.01,9.01."
+        },
+        {
+          "titulo": "Bloom Energy Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:BE) 2026-07-28 - Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQWDE2TnFueGYwZFJnd0FBVEhjanZSbGlhZjBCOFYwWF82a2hXN1lNbXMtXzkydWpYR2ZtRnY1UVpSTm5oUzBiNlo5bVY4TUxWV21nTzNOcGhabkFqQ1MxUlltd0VRR2VMTzBqTlktd3FVRW9CRXBVYWRjZDBNc25vS0QxdmNkMmRuTmZjaVEzeHZjbE9TNmprTDUyeGM4d1BKNzhNOWc5WTI0SzZw?oc=5",
+          "fuente": "Seeking Alpha",
+          "fecha": "2026-07-28",
+          "extracto": "Bloom Energy Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:BE) 2026-07-28 Seeking Alpha",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Bloom Energy Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:BE) 2026-07-28 - Seeking Alpha Bloom Energy Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:BE) 2026-07-28 Seeking Alpha"
+        },
+        {
+          "titulo": "Bloom Energy Set to Report Q2 Earnings: Buy, Sell or Hold the Stock? - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPc2d6WFh6dWNXSmFaQ09BUVoyV0NXWXFaSEE5VmJreW9yVHVBMllZekxQSm9oODdBRUc1ZV95TVMwdHZ0eGhIcHNiMFpMM0V2NWg4SlhUOGVQazVfeVhxNWwzRjlhYW5VS1FBc2hnVTdqSEdFel83QTJBYmRWaUIxQncwTHVmSEFLcHZKRXQyWm9vU19MSWc?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-23",
+          "extracto": "Bloom Energy Set to Report Q2 Earnings: Buy, Sell or Hold the Stock? Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Bloom Energy Set to Report Q2 Earnings: Buy, Sell or Hold the Stock? - Yahoo Finance Bloom Energy Set to Report Q2 Earnings: Buy, Sell or Hold the Stock? Yahoo Finance"
+        }
+      ],
+      "n_brutos": 13,
+      "n_items": 12,
+      "fuentes_ok": [
+        "sec_8k",
+        "google_news_rss"
+      ],
+      "fuentes_fallidas": [
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "desde_cache": true
+    },
+    "fundamental_report": {
+      "passed_gatekeeper": true,
+      "status": "APROBADO",
+      "metrics": {
+        "revenue_growth": 1.655,
+        "net_margin": 0.07868,
+        "debt_to_equity": 1.71578,
+        "roe": 0.22213,
+        "pe_ratio": 262.0263
+      },
+      "reasons": [],
+      "confidence_score": 0.75,
+      "discrepancies": [
+        "Diferencia en Margen Neto: SEC (-40.2%) vs yfinance (7.9%)",
+        "Diferencia en Margen Finnhub: (25.0%) vs yfinance (7.9%)"
+      ],
+      "summary": "Como Analista Fundamental Gatekeeper, considero que la salud financiera de BE es sólida, impulsada por un excepcional crecimiento de ingresos del 165.5% y una rentabilidad positiva respaldada por un ROE del 22.2%. Aunque presenta un apalancamiento elevado con una relación Deuda/Capital de 1.72, el filtro ha sido **APROBADO** gracias a su destacada capacidad de generación de valor y su margen neto favorable del 7.9%."
+    },
+    "technical_report": {
+      "momentum_classification": "NEUTRAL",
+      "rsi": 47.25,
+      "macd": -5.767,
+      "macd_signal": -6.275,
+      "macd_hist": 0.507,
+      "atr": 20.81,
+      "bb_upper": 254.42,
+      "bb_lower": 167.36,
+      "sma_50": 242.82,
+      "sma_200": 186.26,
+      "signals": [
+        "RSI neutral (30-50)",
+        "MACD con cruce alcista y momentum positivo"
+      ],
+      "summary": "Bloom Energy (BE) muestra una estructura técnica de consolidación con un sesgo neutral, reflejado en un RSI de 47.2 que denota equilibrio entre compradores y vendedores. No obstante, el MACD se mantiene en terreno negativo (-5.767) aunque ligeramente por encima de su línea de señal (-6.275), sugiriendo una debilidad latente que requiere superar resistencias clave para definir una tendencia alcista firme."
+    },
+    "news_report": {
+      "status": "DEGRADADO",
+      "company_name": "Bloom Energy Corporation",
+      "as_of": "2026-08-20",
+      "window_days": 30,
+      "impact_probability": 0.4326,
+      "impact_classification": "MEDIA",
+      "direction_classification": "BAJISTA",
+      "direction_imbalance": -0.8379,
+      "catalysts": [
+        {
+          "titular": "BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit Before September 28, 2026 Deadline - TMX Newsfile",
+          "url": "https://news.google.com/rss/articles/CBMiqAJBVV95cUxPdFpnbGt2QS1rVEZMdEZMaS1meDQtb3RXQVpzREZJcTdXZXh3dmEyR09XQVRuZEZmR2QxZURKdElMZElvUV9TYVUtUG1qUEN5cWRIX25iODBTekE3bjhvUk5qXzJtLVR3bERZUEE3ZU1tM1RpaDQ5WV9HVGpGN0VXLXJ0SS1Ic3FJdnZwb3d0QTNOdkpzVG5jY2xNLWJlNGxhT2t3VzdjY2xJR3loTl9XcEZBV2VqWnVLUUVqSmtKLXZPa055akI3VFNHS054TmVmNGVYd2I3NThfLTFETVJ4MUVtTkdCMEdObGNEa3o4OFZ3Q0EtMUpwWk9meXV4d3BWc3NpQ19JNlR0eVJvalpwcG1tRjNEUVN5QlBoVFVwVUNHd25xUVg5Mw?oc=5",
+          "categoria": "REGULATORIO",
+          "fecha": "2026-08-20",
+          "fuente": "TMX Newsfile",
+          "tipo_fuente": "NEWSWIRE",
+          "direccion": "BAJISTA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.288
+        },
+        {
+          "titular": "INVESTOR ALERT: Pomerantz Law Firm Reminds Investors with Losses on their Investment in Bloom Energy Corporation of Class Action Lawsuit and Upcoming Deadlines - BE - PR Newswire",
+          "url": "https://news.google.com/rss/articles/CBMivwJBVV95cUxQOW14ajJ4V05ZN1Y4VE1VUDJETGtUWlFRYUJmcFJqTmQ1M0NWZUlYOWdfb0VlTHNKUHQxeVRCYnlod2pvWnUyY3BkaldMSk5EX05TazZwYVBxTFdZNzZzb1ZpMHowazZ1Skg1WXcycmJmVUx6THpERXdxSGVqSktTa3RSODNEVE10TXJiYXdPU2dFUXNqYXV2Sjg3OUdMR04wVW05NGR2cm9Kb3B2MXlHVkFaWmtreUxmZ2NwZndtZDBqYUV0d1IzdGYwN2VISWRWM255Ti1jUEVJME50RE5sb2U2OGgydkVoaEZlRjY4R3V5ZlEyVmpaQXZUeVZTcndjMkVFa205X2V3X1Z2RUM1N3VjdERZa0hkLTBBTWlwMlhmTGxPZElGT2pUS3N1VUZnMHhQZDlKX1AyWGNpUFhF?oc=5",
+          "categoria": "REGULATORIO",
+          "fecha": "2026-08-20",
+          "fuente": "PR Newswire",
+          "tipo_fuente": "NEWSWIRE",
+          "direccion": "BAJISTA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0576
+        },
+        {
+          "titular": "SHAREHOLDER ALERT Bernstein Liebhard LLP Announces A Securities Fraud Class Action Lawsuit Has Been Filed Against Bloom Energy Corporation (BE) - TMX Newsfile",
+          "url": "https://news.google.com/rss/articles/CBMikwJBVV95cUxNYXZEVnpOTFl0NnhrQkx4NFQtQ3FaRFdLSkJmSGI0SmdRUzJsM3ZkY25XNWdVQW1BUmRDaEVDR3lHaDNBOEtMV0REcm9OVGNGOXdEdmFabDM1cnRtSVFGZHEyaUp0Y0VrNWZYSjlDVFpwdk1mWHAzTm5VVDZyTFhaY3llMUk2NzNsTHFGd0FaaE9QZkdIcjhjVDRFbXFEY0ltbFpYWmNmblpaVTdZTmMzd09GeFQzdzRadU0tNTJfUWpCZDZ3ZTE2ZmdCVjhIRXZ4cnNqV1ZDWVp3bTNsWTE5TE9CeUdmNXp5MXpHdmJpcXpRMUZaSk5fQXNWdGxFdndKclp4MFN0WlF3RUJLSW1MQXp6RQ?oc=5",
+          "categoria": "REGULATORIO",
+          "fecha": "2026-08-18",
+          "fuente": "TMX Newsfile",
+          "tipo_fuente": "NEWSWIRE",
+          "direccion": "BAJISTA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0473
+        }
+      ],
+      "scored_items": [
+        {
+          "titulo": "BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit Before September 28, 2026 Deadline - TMX Newsfile",
+          "url": "https://news.google.com/rss/articles/CBMiqAJBVV95cUxPdFpnbGt2QS1rVEZMdEZMaS1meDQtb3RXQVpzREZJcTdXZXh3dmEyR09XQVRuZEZmR2QxZURKdElMZElvUV9TYVUtUG1qUEN5cWRIX25iODBTekE3bjhvUk5qXzJtLVR3bERZUEE3ZU1tM1RpaDQ5WV9HVGpGN0VXLXJ0SS1Ic3FJdnZwb3d0QTNOdkpzVG5jY2xNLWJlNGxhT2t3VzdjY2xJR3loTl9XcEZBV2VqWnVLUUVqSmtKLXZPa055akI3VFNHS054TmVmNGVYd2I3NThfLTFETVJ4MUVtTkdCMEdObGNEa3o4OFZ3Q0EtMUpwWk9meXV4d3BWc3NpQ19JNlR0eVJvalpwcG1tRjNEUVN5QlBoVFVwVUNHd25xUVg5Mw?oc=5",
+          "fuente": "TMX Newsfile",
+          "fecha": "2026-08-20",
+          "extracto": "BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit Before September 28, 2026 Deadline TMX Newsfile",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "REGULATORIO",
+          "coincidencias_categoria": 2,
+          "peso_categoria": 0.8,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 0,
+          "decaimiento": 1.0,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "BAJISTA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 1,
+          "probabilidad_impacto": 0.288
+        },
+        {
+          "titulo": "INVESTOR ALERT: Pomerantz Law Firm Reminds Investors with Losses on their Investment in Bloom Energy Corporation of Class Action Lawsuit and Upcoming Deadlines - BE - PR Newswire",
+          "url": "https://news.google.com/rss/articles/CBMivwJBVV95cUxQOW14ajJ4V05ZN1Y4VE1VUDJETGtUWlFRYUJmcFJqTmQ1M0NWZUlYOWdfb0VlTHNKUHQxeVRCYnlod2pvWnUyY3BkaldMSk5EX05TazZwYVBxTFdZNzZzb1ZpMHowazZ1Skg1WXcycmJmVUx6THpERXdxSGVqSktTa3RSODNEVE10TXJiYXdPU2dFUXNqYXV2Sjg3OUdMR04wVW05NGR2cm9Kb3B2MXlHVkFaWmtreUxmZ2NwZndtZDBqYUV0d1IzdGYwN2VISWRWM255Ti1jUEVJME50RE5sb2U2OGgydkVoaEZlRjY4R3V5ZlEyVmpaQXZUeVZTcndjMkVFa205X2V3X1Z2RUM1N3VjdERZa0hkLTBBTWlwMlhmTGxPZElGT2pUS3N1VUZnMHhQZDlKX1AyWGNpUFhF?oc=5",
+          "fuente": "PR Newswire",
+          "fecha": "2026-08-20",
+          "extracto": "INVESTOR ALERT: Pomerantz Law Firm Reminds Investors with Losses on their Investment in Bloom Energy Corporation of Class Action Lawsuit and Upcoming Deadlines - BE PR Newswire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "REGULATORIO",
+          "coincidencias_categoria": 2,
+          "peso_categoria": 0.8,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 0,
+          "decaimiento": 1.0,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": true,
+          "direccion": "BAJISTA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 1,
+          "probabilidad_impacto": 0.0576
+        },
+        {
+          "titulo": "SHAREHOLDER ALERT Bernstein Liebhard LLP Announces A Securities Fraud Class Action Lawsuit Has Been Filed Against Bloom Energy Corporation (BE) - TMX Newsfile",
+          "url": "https://news.google.com/rss/articles/CBMikwJBVV95cUxNYXZEVnpOTFl0NnhrQkx4NFQtQ3FaRFdLSkJmSGI0SmdRUzJsM3ZkY25XNWdVQW1BUmRDaEVDR3lHaDNBOEtMV0REcm9OVGNGOXdEdmFabDM1cnRtSVFGZHEyaUp0Y0VrNWZYSjlDVFpwdk1mWHAzTm5VVDZyTFhaY3llMUk2NzNsTHFGd0FaaE9QZkdIcjhjVDRFbXFEY0ltbFpYWmNmblpaVTdZTmMzd09GeFQzdzRadU0tNTJfUWpCZDZ3ZTE2ZmdCVjhIRXZ4cnNqV1ZDWVp3bTNsWTE5TE9CeUdmNXp5MXpHdmJpcXpRMUZaSk5fQXNWdGxFdndKclp4MFN0WlF3RUJLSW1MQXp6RQ?oc=5",
+          "fuente": "TMX Newsfile",
+          "fecha": "2026-08-18",
+          "extracto": "SHAREHOLDER ALERT Bernstein Liebhard LLP Announces A Securities Fraud Class Action Lawsuit Has Been Filed Against Bloom Energy Corporation (BE) TMX Newsfile",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "REGULATORIO",
+          "coincidencias_categoria": 2,
+          "peso_categoria": 0.8,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 2,
+          "decaimiento": 0.8203,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": true,
+          "direccion": "BAJISTA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 1,
+          "probabilidad_impacto": 0.0473
+        },
+        {
+          "titulo": "Bloom Energy Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050150/be-20260728.htm",
+          "fuente": "SEC EDGAR (8-K)",
+          "fecha": "2026-07-28",
+          "extracto": "Presentación oficial ante la SEC el 2026-07-28, periodo de referencia 2026-07-28. 8-K Ítems declarados: 2.02,7.01,9.01.",
+          "tipo_fuente": "SEC_8K",
+          "buscadores": [
+            "sec_8k"
+          ],
+          "filed": "2026-07-28",
+          "accession_number": "0001628280-26-050150",
+          "categoria_forzada": "RESULTADOS",
+          "fuentes_corroborantes": [
+            "sec.gov"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 1.0,
+          "dias_antiguedad": 23,
+          "decaimiento": 0.1025,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0461
+        },
+        {
+          "titulo": "Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxPUkFyaGU3UXlMaVgyemdycmcxZmh5cHJCaGNBVE4yOWhCdmVnWXV4a0VlNnFOT09ZOGE0ZWFuaDRnVTlNcXM5ZzB4VTU4T0duR1dobTFBR21MVXhkaUtKd1h4bHJ4ZlJ4SVV2a01tY0RUbF92QWFQNm13TS1RTTd5eDJhMEVaWGFXaE5NNV91dDlBRFVqRGxlNDZPQnNaS0VtSFhkQXpGanR1dUJOVW9samN3MjBBV18zLXV4X2hlR0VwanZULVVkbWQzZ1Z3dW1DRUhZbFVPYXczZ25uXzlTVk9BT2psRjg2S1haV09n?oc=5",
+          "fuente": "Business Wire",
+          "fecha": "2026-07-28",
+          "extracto": "Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 2,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 23,
+          "decaimiento": 0.1025,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "ALCISTA",
+          "terminos_alcistas": 2,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0369
+        },
+        {
+          "titulo": "Kaplan Fox Encourages Bloom Energy Corporation (NYSE: BE) Investo - The National Law Review",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOb19ITXNRc3lDdjhQZE1aNXZMSXd3TkU1VnJ6bFVZVmdPNGVNZmoyWU94cmNReEdJS1RCWmJFM1BkMmtEd1dZUGxZakNjWTdiaF9jX3lNaUxvbnZUQmVsRkRKYTNRODBCNHBwd0xMYWRsLUhWWUVxakFUN0dUOG9YSFRURW5tbkt4RE8zX1VleHJXeG8wZy0tNnY0UE9LUW53UWRXVEQ3S3Z2bUpOZE1RSEpSTlM?oc=5",
+          "fuente": "The National Law Review",
+          "fecha": "2026-08-20",
+          "extracto": "Kaplan Fox Encourages Bloom Energy Corporation (NYSE: BE) Investo The National Law Review",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 0,
+          "decaimiento": 1.0,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0338
+        },
+        {
+          "titulo": "Portnoy Law Firm Announces Class Action on Behalf of Bloom Energy Corporation Investors - GlobeNewswire",
+          "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxNbmhkbFczdXJTT3J2UGdNNlNRZHMxNGNCNVh2RzZyelhqdDl6UC1IVF9Uc3JoOC1oajV1Vm5lcDlHYTFkZkUxU3BBUlY5Nzd2VEFXUzNfQjU5Nk9aaENkNVJFb3V6ZktOeG55XzFadm1vUEhWZTM0M21lN2FkZzdtblpHWTdwVVBRTDlJRnQzZ1drX1gtM0RYb3VYR3pZeDNVMTQ5Q2dhMWdXdXBfeVFsWmtFNGZuSEh4ZzJGRk40UzFCNVV3WlBiS29JUHRqM2lwSmt5eFF1alJ6d1N6UnRhUFZOaWV5VE85VUVDM0Jlblg?oc=5",
+          "fuente": "GlobeNewswire",
+          "fecha": "2026-08-10",
+          "extracto": "Portnoy Law Firm Announces Class Action on Behalf of Bloom Energy Corporation Investors GlobeNewswire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "REGULATORIO",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 0.8,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 10,
+          "decaimiento": 0.3715,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": true,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0214
+        },
+        {
+          "titulo": "Bloom Energy Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:BE) 2026-07-28 - Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQWDE2TnFueGYwZFJnd0FBVEhjanZSbGlhZjBCOFYwWF82a2hXN1lNbXMtXzkydWpYR2ZtRnY1UVpSTm5oUzBiNlo5bVY4TUxWV21nTzNOcGhabkFqQ1MxUlltd0VRR2VMTzBqTlktd3FVRW9CRXBVYWRjZDBNc25vS0QxdmNkMmRuTmZjaVEzeHZjbE9TNmprTDUyeGM4d1BKNzhNOWc5WTI0SzZw?oc=5",
+          "fuente": "Seeking Alpha",
+          "fecha": "2026-07-28",
+          "extracto": "Bloom Energy Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:BE) 2026-07-28 Seeking Alpha",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 23,
+          "decaimiento": 0.1025,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0208
+        },
+        {
+          "titulo": "BE INVESTOR ALERT: Bronstein, Gewirtz and Grossman, LLC Announces that Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit! - ACCESS Newswire",
+          "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxNRVJaVE1ZSno3ekx2TTlfenhWd2o1Q2NJc3Vweks3NjAzU1YxdV80NWEzQmFOek1iVWFCR0kwSFNiSXB0c1ZGR2MzQnE4UlNIUnlGM1pPR1pCdm9wS1RHR0Uwckg2eUUzRXdZNHd1V1YwRjNiS21tNkplNUZlYnUwMEpJVTBuQWJUUEI0QTliVUcweXJxVm1qWGpYaTlzNERGd1A2RTZrOXVOQThiaVo2eXljNTcwWnhwNE95UmhOTWxhLUhOcDQyOWZHaXFSbDFkY3ZhbUxVRjdvUW8tZWg1MWN6M0o?oc=5",
+          "fuente": "ACCESS Newswire",
+          "fecha": "2026-08-18",
+          "extracto": "BE INVESTOR ALERT: Bronstein, Gewirtz and Grossman, LLC Announces that Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit! ACCESS Newswire",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "REGULATORIO",
+          "coincidencias_categoria": 2,
+          "peso_categoria": 0.8,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 2,
+          "decaimiento": 0.8203,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": true,
+          "direccion": "BAJISTA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 1,
+          "probabilidad_impacto": 0.0177
+        },
+        {
+          "titulo": "Bloom Energy Set to Report Q2 Earnings: Buy, Sell or Hold the Stock? - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPc2d6WFh6dWNXSmFaQ09BUVoyV0NXWXFaSEE5VmJreW9yVHVBMllZekxQSm9oODdBRUc1ZV95TVMwdHZ0eGhIcHNiMFpMM0V2NWg4SlhUOGVQazVfeVhxNWwzRjlhYW5VS1FBc2hnVTdqSEdFel83QTJBYmRWaUIxQncwTHVmSEFLcHZKRXQyWm9vU19MSWc?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-23",
+          "extracto": "Bloom Energy Set to Report Q2 Earnings: Buy, Sell or Hold the Stock? Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 28,
+          "decaimiento": 0.0625,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0127
+        },
+        {
+          "titulo": "BE Investors Have Opportunity to Lead Bloom Energy Corporation Securities Fraud Lawsuit - PR Newswire",
+          "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxPSDhRNmt3cFJyQXhJc0pFUFBHRW1xM01oNzdjeFFDWEl2Z043UEtYT0tlQWFYVk5pbndyVnFzcnBEVUVZY2FmTkIxTG5tZ2dRZ09NVUJ3eUF3RXZ3Mm5kUUxuLWI5dUFhM0NiOGxHOEUtV2hFa0VqcmdiUHlNTS15cnBiOEhOeG94VVVtR3pUamxhQU9kaU9xcEN3SEJmbnMyUmRFM0RQRlFIQXFXNEtyVENGOHhFWUJqTFB1c3Q0RjgyOG9mU3VFUlFZQVE5OHYxYmRkeG5HYlVjaEE?oc=5",
+          "fuente": "PR Newswire",
+          "fecha": "2026-07-31",
+          "extracto": "BE Investors Have Opportunity to Lead Bloom Energy Corporation Securities Fraud Lawsuit PR Newswire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "REGULATORIO",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 0.8,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 20,
+          "decaimiento": 0.138,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": true,
+          "direccion": "BAJISTA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 1,
+          "probabilidad_impacto": 0.0079
+        },
+        {
+          "titulo": "Rosen Law Firm Urges Bloom Energy Corporation (NYSE: BE) Stockholders to Contact the Firm for Information About Their Rights - Business Wire",
+          "url": "https://news.google.com/rss/articles/CBMiigJBVV95cUxQOGNvTldXaV9FX2hIdDlDVEtJeWNqa2RjSExWTzdJZjJwVWtEejdDVUdMUTdPcmd3eDZlVWZncHBrQUVXVjB4d1h1ZHBrc2dVbGRHeHljeDFtWVRBaDU5UE90c0tHdWtMeDlqaDg0MDZPZGlLU1FvNnlzYjNyUVZJSkFWcTdOXzBzWDhqVWx4UFJuY0NQdlpWYkVvdXcxOU5ONmpSclZ1cnloZ3Y2V0hXb1BzSjZVOEl1UEpGZllBemZaaVlIWlBfQzBTcVlveVdBZ1Z0NUQ4a1lHTVluR2lPREFrWTB6dm1wRVlpUkU2emwtZWphVnlEX2ZqUTQzSDc3VDNTblhOSS1ZZw?oc=5",
+          "fuente": "Business Wire",
+          "fecha": "2026-07-31",
+          "extracto": "Rosen Law Firm Urges Bloom Energy Corporation (NYSE: BE) Stockholders to Contact the Firm for Information About Their Rights Business Wire",
+          "tipo_fuente": "NEWSWIRE",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.8,
+          "dias_antiguedad": 20,
+          "decaimiento": 0.138,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": true,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0025
+        }
+      ],
+      "n_items": 12,
+      "category_counts": {
+        "REGULATORIO": 6,
+        "RESULTADOS": 4,
+        "OTROS": 2
+      },
+      "sources_ok": [
+        "sec_8k",
+        "google_news_rss"
+      ],
+      "sources_failed": [
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "from_cache": true,
+      "advisory_only": true,
+      "signals": [
+        "REGULATORIO (2026-08-20, NEWSWIRE, p=0.29): BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class ",
+        "REGULATORIO (2026-08-20, NEWSWIRE, p=0.06): INVESTOR ALERT: Pomerantz Law Firm Reminds Investors with Losses on their Investment in Bloom Energy Corporati",
+        "REGULATORIO (2026-08-18, NEWSWIRE, p=0.05): SHAREHOLDER ALERT Bernstein Liebhard LLP Announces A Securities Fraud Class Action Lawsuit Has Been Filed Agai",
+        "RESULTADOS (2026-07-28, SEC_8K, p=0.05): Bloom Energy Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+        "RESULTADOS (2026-07-28, NEWSWIRE, p=0.04): Bloom Energy Reports Record Second Quarter 2026 Financial Results and Raises Full Year 2026 Guidance - Busines"
+      ],
+      "summary": "**Lectura de actualidad - Bloom Energy Corporation (BE)**\n\n**Probabilidad de impacto:** MEDIA (0.43) | **Dirección probable:** BAJISTA\n\nVarios bufetes de abogados han interpuesto demandas colectivas por fraude de valores contra Bloom Energy Corporation, alertando a los inversores sobre pérdidas financieras significativas. Este contexto de litigios legales y el escrutinio sobre la información corporativa generan incertidumbre en el mercado, lo que incrementa la presión vendedora y justifica la tendencia bajista en el precio de la acción."
+    },
+    "debate_report": {
+      "bullish_case": "TESIS ALCISTA (BE): Excelente crecimiento de ingresos (165.5%) demostrando expansión de mercado. Margen neto sólido del 7.9%, garantizando rentabilidad y generación de caja. Estructura técnica con clasificación NEUTRAL y RSI de 47.2 en zona de fuerte impulso.",
+      "bearish_case": "TESIS BAJISTA (BE): Múltiplo P/E elevado (262.0x) que sugiere sobrevaloración. Carga financiera moderada/alta con Deuda/Capital en 1.72. Discrepancias encontradas en la reconciliación multi-fuente de datos. Flujo de noticias con probabilidad de impacto MEDIA (0.43) y sesgo BAJISTA sobre 12 nota(s); principal catalizador: \"BE INVESTOR NOTICE: Bloom Energy Corporation Investors with Substantial Losses Have Opportunity to Lead Class Action Law\" (capa asesora: no altera el dictamen).",
+      "synthesis": "A continuación, se presenta la síntesis del debate de inversión sobre **BE (Bloom Energy Corporation)** basada en los argumentos expuestos:\n\n### Síntesis del Debate de Inversión (BE)\n\n*   **Tesis Alcista:** La compañía destaca por un excepcional crecimiento de ingresos del 165.5%, lo que evidencia una fuerte expansión en el mercado, respaldada por un margen neto sólido del 7.9% que asegura rentabilidad y generación de caja. Desde el punto de vista técnico, mantiene una clasificación neutral con un RSI en 47.2, situándose en una zona propicia para un fuerte impulso.\n*   **Tesis Bajista:** En contraposición, la acción presenta un múltiplo P/E extremadamente elevado de 262.0x, indicando una posible sobrevaloración, acompañada de una carga financiera moderada-alta reflejada en una ratio Deuda/Capital de 1.72. Adicionalmente, existen discrepancias en los datos multi-fuente y un flujo de noticias con sesgo bajista centrado en demandas colectivas recientes contra la empresa.\n\n### Conclusión Imparcial\n\nBloom Energy (BE) demuestra una sólida salud operativa y un crecimiento de ingresos sobresaliente que respalda su capacidad de generar caja y mantener una rentabilidad positiva. Sin embargo, estos fundamentales sólidos chocan con una valoración muy exigente (P/E de 262x), un endeudamiento elevado y la reciente presión mediática y legal derivada de demandas colectivas. Por lo tanto, los inversores deben ponderar el alto potencial de crecimiento comercial frente al riesgo considerable de sobrevaloración y la incertidumbre generada por el actual flujo de noticias negativas."
+    },
+    "final_decision": {
+      "rating": "MANTENER",
+      "position_size_pct": "2.0% - 3.0%",
+      "current_price": 199.13999938964844,
+      "stop_loss_atr": 157.52,
+      "take_profit_atr": 271.97,
+      "rationale": "Fundamentales aprobados con éxito. Momentum técnico classified como NEUTRAL. Síntesis de debate: A continuación, se presenta la síntesis del debate de inversión sobre **BE (Bloom Energy Corporation)** basada en los argumentos expuestos:\n\n### Síntesis del Debate de Inversión (BE)\n\n*   **Tesis Alcista:** La compañía destaca por un excepcional crecimiento de ingresos del 165.5%, lo que evidencia una fuerte expansión en el mercado, respaldada por un margen neto sólido del 7.9% que asegura rentabilidad y generación de caja. Desde el punto de vista técnico, mantiene una clasificación neutral con un RSI en 47.2, situándose en una zona propicia para un fuerte impulso.\n*   **Tesis Bajista:** En contraposición, la acción presenta un múltiplo P/E extremadamente elevado de 262.0x, indicando una posible sobrevaloración, acompañada de una carga financiera moderada-alta reflejada en una ratio Deuda/Capital de 1.72. Adicionalmente, existen discrepancias en los datos multi-fuente y un flujo de noticias con sesgo bajista centrado en demandas colectivas recientes contra la empresa.\n\n### Conclusión Imparcial\n\nBloom Energy (BE) demuestra una sólida salud operativa y un crecimiento de ingresos sobresaliente que respalda su capacidad de generar caja y mantener una rentabilidad positiva. Sin embargo, estos fundamentales sólidos chocan con una valoración muy exigente (P/E de 262x), un endeudamiento elevado y la reciente presión mediática y legal derivada de demandas colectivas. Por lo tanto, los inversores deben ponderar el alto potencial de crecimiento comercial frente al riesgo considerable de sobrevaloración y la incertidumbre generada por el actual flujo de noticias negativas.",
+      "summary": "**ORDEN EJECUTIVA DE INVERSIÓN – BLOOM ENERGY CORP. (BE)**\n\nTras evaluar los sólidos fundamentales operativos y el sobresaliente crecimiento de ingresos frente al riesgo derivado de su elevada valoración (P/E de 262.0x), el apalancamiento y las recientes demandas colectivas, se emite un dictamen de **MANTENER** con una asignación de cartera recomendada entre el **2.0% y el 3.0%**. Con un precio actual de mercado en **$199.14** y un momentum técnico neutral, la posición quedará estrictamente protegida bajo una gestión de riesgo cuantitativa que establece un **Stop-Loss ATR en $157.52** y un **Take-Profit ATR en $271.97**. Esta directriz busca equilibrar la captura del potencial de expansión comercial de la compañía con una prudente mitigación de la volatilidad legal y financiera a corto plazo."
+    },
+    "passed_fundamental_gatekeeper": true,
+    "workflow_status": "COMPLETED",
+    "logs": [
+      "[Ingesta] Recolectando datos multi-fuente para BE...",
+      "[Reconciliación] Puntuación de confianza: 0.75, Fuentes: ['yfinance', 'SEC EDGAR (Oficial)', 'Finnhub']",
+      "[Gatekeeper Fundamental] Evaluando salud financiera para BE...",
+      "[Gatekeeper Fundamental] Resultado: APROBADO -> Continuando a Análisis Técnico",
+      "[Analista de Noticias] 12 noticia(s) | Impacto: MEDIA (0.43) | Dirección: BAJISTA | Fuentes sin respuesta: tavily",
+      "[Analista de Noticias] Capa ASESORA: no altera el rating ni el sizing.",
+      "[Analista Técnico] Evaluando indicadores de momentum para BE...",
+      "[Analista Técnico] Momentum clasificado como: NEUTRAL",
+      "[Capa de Debate] Ejecutando confrontación Bullish vs Bearish para BE...",
+      "[Capa de Debate] Síntesis finalizada.",
+      "[Fund Manager] Sintetizando informes y emitiendo recomendación final para BE...",
+      "[Fund Manager] DICTAMEN FINAL: MANTENER"
+    ]
+  },
+  {
+    "ticker": "GOOGL",
+    "company_name": "Alphabet Inc.",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "sec_edgar_data": {
+      "status": "SUCCESS",
+      "source": "SEC EDGAR (Oficial)",
+      "cik": "0001652044",
+      "revenues": 229692000000.0,
+      "net_income": 174771000000.0,
+      "total_assets": 921983000000.0,
+      "total_liabilities": 281503000000.0
+    },
+    "finnhub_data": {
+      "status": "SUCCESS",
+      "source": "Finnhub",
+      "pe_ratio": 17.3095,
+      "roe_ttm": 50.839999999999996,
+      "net_margin_ttm": 54.77,
+      "revenue_growth_5y": 17.15
+    },
+    "yfinance_data": {
+      "status": "SUCCESS",
+      "ticker": "GOOGL",
+      "company_name": "Alphabet Inc.",
+      "sector": "Communication Services",
+      "industry": "Internet Content & Information",
+      "current_price": 338.9100036621094,
+      "fundamentals": {
+        "revenue_growth": 0.242,
+        "net_margin": 0.54771,
+        "debt_to_equity": 0.18859,
+        "roe": 0.48676,
+        "pe_ratio": 16.97946,
+        "market_cap": 4144847388672
+      },
+      "technical": {
+        "close": 338.9100036621094,
+        "rsi": 38.33,
+        "macd": -2.467,
+        "macd_signal": -1.574,
+        "macd_hist": -0.892,
+        "bb_upper": 375.99,
+        "bb_lower": 318.12,
+        "atr": 9.35,
+        "sma_50": 351.97,
+        "sma_200": 332.45,
+        "volume_rel": 0.23
+      },
+      "price_history_summary": {
+        "min_52w": 196.04074228977996,
+        "max_52w": 408.36608091552193,
+        "close_today": 338.9100036621094,
+        "change_1m_pct": 0.059955007234729754
+      }
+    },
+    "reconciliation_data": {
+      "status": "RECONCILED_WITH_DISCREPANCIES",
+      "ticker": "GOOGL",
+      "confidence_score": 0.85,
+      "sources_consulted": [
+        "yfinance",
+        "SEC EDGAR (Oficial)",
+        "Finnhub"
+      ],
+      "discrepancies": [
+        "Diferencia en Margen Neto: SEC (76.1%) vs yfinance (54.8%)"
+      ],
+      "reconciled_metrics": {
+        "revenue_growth": 0.242,
+        "net_margin": 0.54771,
+        "debt_to_equity": 0.18859,
+        "roe": 0.48676,
+        "pe_ratio": 16.97946
+      }
+    },
+    "news_data": {
+      "status": "DEGRADADO",
+      "ticker": "GOOGL",
+      "empresa": "Alphabet Inc.",
+      "as_of": "2026-08-20",
+      "ventana_dias": 30,
+      "items": [
+        {
+          "titulo": "Top Analyst Reports for Alphabet, AMD & RTX - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQbzF3ZGg4TmZtOXlHWDR1dlZSRjB4aVpheTJNWE9GVDM2Wi1NbE1UQkpLLVN6Q2JaaHFuRVBxb19hYzBJN2Z0OGs0NjJkckptMVlRbGo3a29hNzZIUTFydDVuQ2kxZ1N2QUNCQ0ZOOTdLTDJ0M3lzak9pVlVCV2FZWFdCOXBuMlpWSVlkZnhXcTdKUERSTXdyeDFxeDNBdw?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-28",
+          "extracto": "Top Analyst Reports for Alphabet, AMD & RTX Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Top Analyst Reports for Alphabet, AMD & RTX - Yahoo Finance Top Analyst Reports for Alphabet, AMD & RTX Yahoo Finance"
+        },
+        {
+          "titulo": "Alphabet Inc. (GOOG) executive logs GSU conversion and tax withholding moves - Stock Titan",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNOWhNQzhGX3NFSE1nb3dsTml2M1BlX2NZLWpJWjdJMEw0QU5yWFBiaGpnWWR1eTZnVFdONzBRYlcta3lYa19MaWJzeE5wV2hkZTlRRDlrb3p3UmJFMHlEeXpRWE9JQkhqSFN0X2NjT2FrOUxXN2ZOXzZualYyd1B5VVJmSkw4dW5lcVYwVm5hNHc4b0V6V04xMm1ZM2dGQWk0N2ZiTHB6V1FNUQ?oc=5",
+          "fuente": "Stock Titan",
+          "fecha": "2026-07-28",
+          "extracto": "Alphabet Inc. (GOOG) executive logs GSU conversion and tax withholding moves Stock Titan",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet Inc. (GOOG) executive logs GSU conversion and tax withholding moves - Stock Titan Alphabet Inc. (GOOG) executive logs GSU conversion and tax withholding moves Stock Titan"
+        },
+        {
+          "titulo": "Alphabet Earnings: Strong AI Monetization Continues to Spearhead Results - Morningstar",
+          "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQRjlrRVFwUXpqa0tjUmhCNmhBYWE5MVNfc08yX3B4ZGZBYlo4OEZIQlY1NmJ0Qmh3bVVnMWpGWjNHZDZNc3VJQzFuak5UZ2lvbE1MS3N0NHNuSzNDc1A4b3BUT09ZZUdka1lNODNIQUFVMy04b3I2cVdPLUlUMXREVWVTQlh3N1hLYTBrc19paGlQQlZ2blhpQXN4LWZFcFNfNHROLVlXS3c0TTFDek9naHhR?oc=5",
+          "fuente": "Morningstar",
+          "fecha": "2026-07-23",
+          "extracto": "Alphabet Earnings: Strong AI Monetization Continues to Spearhead Results Morningstar",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet Earnings: Strong AI Monetization Continues to Spearhead Results - Morningstar Alphabet Earnings: Strong AI Monetization Continues to Spearhead Results Morningstar"
+        },
+        {
+          "titulo": "Ticker: Google’s earnings jump; Tesla profits down - Boston Herald",
+          "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxNMy1zQnA4YTQyOUptenNieVVoa1hMMV90SS1VeEdmaHN4dnJBM2ZwcXJmSTR0S0szcmlCd3ZZZnlfRUdJeU1uRG9kNUUwSEtuVVU2a01jTkpTRVM1YThRbVJwUG8tX19PTVU1RTN3REt2VWhMaG5CMnU1aFhmX29GRmoxTXpULUFoY09WVTdqUGpQQQ?oc=5",
+          "fuente": "Boston Herald",
+          "fecha": "2026-07-22",
+          "extracto": "Ticker: Google’s earnings jump; Tesla profits down Boston Herald",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Ticker: Google’s earnings jump; Tesla profits down - Boston Herald Ticker: Google’s earnings jump; Tesla profits down Boston Herald"
+        },
+        {
+          "titulo": "Google’s Q2 earnings of $112.11B beat Wall Street’s expectations on AI boom - AP News",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQMXRMUkFabGhkczdYMVdlNXV3V28taUpsWW4xanhVa0JsOGk2NzkxT0djbjNUSGNjdWlOTm1MbzkwdkdLZ1p2Wkx4U2hUdnJaM0VYN0wtR2VGbEhEWkZ2MnVQREEwUURXU2NtZTdNQUxRU19XZGEyTHpzOXJvR0JsYTA4UkN3c2lEWEhiUzVkZkxGSVFiMFJKc1Y3VE9leGk0dlpZ?oc=5",
+          "fuente": "AP News",
+          "fecha": "2026-07-22",
+          "extracto": "Google’s Q2 earnings of $112.11B beat Wall Street’s expectations on AI boom AP News",
+          "tipo_fuente": "MEDIO_TIER1",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Google’s Q2 earnings of $112.11B beat Wall Street’s expectations on AI boom - AP News Google’s Q2 earnings of $112.11B beat Wall Street’s expectations on AI boom AP News"
+        },
+        {
+          "titulo": "Earnings call transcript: Alphabet beats Q2 2026 estimates, shares fall on capex surge - Investing.com",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbThFdFFfZlh5eWJvYWUzdlpjbFZvT2ltbjUzR2dxajBtZS1iTGJFbjJfMGxDSzNtNXNhS3BVZm1NNy0tdERJMm16OFVZNGFmZWlkY19fZ3V1cHFQSzRjaEVuV2UxU0Q3N3lHRTNBS2oxQlRBb3ZPX0RvNmk0VXFlSi1QLVBSTzBGTDZyWU9BNUR5OW9nWlFMQlkwQWR1VjltWlNvMkp5a240ejlRZTE1WGFBWXBiaVJidl80d2xXWGJpLXFjd3ZNUTE4X0VfQkhGVFE4NFA1OA?oc=5",
+          "fuente": "Investing.com",
+          "fecha": "2026-07-22",
+          "extracto": "Earnings call transcript: Alphabet beats Q2 2026 estimates, shares fall on capex surge Investing.com",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Earnings call transcript: Alphabet beats Q2 2026 estimates, shares fall on capex surge - Investing.com Earnings call transcript: Alphabet beats Q2 2026 estimates, shares fall on capex surge Investing.com"
+        },
+        {
+          "titulo": "Alphabet set for blockbuster quarter as AI bets collide with spending fears | NASDAQ:GOOG - Proactive financial news",
+          "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxNS0FqY3J6Vy1XU1VUeld0NWxFTTVsNlBjOG1EZDRaZ20tQi01eUxDNkE0UC1wYy1abEFwbmpiSE8yVVFqZDBfSFV4dVAzY3RUVjd0VVd3bzZocm5MX3NWN3ZaMjIxWm40MHJGX0pwWmdhU2xmeXRLSmpwc280dmtmaTNEcnVmVl9fYVVPY0NNRWYtcS1FM2UzMEhjT0tWTTY2MC10YjZmckVVYjBPNlAtYjBtTE1DT0ZuRHNPSnJrNlIybGpHUTdRTjdXOFBlUlBQbkFDOWtpNGU3SHFPWE1J?oc=5",
+          "fuente": "Proactive financial news",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet set for blockbuster quarter as AI bets collide with spending fears | NASDAQ:GOOG Proactive financial news",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet set for blockbuster quarter as AI bets collide with spending fears | NASDAQ:GOOG - Proactive financial news Alphabet set for blockbuster quarter as AI bets collide with spending fears | NASDAQ:GOOG Proactive financial news"
+        },
+        {
+          "titulo": "Alphabet Quadruples Profit to $112 Billion, Fueled by A.I. Investments - The New York Times",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNUGRkSDhSdi1IQlludFBtc2paX3p4Z1AtaTJFVy15VmtMVDJnZjRnVHRSRllRVGJySXEzV0VhazU5T1dYcXVVc3o4dFVreHBWeFNLZ0Q3dS1EYW5ybmZmTDlrTFI1bEs3dENPVi1OZTNzZmc1WTE0RmRPNTVEV0FpdFh5WlZvTjUzWWc?oc=5",
+          "fuente": "The New York Times",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet Quadruples Profit to $112 Billion, Fueled by A.I. Investments The New York Times",
+          "tipo_fuente": "MEDIO_TIER1",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet Quadruples Profit to $112 Billion, Fueled by A.I. Investments - The New York Times Alphabet Quadruples Profit to $112 Billion, Fueled by A.I. Investments The New York Times"
+        },
+        {
+          "titulo": "Alphabet Posts $98 Billion in Second-Quarter Investment Gains - Bloomberg.com",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOUklRMFZLWjlVNnZ6SFFYU0RtUXAybUpoUUEzRHZ6TV9ja09TZUlWVDNWTGhKbGNfbkhfbFJscm5vM0gwU3R1S1dDZnh4UVJRZVEtZl9PS2xJOTRKZWU3eVRWN3NWMlZvaFRMdjZJQ0EydlZDcXFUdThlRDlBU3NGWFMtWmtYUUFhLWI4RC1sOGNRZ3BwOVdGVTVHNUFnaV9LSFJoek92VFNjak5GQXdiMA?oc=5",
+          "fuente": "Bloomberg.com",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet Posts $98 Billion in Second-Quarter Investment Gains Bloomberg.com",
+          "tipo_fuente": "MEDIO_TIER1",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet Posts $98 Billion in Second-Quarter Investment Gains - Bloomberg.com Alphabet Posts $98 Billion in Second-Quarter Investment Gains Bloomberg.com"
+        },
+        {
+          "titulo": "Alphabet Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/goog-20260722.htm",
+          "fuente": "SEC EDGAR (8-K)",
+          "fecha": "2026-07-22",
+          "extracto": "Presentación oficial ante la SEC el 2026-07-22, periodo de referencia 2026-07-22. 8-K Ítems declarados: 2.02,9.01.",
+          "tipo_fuente": "SEC_8K",
+          "buscadores": [
+            "sec_8k"
+          ],
+          "filed": "2026-07-22",
+          "accession_number": "0001652044-26-000066",
+          "categoria_forzada": "RESULTADOS",
+          "fuentes_corroborantes": [
+            "sec.gov"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition) Presentación oficial ante la SEC el 2026-07-22, periodo de referencia 2026-07-22. 8-K Ítems declarados: 2.02,9.01."
+        },
+        {
+          "titulo": "Alphabet Inc. 2026 Q2 - Results - Earnings Call Presentation (NASDAQ:GOOGL) 2026-07-22 - Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQRjJvODhjUlhPcUF6LVFKQzkwc3RISU1WaGthc0RkWXpyMmtCLW9CSjNrcDVVR0V4cS02NUJoUHVLbjdWdExHaHlyUVJmeFF1ZzN5ZEdyekl0Y2p2Ym9OdWdHY1BLcVpXazRjYUlpRHlkb0VIWG4ybllHbV9WS0hrOTd4TmwwdFFSTFE0VE5rNGN0UTVuSWVfNGJ3MTM?oc=5",
+          "fuente": "Seeking Alpha",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet Inc. 2026 Q2 - Results - Earnings Call Presentation (NASDAQ:GOOGL) 2026-07-22 Seeking Alpha",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet Inc. 2026 Q2 - Results - Earnings Call Presentation (NASDAQ:GOOGL) 2026-07-22 - Seeking Alpha Alphabet Inc. 2026 Q2 - Results - Earnings Call Presentation (NASDAQ:GOOGL) 2026-07-22 Seeking Alpha"
+        },
+        {
+          "titulo": "Alphabet Inc. (GOOG) Q2 Earnings and Revenues Top Estimates - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPQVdNakoxenUxLTA1UFFLdHhUeXIxQ0pNU2x3aWNUUUJIMjI1cFJMNUpKUHZremhSSU1kMDdjNnUxcVpCTlZJNXRwS1BBbjkwVGhoVnR0T3pVaUIta1J0SmlkdUJuaDktbWg4SmRBSVJTT0lPUXFKbUUtamdGc1dwQmwtcjRKaHNtR2tWUFhtOE50bHRyYTRDandR?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet Inc. (GOOG) Q2 Earnings and Revenues Top Estimates Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet Inc. (GOOG) Q2 Earnings and Revenues Top Estimates - Yahoo Finance Alphabet Inc. (GOOG) Q2 Earnings and Revenues Top Estimates Yahoo Finance"
+        },
+        {
+          "titulo": "Alphabet (GOOG) Releases Q2 2026 Earnings: Revenue Jumps 24% | GOOG Stock News - Quiver Quantitative",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPbFR6OE9UR0NQRXZCU2phVl9VMDZwTVhiaGJkUTJyWGlla2xSOWIwNFpUc0FBcElWN3B4STJMSE9mWmQzMHFKYzZ2U2x2djI4dGhIM1djdE9aaUNudWhTcXJobWVoeXMtczQ4dkZWbzg1VWp0d1RxQWtaaDEwX1o3ZzZqMC1abllxUER5ZFF4Q3BLVGhNTFNMNDFtMmRqaTRXMWpr?oc=5",
+          "fuente": "Quiver Quantitative",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet (GOOG) Releases Q2 2026 Earnings: Revenue Jumps 24% | GOOG Stock News Quiver Quantitative",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Alphabet (GOOG) Releases Q2 2026 Earnings: Revenue Jumps 24% | GOOG Stock News - Quiver Quantitative Alphabet (GOOG) Releases Q2 2026 Earnings: Revenue Jumps 24% | GOOG Stock News Quiver Quantitative"
+        }
+      ],
+      "n_brutos": 13,
+      "n_items": 13,
+      "fuentes_ok": [
+        "sec_8k",
+        "google_news_rss"
+      ],
+      "fuentes_fallidas": [
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "desde_cache": false
+    },
+    "fundamental_report": {
+      "passed_gatekeeper": true,
+      "status": "APROBADO",
+      "metrics": {
+        "revenue_growth": 0.242,
+        "net_margin": 0.54771,
+        "debt_to_equity": 0.18859,
+        "roe": 0.48676,
+        "pe_ratio": 16.97946
+      },
+      "reasons": [],
+      "confidence_score": 0.85,
+      "discrepancies": [
+        "Diferencia en Margen Neto: SEC (76.1%) vs yfinance (54.8%)"
+      ],
+      "summary": "**APROBADO.** GOOGL demuestra una salud financiera excepcional, destacando por un crecimiento de ingresos del 24.2% respaldado por un margen neto sobresaliente del 54.8% y un ROE de 48.7%. Su bajo apalancamiento (Deuda/Capital de 0.19) confirma una sólida estabilidad y una capacidad superior para generar valor sostenible."
+    },
+    "technical_report": {
+      "momentum_classification": "NEUTRAL",
+      "rsi": 38.33,
+      "macd": -2.467,
+      "macd_signal": -1.574,
+      "macd_hist": -0.892,
+      "atr": 9.35,
+      "bb_upper": 375.99,
+      "bb_lower": 318.12,
+      "sma_50": 351.97,
+      "sma_200": 332.45,
+      "signals": [
+        "RSI neutral (30-50)",
+        "MACD con sesgo bajista"
+      ],
+      "summary": "GOOGL cotiza a $338.91 bajo una estructura de **momentum bajista moderado**, reflejado por un MACD negativo ($ -2.467 $) ubicado por debajo de su línea de señal. No obstante, el RSI en 38.3 se acerca a la **zona de sobreventa sin llegar a ella**, sugiriendo una pausa en la presión vendedora que justifica la clasificación neutral actual a la espera de un punto de inflexión."
+    },
+    "news_report": {
+      "status": "DEGRADADO",
+      "company_name": "Alphabet Inc.",
+      "as_of": "2026-08-20",
+      "window_days": 30,
+      "impact_probability": 0.0919,
+      "impact_classification": "BAJA",
+      "direction_classification": "ALCISTA",
+      "direction_imbalance": 1.0,
+      "catalysts": [
+        {
+          "titular": "Alphabet Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/goog-20260722.htm",
+          "categoria": "RESULTADOS",
+          "fecha": "2026-07-22",
+          "fuente": "SEC EDGAR (8-K)",
+          "tipo_fuente": "SEC_8K",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0255
+        },
+        {
+          "titular": "Alphabet Posts $98 Billion in Second-Quarter Investment Gains - Bloomberg.com",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOUklRMFZLWjlVNnZ6SFFYU0RtUXAybUpoUUEzRHZ6TV9ja09TZUlWVDNWTGhKbGNfbkhfbFJscm5vM0gwU3R1S1dDZnh4UVJRZVEtZl9PS2xJOTRKZWU3eVRWN3NWMlZvaFRMdjZJQ0EydlZDcXFUdThlRDlBU3NGWFMtWmtYUUFhLWI4RC1sOGNRZ3BwOVdGVTVHNUFnaV9LSFJoek92VFNjak5GQXdiMA?oc=5",
+          "categoria": "RESULTADOS",
+          "fecha": "2026-07-22",
+          "fuente": "Bloomberg.com",
+          "tipo_fuente": "MEDIO_TIER1",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0178
+        },
+        {
+          "titular": "Google’s Q2 earnings of $112.11B beat Wall Street’s expectations on AI boom - AP News",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQMXRMUkFabGhkczdYMVdlNXV3V28taUpsWW4xanhVa0JsOGk2NzkxT0djbjNUSGNjdWlOTm1MbzkwdkdLZ1p2Wkx4U2hUdnJaM0VYN0wtR2VGbEhEWkZ2MnVQREEwUURXU2NtZTdNQUxRU19XZGEyTHpzOXJvR0JsYTA4UkN3c2lEWEhiUzVkZkxGSVFiMFJKc1Y3VE9leGk0dlpZ?oc=5",
+          "categoria": "RESULTADOS",
+          "fecha": "2026-07-22",
+          "fuente": "AP News",
+          "tipo_fuente": "MEDIO_TIER1",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0178
+        }
+      ],
+      "scored_items": [
+        {
+          "titulo": "Alphabet Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/goog-20260722.htm",
+          "fuente": "SEC EDGAR (8-K)",
+          "fecha": "2026-07-22",
+          "extracto": "Presentación oficial ante la SEC el 2026-07-22, periodo de referencia 2026-07-22. 8-K Ítems declarados: 2.02,9.01.",
+          "tipo_fuente": "SEC_8K",
+          "buscadores": [
+            "sec_8k"
+          ],
+          "filed": "2026-07-22",
+          "accession_number": "0001652044-26-000066",
+          "categoria_forzada": "RESULTADOS",
+          "fuentes_corroborantes": [
+            "sec.gov"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 1.0,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0255
+        },
+        {
+          "titulo": "Alphabet Posts $98 Billion in Second-Quarter Investment Gains - Bloomberg.com",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOUklRMFZLWjlVNnZ6SFFYU0RtUXAybUpoUUEzRHZ6TV9ja09TZUlWVDNWTGhKbGNfbkhfbFJscm5vM0gwU3R1S1dDZnh4UVJRZVEtZl9PS2xJOTRKZWU3eVRWN3NWMlZvaFRMdjZJQ0EydlZDcXFUdThlRDlBU3NGWFMtWmtYUUFhLWI4RC1sOGNRZ3BwOVdGVTVHNUFnaV9LSFJoek92VFNjak5GQXdiMA?oc=5",
+          "fuente": "Bloomberg.com",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet Posts $98 Billion in Second-Quarter Investment Gains Bloomberg.com",
+          "tipo_fuente": "MEDIO_TIER1",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.7,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0178
+        },
+        {
+          "titulo": "Google’s Q2 earnings of $112.11B beat Wall Street’s expectations on AI boom - AP News",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQMXRMUkFabGhkczdYMVdlNXV3V28taUpsWW4xanhVa0JsOGk2NzkxT0djbjNUSGNjdWlOTm1MbzkwdkdLZ1p2Wkx4U2hUdnJaM0VYN0wtR2VGbEhEWkZ2MnVQREEwUURXU2NtZTdNQUxRU19XZGEyTHpzOXJvR0JsYTA4UkN3c2lEWEhiUzVkZkxGSVFiMFJKc1Y3VE9leGk0dlpZ?oc=5",
+          "fuente": "AP News",
+          "fecha": "2026-07-22",
+          "extracto": "Google’s Q2 earnings of $112.11B beat Wall Street’s expectations on AI boom AP News",
+          "tipo_fuente": "MEDIO_TIER1",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.7,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0178
+        },
+        {
+          "titulo": "Alphabet Inc. (GOOG) Q2 Earnings and Revenues Top Estimates - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPQVdNakoxenUxLTA1UFFLdHhUeXIxQ0pNU2x3aWNUUUJIMjI1cFJMNUpKUHZremhSSU1kMDdjNnUxcVpCTlZJNXRwS1BBbjkwVGhoVnR0T3pVaUIta1J0SmlkdUJuaDktbWg4SmRBSVJTT0lPUXFKbUUtamdGc1dwQmwtcjRKaHNtR2tWUFhtOE50bHRyYTRDandR?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet Inc. (GOOG) Q2 Earnings and Revenues Top Estimates Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0115
+        },
+        {
+          "titulo": "Alphabet Inc. 2026 Q2 - Results - Earnings Call Presentation (NASDAQ:GOOGL) 2026-07-22 - Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQRjJvODhjUlhPcUF6LVFKQzkwc3RISU1WaGthc0RkWXpyMmtCLW9CSjNrcDVVR0V4cS02NUJoUHVLbjdWdExHaHlyUVJmeFF1ZzN5ZEdyekl0Y2p2Ym9OdWdHY1BLcVpXazRjYUlpRHlkb0VIWG4ybllHbV9WS0hrOTd4TmwwdFFSTFE0VE5rNGN0UTVuSWVfNGJ3MTM?oc=5",
+          "fuente": "Seeking Alpha",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet Inc. 2026 Q2 - Results - Earnings Call Presentation (NASDAQ:GOOGL) 2026-07-22 Seeking Alpha",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0115
+        },
+        {
+          "titulo": "Earnings call transcript: Alphabet beats Q2 2026 estimates, shares fall on capex surge - Investing.com",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbThFdFFfZlh5eWJvYWUzdlpjbFZvT2ltbjUzR2dxajBtZS1iTGJFbjJfMGxDSzNtNXNhS3BVZm1NNy0tdERJMm16OFVZNGFmZWlkY19fZ3V1cHFQSzRjaEVuV2UxU0Q3N3lHRTNBS2oxQlRBb3ZPX0RvNmk0VXFlSi1QLVBSTzBGTDZyWU9BNUR5OW9nWlFMQlkwQWR1VjltWlNvMkp5a240ejlRZTE1WGFBWXBiaVJidl80d2xXWGJpLXFjd3ZNUTE4X0VfQkhGVFE4NFA1OA?oc=5",
+          "fuente": "Investing.com",
+          "fecha": "2026-07-22",
+          "extracto": "Earnings call transcript: Alphabet beats Q2 2026 estimates, shares fall on capex surge Investing.com",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "ALCISTA",
+          "terminos_alcistas": 1,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0115
+        },
+        {
+          "titulo": "Alphabet Earnings: Strong AI Monetization Continues to Spearhead Results - Morningstar",
+          "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQRjlrRVFwUXpqa0tjUmhCNmhBYWE5MVNfc08yX3B4ZGZBYlo4OEZIQlY1NmJ0Qmh3bVVnMWpGWjNHZDZNc3VJQzFuak5UZ2lvbE1MS3N0NHNuSzNDc1A4b3BUT09ZZUdka1lNODNIQUFVMy04b3I2cVdPLUlUMXREVWVTQlh3N1hLYTBrc19paGlQQlZ2blhpQXN4LWZFcFNfNHROLVlXS3c0TTFDek9naHhR?oc=5",
+          "fuente": "Morningstar",
+          "fecha": "2026-07-23",
+          "extracto": "Alphabet Earnings: Strong AI Monetization Continues to Spearhead Results Morningstar",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 28,
+          "decaimiento": 0.0625,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0084
+        },
+        {
+          "titulo": "Alphabet (GOOG) Releases Q2 2026 Earnings: Revenue Jumps 24% | GOOG Stock News - Quiver Quantitative",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPbFR6OE9UR0NQRXZCU2phVl9VMDZwTVhiaGJkUTJyWGlla2xSOWIwNFpUc0FBcElWN3B4STJMSE9mWmQzMHFKYzZ2U2x2djI4dGhIM1djdE9aaUNudWhTcXJobWVoeXMtczQ4dkZWbzg1VWp0d1RxQWtaaDEwX1o3ZzZqMC1abllxUER5ZFF4Q3BLVGhNTFNMNDFtMmRqaTRXMWpr?oc=5",
+          "fuente": "Quiver Quantitative",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet (GOOG) Releases Q2 2026 Earnings: Revenue Jumps 24% | GOOG Stock News Quiver Quantitative",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "ALCISTA",
+          "terminos_alcistas": 1,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0076
+        },
+        {
+          "titulo": "Ticker: Google’s earnings jump; Tesla profits down - Boston Herald",
+          "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxNMy1zQnA4YTQyOUptenNieVVoa1hMMV90SS1VeEdmaHN4dnJBM2ZwcXJmSTR0S0szcmlCd3ZZZnlfRUdJeU1uRG9kNUUwSEtuVVU2a01jTkpTRVM1YThRbVJwUG8tX19PTVU1RTN3REt2VWhMaG5CMnU1aFhmX29GRmoxTXpULUFoY09WVTdqUGpQQQ?oc=5",
+          "fuente": "Boston Herald",
+          "fecha": "2026-07-22",
+          "extracto": "Ticker: Google’s earnings jump; Tesla profits down Boston Herald",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0076
+        },
+        {
+          "titulo": "Top Analyst Reports for Alphabet, AMD & RTX - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQbzF3ZGg4TmZtOXlHWDR1dlZSRjB4aVpheTJNWE9GVDM2Wi1NbE1UQkpLLVN6Q2JaaHFuRVBxb19hYzBJN2Z0OGs0NjJkckptMVlRbGo3a29hNzZIUTFydDVuQ2kxZ1N2QUNCQ0ZOOTdLTDJ0M3lzak9pVlVCV2FZWFdCOXBuMlpWSVlkZnhXcTdKUERSTXdyeDFxeDNBdw?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-28",
+          "extracto": "Top Analyst Reports for Alphabet, AMD & RTX Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 23,
+          "decaimiento": 0.1025,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0052
+        },
+        {
+          "titulo": "Alphabet Quadruples Profit to $112 Billion, Fueled by A.I. Investments - The New York Times",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNUGRkSDhSdi1IQlludFBtc2paX3p4Z1AtaTJFVy15VmtMVDJnZjRnVHRSRllRVGJySXEzV0VhazU5T1dYcXVVc3o4dFVreHBWeFNLZ0Q3dS1EYW5ybmZmTDlrTFI1bEs3dENPVi1OZTNzZmc1WTE0RmRPNTVEV0FpdFh5WlZvTjUzWWc?oc=5",
+          "fuente": "The New York Times",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet Quadruples Profit to $112 Billion, Fueled by A.I. Investments The New York Times",
+          "tipo_fuente": "MEDIO_TIER1",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.7,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0045
+        },
+        {
+          "titulo": "Alphabet Inc. (GOOG) executive logs GSU conversion and tax withholding moves - Stock Titan",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNOWhNQzhGX3NFSE1nb3dsTml2M1BlX2NZLWpJWjdJMEw0QU5yWFBiaGpnWWR1eTZnVFdONzBRYlcta3lYa19MaWJzeE5wV2hkZTlRRDlrb3p3UmJFMHlEeXpRWE9JQkhqSFN0X2NjT2FrOUxXN2ZOXzZualYyd1B5VVJmSkw4dW5lcVYwVm5hNHc4b0V6V04xMm1ZM2dGQWk0N2ZiTHB6V1FNUQ?oc=5",
+          "fuente": "Stock Titan",
+          "fecha": "2026-07-28",
+          "extracto": "Alphabet Inc. (GOOG) executive logs GSU conversion and tax withholding moves Stock Titan",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 23,
+          "decaimiento": 0.1025,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0035
+        },
+        {
+          "titulo": "Alphabet set for blockbuster quarter as AI bets collide with spending fears | NASDAQ:GOOG - Proactive financial news",
+          "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxNS0FqY3J6Vy1XU1VUeld0NWxFTTVsNlBjOG1EZDRaZ20tQi01eUxDNkE0UC1wYy1abEFwbmpiSE8yVVFqZDBfSFV4dVAzY3RUVjd0VVd3bzZocm5MX3NWN3ZaMjIxWm40MHJGX0pwWmdhU2xmeXRLSmpwc280dmtmaTNEcnVmVl9fYVVPY0NNRWYtcS1FM2UzMEhjT0tWTTY2MC10YjZmckVVYjBPNlAtYjBtTE1DT0ZuRHNPSnJrNlIybGpHUTdRTjdXOFBlUlBQbkFDOWtpNGU3SHFPWE1J?oc=5",
+          "fuente": "Proactive financial news",
+          "fecha": "2026-07-22",
+          "extracto": "Alphabet set for blockbuster quarter as AI bets collide with spending fears | NASDAQ:GOOG Proactive financial news",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0019
+        }
+      ],
+      "n_items": 13,
+      "category_counts": {
+        "RESULTADOS": 9,
+        "OTROS": 4
+      },
+      "sources_ok": [
+        "sec_8k",
+        "google_news_rss"
+      ],
+      "sources_failed": [
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "from_cache": false,
+      "advisory_only": true,
+      "signals": [
+        "RESULTADOS (2026-07-22, SEC_8K, p=0.03): Alphabet Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+        "RESULTADOS (2026-07-22, MEDIO_TIER1, p=0.02): Alphabet Posts $98 Billion in Second-Quarter Investment Gains - Bloomberg.com",
+        "RESULTADOS (2026-07-22, MEDIO_TIER1, p=0.02): Google’s Q2 earnings of $112.11B beat Wall Street’s expectations on AI boom - AP News",
+        "RESULTADOS (2026-07-22, AGREGADOR, p=0.01): Alphabet Inc. (GOOG) Q2 Earnings and Revenues Top Estimates - Yahoo Finance",
+        "RESULTADOS (2026-07-22, AGREGADOR, p=0.01): Alphabet Inc. 2026 Q2 - Results - Earnings Call Presentation (NASDAQ:GOOGL) 2026-07-22 - Seeking Alpha"
+      ],
+      "summary": "Alphabet ha superado las expectativas de Wall Street en el segundo trimestre con unos ingresos de 112.110 millones de dólares gracias al auge de la inteligencia artificial, impulsada además por unos sólidos beneficios de inversión de 98.000 millones de dólares. Estos sólidos resultados financieros y operativos presentados en su último formulario 8-K justifican una previsión de impacto alcista en el precio de la acción, a pesar de que la probabilidad estimada de este movimiento sea baja (0.09)."
+    },
+    "debate_report": {
+      "bullish_case": "TESIS ALCISTA (GOOGL): Excelente crecimiento de ingresos (24.2%) demostrando expansión de mercado. Margen neto sólido del 54.8%, garantizando rentabilidad y generación de caja. Estructura técnica con clasificación NEUTRAL y RSI de 38.3 en zona de fuerte impulso. Flujo de noticias con probabilidad de impacto BAJA (0.09) y sesgo ALCISTA sobre 13 nota(s); principal catalizador: \"Alphabet Inc. presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)\" (capa asesora: no altera el dictamen).",
+      "bearish_case": "TESIS BAJISTA (GOOGL): Discrepancias encontradas en la reconciliación multi-fuente de datos.",
+      "synthesis": "A continuación, presento la síntesis y conclusión del debate de inversión sobre **Alphabet Inc. (GOOGL)**:\n\n### **Síntesis del Debate de Inversión (GOOGL)**\n\n*   **TESIS ALCISTA:** \n    *   **Fundamentales:** Sólido crecimiento de ingresos del 24.2%, lo que refleja una clara expansión en el mercado. Margen neto excepcional del 54.8%, garantizando una alta rentabilidad y una robusta generación de flujo de caja.\n    *   **Técnico y Sentimiento:** Estructura técnica clasificada como NEUTRAL, con un RSI en 38.3 que sugiere proximidad a zonas de soporte o de fuerte impulso operativo. Flujo de noticias con sesgo alcista (respaldado por 13 notas), aunque con baja probabilidad de impacto (0.09). El principal catalizador reciente es la presentación del formulario 8-K (resultados financieros), el cual no altera el dictamen general de la capa asesora.\n\n*   **TESIS BAJISTA:** \n    *   **Riesgo Operativo / Datos:** Se han identificado discrepancias en la reconciliación multi-fuente de datos, lo que introduce un elemento de incertidumbre y precaución en la verificación de la información financiera y de mercado.\n\n---\n\n### **Conclusión Imparcial**\n\nAlphabet demuestra una salud financiera envidiable, respaldada por un crecimiento vigoroso de los ingresos y márgenes de rentabilidad extraordinarios que minimizan el riesgo operativo a largo plazo. No obstante, las discrepancias detectadas en la reconciliación de datos exigen cautela y una mayor verificación antes de asumir una postura plenamente compradora. Por lo tanto, aunque los fundamentales y el sesgo de noticias sugieren un atractivo potencial alcista, el inversor debe sopesar estas señales positivas frente a la actual ambigüedad en la consistencia de los datos."
+    },
+    "final_decision": {
+      "rating": "MANTENER",
+      "position_size_pct": "2.0% - 3.0%",
+      "current_price": 338.9100036621094,
+      "stop_loss_atr": 320.21,
+      "take_profit_atr": 371.64,
+      "rationale": "Fundamentales aprobados con éxito. Momentum técnico classified como NEUTRAL. Síntesis de debate: A continuación, presento la síntesis y conclusión del debate de inversión sobre **Alphabet Inc. (GOOGL)**:\n\n### **Síntesis del Debate de Inversión (GOOGL)**\n\n*   **TESIS ALCISTA:** \n    *   **Fundamentales:** Sólido crecimiento de ingresos del 24.2%, lo que refleja una clara expansión en el mercado. Margen neto excepcional del 54.8%, garantizando una alta rentabilidad y una robusta generación de flujo de caja.\n    *   **Técnico y Sentimiento:** Estructura técnica clasificada como NEUTRAL, con un RSI en 38.3 que sugiere proximidad a zonas de soporte o de fuerte impulso operativo. Flujo de noticias con sesgo alcista (respaldado por 13 notas), aunque con baja probabilidad de impacto (0.09). El principal catalizador reciente es la presentación del formulario 8-K (resultados financieros), el cual no altera el dictamen general de la capa asesora.\n\n*   **TESIS BAJISTA:** \n    *   **Riesgo Operativo / Datos:** Se han identificado discrepancias en la reconciliación multi-fuente de datos, lo que introduce un elemento de incertidumbre y precaución en la verificación de la información financiera y de mercado.\n\n---\n\n### **Conclusión Imparcial**\n\nAlphabet demuestra una salud financiera envidiable, respaldada por un crecimiento vigoroso de los ingresos y márgenes de rentabilidad extraordinarios que minimizan el riesgo operativo a largo plazo. No obstante, las discrepancias detectadas en la reconciliación de datos exigen cautela y una mayor verificación antes de asumir una postura plenamente compradora. Por lo tanto, aunque los fundamentales y el sesgo de noticias sugieren un atractivo potencial alcista, el inversor debe sopesar estas señales positivas frente a la actual ambigüedad en la consistencia de los datos.",
+      "summary": "**ORDEN EJECUTIVA DE INVERSIÓN – ALPHABET INC. (GOOGL)**\n\nTras evaluar la solidez de sus fundamentales (crecimiento del 24.2% y margen neto del 54.8%) frente a las recientes discrepancias en la reconciliación de datos, se dicta **MANTENER** la posición actual con una asignación de cartera de **2.0% a 3.0%**. Para salvaguardar el capital ante un momentum técnico **NEUTRAL** (precio actual en $338.91), se establece estrictamente un **Stop-Loss ATR en $320.21** y un **Take-Profit ATR en $371.64**."
+    },
+    "passed_fundamental_gatekeeper": true,
+    "workflow_status": "COMPLETED",
+    "logs": [
+      "[Ingesta] Recolectando datos multi-fuente para GOOGL...",
+      "[Reconciliación] Puntuación de confianza: 0.85, Fuentes: ['yfinance', 'SEC EDGAR (Oficial)', 'Finnhub']",
+      "[Gatekeeper Fundamental] Evaluando salud financiera para GOOGL...",
+      "[Gatekeeper Fundamental] Resultado: APROBADO -> Continuando a Análisis Técnico",
+      "[Analista de Noticias] 13 noticia(s) | Impacto: BAJA (0.09) | Dirección: ALCISTA | Fuentes sin respuesta: tavily",
+      "[Analista de Noticias] Capa ASESORA: no altera el rating ni el sizing.",
+      "[Analista Técnico] Evaluando indicadores de momentum para GOOGL...",
+      "[Analista Técnico] Momentum clasificado como: NEUTRAL",
+      "[Capa de Debate] Ejecutando confrontación Bullish vs Bearish para GOOGL...",
+      "[Capa de Debate] Síntesis finalizada.",
+      "[Fund Manager] Sintetizando informes y emitiendo recomendación final para GOOGL...",
+      "[Fund Manager] DICTAMEN FINAL: MANTENER"
+    ]
+  },
+  {
+    "ticker": "NEM",
+    "company_name": "Newmont Corporation",
+    "sector": "Basic Materials",
+    "industry": "Gold",
+    "sec_edgar_data": {
+      "status": "SUCCESS",
+      "source": "SEC EDGAR (Oficial)",
+      "cik": "0001164727",
+      "revenues": 6711000000.0,
+      "net_income": 5464000000.0,
+      "total_assets": 57641000000.0,
+      "total_liabilities": 22227000000.0
+    },
+    "finnhub_data": {
+      "status": "SUCCESS",
+      "source": "Finnhub",
+      "pe_ratio": 13.9638,
+      "roe_ttm": 25.05,
+      "net_margin_ttm": 33.36,
+      "revenue_growth_5y": 14.54
+    },
+    "yfinance_data": {
+      "status": "SUCCESS",
+      "ticker": "NEM",
+      "company_name": "Newmont Corporation",
+      "sector": "Basic Materials",
+      "industry": "Gold",
+      "current_price": 127.78500366210938,
+      "fundamentals": {
+        "revenue_growth": 0.151,
+        "net_margin": 0.33363998,
+        "debt_to_equity": 0.15807000000000002,
+        "roe": 0.25905,
+        "pe_ratio": 16.114124,
+        "market_cap": 134646071296
+      },
+      "technical": {
+        "close": 127.78500366210938,
+        "rsi": 83.96,
+        "macd": 7.193,
+        "macd_signal": 5.158,
+        "macd_hist": 2.035,
+        "bb_upper": 132.28,
+        "bb_lower": 82.55,
+        "atr": 4.89,
+        "sma_50": 100.76,
+        "sma_200": 105.82,
+        "volume_rel": 0.56
+      },
+      "price_history_summary": {
+        "min_52w": 66.97786277524479,
+        "max_52w": 134.2940212296047,
+        "close_today": 127.78500366210938,
+        "change_1m_pct": 0.37123082213089253
+      }
+    },
+    "reconciliation_data": {
+      "status": "RECONCILED_WITH_DISCREPANCIES",
+      "ticker": "NEM",
+      "confidence_score": 0.85,
+      "sources_consulted": [
+        "yfinance",
+        "SEC EDGAR (Oficial)",
+        "Finnhub"
+      ],
+      "discrepancies": [
+        "Diferencia en Margen Neto: SEC (81.4%) vs yfinance (33.4%)"
+      ],
+      "reconciled_metrics": {
+        "revenue_growth": 0.151,
+        "net_margin": 0.33363998,
+        "debt_to_equity": 0.15807000000000002,
+        "roe": 0.25905,
+        "pe_ratio": 16.114124
+      }
+    },
+    "news_data": {
+      "status": "DEGRADADO",
+      "ticker": "NEM",
+      "empresa": "Newmont Corporation",
+      "as_of": "2026-08-20",
+      "ventana_dias": 30,
+      "items": [
+        {
+          "titulo": "StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane, from Newmont Corporation - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNNGZId1l6V2VJM0JxbkxrTjFxLVIyLTJqNHR0Q25sM2dWT0tTX2d6UlVPdlVDajBLemtSdUQzcVl0cGhDOTU0N0RRYkRWZVhOQkczQkxPcjFENkdSRFl5RkFHaTJsZmZPdDMzd0VoQmhSSWU2SWJCaE5qbXd0WW5ZNzlkU2IzOUNXMGZpcWU3MktlUlozdV9Ma2Fnb254Qnd2UVVTWk51WDVEYmRZWlJwaXVGaWEwQS1zSERxZWdyQUtXbTA?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-08-18",
+          "extracto": "StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane, from Newmont Corporation Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane, from Newmont Corporation - Yahoo Finance StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane, from Newmont Corporation Yahoo Finance"
+        },
+        {
+          "titulo": "Newmont & Barrick Settle Nevada Gold Mines Dispute Clearing Barrick IPO Path - Streetwise Reports",
+          "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPYkVfVXZPSG1aWXFkem90d2NfTWtYbW1RQlBtcmdFM0lWQXl5d0w0X0tUOU56WEVKMFZyRzQ3TDdJNkhyX0dVelU2Q1E5d3FWbWRwaEN5d2NJV3Jpc1lfT0c2VERpek1kd3F3QVBwVlBnNEY1ckRQYmlQYlp3YWo5eUFPVml2cnZ1dGhhaHBQdGpjNVV2Sy1zOWw0a1psdXhoTkJ1TTl4ZzhHQ1JIMGpDWmdZLV9aOUIxOU1vd1VQZGFlMmZoRll4RE5sX29kVmp2dHc?oc=5",
+          "fuente": "Streetwise Reports",
+          "fecha": "2026-08-14",
+          "extracto": "Newmont & Barrick Settle Nevada Gold Mines Dispute Clearing Barrick IPO Path Streetwise Reports",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Newmont & Barrick Settle Nevada Gold Mines Dispute Clearing Barrick IPO Path - Streetwise Reports Newmont & Barrick Settle Nevada Gold Mines Dispute Clearing Barrick IPO Path Streetwise Reports"
+        },
+        {
+          "titulo": "Headwater Gold Signs New Earn-In Agreement with Newmont on the Jupiter Project, Nevada - Nasdaq",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOcS0tdnhDZlpXWWY5MkVUeHc2cjRaSmRnMXZSRWk5eTg4Zzhua0dtU1FHenN5QWo1dHhOd2hBa284c09Lc1pZRFFhSmwyVHUzd0RUTDU2STFoRnc1V243YWVOMEJtaUgtOFIweHEtOTRfb2hMLXJNNEczZ2VoZWt2OUx4bVF0cGZhZGZzdjQzaFhaMmpyeFVxZWwwTmpOMjA0Szc3b3FvOEZ6blZKa3lJQWVCMkJ2RkNKaUE?oc=5",
+          "fuente": "Nasdaq",
+          "fecha": "2026-08-13",
+          "extracto": "Headwater Gold Signs New Earn-In Agreement with Newmont on the Jupiter Project, Nevada Nasdaq",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Headwater Gold Signs New Earn-In Agreement with Newmont on the Jupiter Project, Nevada - Nasdaq Headwater Gold Signs New Earn-In Agreement with Newmont on the Jupiter Project, Nevada Nasdaq"
+        },
+        {
+          "titulo": "Barrick and Newmont Reach Agreement Regarding Nevada Gold Mines Joint Venture - Barrick Mining Corporation",
+          "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxOZnpscnpJZ2pzbHlPUUVwR0tGSmVrN2t2czljNGZXY2JrY2JCM013RW5pY3RCLVpvYThxc2hkODFreTQtV1JYaUNFdHBsbXdQdFptWUIzZmQ0YnJJajBNMk1uZ0pMbDFDS3hUcEtHXzdGNWVodUEzZ2MzeXV6V1lqZ09sQTNUZ2haTGxGb1pFRXd2djYzRjdGd3VwSzVpMXZqSmtEejdlR0ptQzcydG4wWlozMzRwVWZHZ1dDdEVIel9hcUpGdjBCemlySXRjWkxFSnFQT0syTDJvVmdpckE?oc=5",
+          "fuente": "Barrick Mining Corporation",
+          "fecha": "2026-08-10",
+          "extracto": "Barrick and Newmont Reach Agreement Regarding Nevada Gold Mines Joint Venture Barrick Mining Corporation",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Barrick and Newmont Reach Agreement Regarding Nevada Gold Mines Joint Venture - Barrick Mining Corporation Barrick and Newmont Reach Agreement Regarding Nevada Gold Mines Joint Venture Barrick Mining Corporation"
+        },
+        {
+          "titulo": "Pacer Advisors Inc. Decreases Stock Position in Newmont Corporation $NEM - MarketBeat",
+          "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxONkw4UWtRQ2RDQ0dFTU9LTXpENmMzel9Nam1uUnJ5UzZ0Y2NxSmp4aEtpVFQ2Qzg4clpuTmQ3bTY3aXdOWTdid0xXbGRPU1RLWDFnZHJVMVRYcnY4MzJUdFVNQ0s0aHowXzN3SkVBeTg5N2d1eHF6NDBrYXcxbldxYnN3Sk1OeXBDdlJRYk8xeHpEU3I2d2tkaVB4ajM1UjNFX3VHT0tMYkRvb0gyMWNjZDlPTkdxY0xIQ2ZxWmIxczRnb1lBTzlfMllJZw?oc=5",
+          "fuente": "MarketBeat",
+          "fecha": "2026-08-03",
+          "extracto": "Pacer Advisors Inc. Decreases Stock Position in Newmont Corporation $NEM MarketBeat",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Pacer Advisors Inc. Decreases Stock Position in Newmont Corporation $NEM - MarketBeat Pacer Advisors Inc. Decreases Stock Position in Newmont Corporation $NEM MarketBeat"
+        },
+        {
+          "titulo": "Newmont Corporation CHESS (NEM) Gets a Buy from UBS - The Globe and Mail",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxQVzhzZUFwRTM2Rl9PaXhTYVdZQWI4REFMaXpqeFNsRDVndnYwMVNSdWg1cE5KdjRPMzU0R3FSeTVWSl9hdXkxOTdaZmY5ZWxGVFoxZVZiVExnMWxEazlIbXBnY0VHZXR6OVM3MndRa0JEdGk3aFlSTlhCN1hPamtPRXNwOWFhaGRuUVNvMHg3ZGFVUW5FYnI5Z1lOdlBjWl9PV0tZMGdqa1lBWldsZVhGeVZKU0cwMkRpeXdaNy1vZGNBQVdzcUc1QTJLdGNzZw?oc=5",
+          "fuente": "The Globe and Mail",
+          "fecha": "2026-07-27",
+          "extracto": "Newmont Corporation CHESS (NEM) Gets a Buy from UBS The Globe and Mail",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Newmont Corporation CHESS (NEM) Gets a Buy from UBS - The Globe and Mail Newmont Corporation CHESS (NEM) Gets a Buy from UBS The Globe and Mail"
+        },
+        {
+          "titulo": "Q2 2026 Newmont Corporation Earnings Call Transcript - GuruFocus",
+          "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1ZMkRJdEFUTkNSS3liOWNKUl9oSUV3UGt6Rk1YRVZfbGk5TERnTEItR2JEV3BXajFnV1I5RW8xamV3V2FwLWVXZTEycWh0VEgwOEZNNDBfeDhsY1NhZTVPekZOdTdwVVlEc05kTXZB?oc=5",
+          "fuente": "GuruFocus",
+          "fecha": "2026-07-23",
+          "extracto": "Q2 2026 Newmont Corporation Earnings Call Transcript GuruFocus",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Q2 2026 Newmont Corporation Earnings Call Transcript - GuruFocus Q2 2026 Newmont Corporation Earnings Call Transcript GuruFocus"
+        },
+        {
+          "titulo": "Newmont: Q2 Earnings Snapshot - KING5.com",
+          "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPaU91N3kySEI0MmthNkVwLWZmMFJscXJRbU4zbk1pcm5oVG40NjJOYnp4SGdqSlZJYUhOM1lkSEdBZF9wYXZaVmdKQW5RWkdiOUxLTlRfN09MWXY0MmVwTW5jX09VNUZXcXBnXzg5MTJHeVdvbF9zOWw2cWUzWjE2M3djdW9sUkZHMlVpUzFYc050R25jZ3h4SmNVQklCb1BiRmFGTXVXMnJhOGJKaXFqc2N2YW13WFZnQWRjd2ZWaGVCM09BdkE?oc=5",
+          "fuente": "KING5.com",
+          "fecha": "2026-07-23",
+          "extracto": "Newmont: Q2 Earnings Snapshot KING5.com",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Newmont: Q2 Earnings Snapshot - KING5.com Newmont: Q2 Earnings Snapshot KING5.com"
+        },
+        {
+          "titulo": "Newmont shares dip as Q2 results miss on top and bottom lines - Investing.com",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNTmkwNngxaU9hSUpPRHdsdVZtMnByTExtblpQQzQ0dmdZSmI5ZFBsTTBrSGNNRWVPZG9PSDU4NVYzd3Q4ZjNBb1dyQXFuRXJyd2RsdG91bHNYSlNCYVY5dGdJMU1QcXdxNGE2S0lQTFFKckxzSHp2SlNzX1QxYTJDSWpadUtsQmQ5UWJPMndjQjg2aGhiNTJJMXRQS19OWVJmdGEtdThmLW14V0ZxQlRET1R0dDc?oc=5",
+          "fuente": "Investing.com",
+          "fecha": "2026-07-23",
+          "extracto": "Newmont shares dip as Q2 results miss on top and bottom lines Investing.com",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Newmont shares dip as Q2 results miss on top and bottom lines - Investing.com Newmont shares dip as Q2 results miss on top and bottom lines Investing.com"
+        },
+        {
+          "titulo": "Newmont Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1164727/000116472726000034/nem-20260723.htm",
+          "fuente": "SEC EDGAR (8-K)",
+          "fecha": "2026-07-23",
+          "extracto": "Presentación oficial ante la SEC el 2026-07-23, periodo de referencia 2026-07-23. 8-K Ítems declarados: 2.02,9.01.",
+          "tipo_fuente": "SEC_8K",
+          "buscadores": [
+            "sec_8k"
+          ],
+          "filed": "2026-07-23",
+          "accession_number": "0001164727-26-000034",
+          "categoria_forzada": "RESULTADOS",
+          "fuentes_corroborantes": [
+            "sec.gov"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Newmont Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition) Presentación oficial ante la SEC el 2026-07-23, periodo de referencia 2026-07-23. 8-K Ítems declarados: 2.02,9.01."
+        },
+        {
+          "titulo": "Newmont Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:NEM) 2026-07-23 - Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPd3BZU3dpXzBlUjlJUGpqQkJDNEdaaWRXcnAxMzNfYW80M3czcFVVU0hpNUE4YkhXVXZ3YThRSC1zMHYxSmJ3TGVVWHZabUJSVEoyVHNKS1hfRy1icTUzajR3STU3b2hzTzZ0Nm1GVmhBVjhJeGNXUTZNdmVQeExrTE5NNjlRLTQ1cGdQZExkcmZMVm1qYVhYS19HMm9vUXhhR2tfUzVn?oc=5",
+          "fuente": "Seeking Alpha",
+          "fecha": "2026-07-23",
+          "extracto": "Newmont Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:NEM) 2026-07-23 Seeking Alpha",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Newmont Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:NEM) 2026-07-23 - Seeking Alpha Newmont Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:NEM) 2026-07-23 Seeking Alpha"
+        },
+        {
+          "titulo": "Newmont (NEM) Reports Q2 Earnings: What Key Metrics Have to Say - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPM09JNnNGamdMRml4NmJBMkpwSUlwVnhkVDBhd3pVT0dfc1o5RnA3UFhKakIwZzc4aFhlVGM2U2ZqQy1LcS10M0NET3JEdnVzaks4bGFjeG1XSjZzLXpxNUdDMjRNQkR6a1BZLVpmX1AwejB1WEVaMGJEcXl1WlpzelBldC1nUGhoZFZjT1BIQUlXU1RoVDVLNVRieVQ?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-23",
+          "extracto": "Newmont (NEM) Reports Q2 Earnings: What Key Metrics Have to Say Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Newmont (NEM) Reports Q2 Earnings: What Key Metrics Have to Say - Yahoo Finance Newmont (NEM) Reports Q2 Earnings: What Key Metrics Have to Say Yahoo Finance"
+        },
+        {
+          "titulo": "Why Newmont (NEM) Stock Is Up 3.7% Today - Quiver Quantitative",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPbzFjTmFnYU5tQld3eE8tY3RTSFJXTmFfVXYxRkhVN2E0SXFhNzVINktDdmE0OS1VaHh2b2JYVkc3M3lHbk16MG5KOXFpSUVyWEtZWWg2MHpYa2hxQnNNZHRCdmRZbkwyM2ViblluZkFiRGlCQmdWcHltdGpuclFTeC0wQ3lUQQ?oc=5",
+          "fuente": "Quiver Quantitative",
+          "fecha": "2026-07-22",
+          "extracto": "Why Newmont (NEM) Stock Is Up 3.7% Today Quiver Quantitative",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "texto_agregado": "Why Newmont (NEM) Stock Is Up 3.7% Today - Quiver Quantitative Why Newmont (NEM) Stock Is Up 3.7% Today Quiver Quantitative"
+        }
+      ],
+      "n_brutos": 13,
+      "n_items": 13,
+      "fuentes_ok": [
+        "sec_8k",
+        "google_news_rss"
+      ],
+      "fuentes_fallidas": [
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "desde_cache": false
+    },
+    "fundamental_report": {
+      "passed_gatekeeper": true,
+      "status": "APROBADO",
+      "metrics": {
+        "revenue_growth": 0.151,
+        "net_margin": 0.33363998,
+        "debt_to_equity": 0.15807000000000002,
+        "roe": 0.25905,
+        "pe_ratio": 16.114124
+      },
+      "reasons": [],
+      "confidence_score": 0.85,
+      "discrepancies": [
+        "Diferencia en Margen Neto: SEC (81.4%) vs yfinance (33.4%)"
+      ],
+      "summary": "Como Analista Fundamental Gatekeeper, confirmo que Newmont (NEM) muestra una excelente salud financiera impulsada por un sólido crecimiento de ingresos del 15.1% y una alta rentabilidad con un margen neto del 33.4% y un ROE del 25.9%. Además, su bajo apalancamiento (Deuda/Capital de 0.16) garantiza un perfil de riesgo muy conservador, justificando plenamente su **APROBACIÓN** como activo de alta calidad."
+    },
+    "technical_report": {
+      "momentum_classification": "NEUTRAL",
+      "rsi": 83.96,
+      "macd": 7.193,
+      "macd_signal": 5.158,
+      "macd_hist": 2.035,
+      "atr": 4.89,
+      "bb_upper": 132.28,
+      "bb_lower": 82.55,
+      "sma_50": 100.76,
+      "sma_200": 105.82,
+      "signals": [
+        "RSI en zona de sobrecompra (>70)",
+        "MACD con cruce alcista y momentum positivo",
+        "Cruce de la muerte / Tendencia SMA bajista"
+      ],
+      "summary": "Como analista técnico especialista en Momentum, observo que Newmont (NEM) cotiza a $127.79 bajo condiciones de **sobrecompra extrema (RSI de 84.0)**, lo cual contrasta con una clasificación neutral. No obstante, el **histograma y la línea MACD (7.193) se mantienen firmemente por encima de su línea de señal (5.158)**, validando que la fuerte presión alcista previa sigue vigente a corto plazo pero con alto riesgo de agotamiento inminente."
+    },
+    "news_report": {
+      "status": "DEGRADADO",
+      "company_name": "Newmont Corporation",
+      "as_of": "2026-08-20",
+      "window_days": 30,
+      "impact_probability": 0.1371,
+      "impact_classification": "BAJA",
+      "direction_classification": "INCIERTA",
+      "direction_imbalance": 0.0,
+      "catalysts": [
+        {
+          "titular": "StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane, from Newmont Corporation - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNNGZId1l6V2VJM0JxbkxrTjFxLVIyLTJqNHR0Q25sM2dWT0tTX2d6UlVPdlVDajBLemtSdUQzcVl0cGhDOTU0N0RRYkRWZVhOQkczQkxPcjFENkdSRFl5RkFHaTJsZmZPdDMzd0VoQmhSSWU2SWJCaE5qbXd0WW5ZNzlkU2IzOUNXMGZpcWU3MktlUlozdV9Ma2Fnb254Qnd2UVVTWk51WDVEYmRZWlJwaXVGaWEwQS1zSERxZWdyQUtXbTA?oc=5",
+          "categoria": "OTROS",
+          "fecha": "2026-08-18",
+          "fuente": "Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0415
+        },
+        {
+          "titular": "Newmont Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1164727/000116472726000034/nem-20260723.htm",
+          "categoria": "RESULTADOS",
+          "fecha": "2026-07-23",
+          "fuente": "SEC EDGAR (8-K)",
+          "tipo_fuente": "SEC_8K",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0281
+        },
+        {
+          "titular": "Barrick and Newmont Reach Agreement Regarding Nevada Gold Mines Joint Venture - Barrick Mining Corporation",
+          "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxOZnpscnpJZ2pzbHlPUUVwR0tGSmVrN2t2czljNGZXY2JrY2JCM013RW5pY3RCLVpvYThxc2hkODFreTQtV1JYaUNFdHBsbXdQdFptWUIzZmQ0YnJJajBNMk1uZ0pMbDFDS3hUcEtHXzdGNWVodUEzZ2MzeXV6V1lqZ09sQTNUZ2haTGxGb1pFRXd2djYzRjdGd3VwSzVpMXZqSmtEejdlR0ptQzcydG4wWlozMzRwVWZHZ1dDdEVIel9hcUpGdjBCemlySXRjWkxFSnFQT0syTDJvVmdpckE?oc=5",
+          "categoria": "ALIANZA",
+          "fecha": "2026-08-10",
+          "fuente": "Barrick Mining Corporation",
+          "tipo_fuente": "DESCONOCIDA",
+          "direccion": "NEUTRA",
+          "n_corroboraciones": 1,
+          "probabilidad_impacto": 0.0276
+        }
+      ],
+      "scored_items": [
+        {
+          "titulo": "StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane, from Newmont Corporation - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNNGZId1l6V2VJM0JxbkxrTjFxLVIyLTJqNHR0Q25sM2dWT0tTX2d6UlVPdlVDajBLemtSdUQzcVl0cGhDOTU0N0RRYkRWZVhOQkczQkxPcjFENkdSRFl5RkFHaTJsZmZPdDMzd0VoQmhSSWU2SWJCaE5qbXd0WW5ZNzlkU2IzOUNXMGZpcWU3MktlUlozdV9Ma2Fnb254Qnd2UVVTWk51WDVEYmRZWlJwaXVGaWEwQS1zSERxZWdyQUtXbTA?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-08-18",
+          "extracto": "StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane, from Newmont Corporation Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 2,
+          "decaimiento": 0.8203,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0415
+        },
+        {
+          "titulo": "Newmont Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1164727/000116472726000034/nem-20260723.htm",
+          "fuente": "SEC EDGAR (8-K)",
+          "fecha": "2026-07-23",
+          "extracto": "Presentación oficial ante la SEC el 2026-07-23, periodo de referencia 2026-07-23. 8-K Ítems declarados: 2.02,9.01.",
+          "tipo_fuente": "SEC_8K",
+          "buscadores": [
+            "sec_8k"
+          ],
+          "filed": "2026-07-23",
+          "accession_number": "0001164727-26-000034",
+          "categoria_forzada": "RESULTADOS",
+          "fuentes_corroborantes": [
+            "sec.gov"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 1.0,
+          "dias_antiguedad": 28,
+          "decaimiento": 0.0625,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0281
+        },
+        {
+          "titulo": "Barrick and Newmont Reach Agreement Regarding Nevada Gold Mines Joint Venture - Barrick Mining Corporation",
+          "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxOZnpscnpJZ2pzbHlPUUVwR0tGSmVrN2t2czljNGZXY2JrY2JCM013RW5pY3RCLVpvYThxc2hkODFreTQtV1JYaUNFdHBsbXdQdFptWUIzZmQ0YnJJajBNMk1uZ0pMbDFDS3hUcEtHXzdGNWVodUEzZ2MzeXV6V1lqZ09sQTNUZ2haTGxGb1pFRXd2djYzRjdGd3VwSzVpMXZqSmtEejdlR0ptQzcydG4wWlozMzRwVWZHZ1dDdEVIel9hcUpGdjBCemlySXRjWkxFSnFQT0syTDJvVmdpckE?oc=5",
+          "fuente": "Barrick Mining Corporation",
+          "fecha": "2026-08-10",
+          "extracto": "Barrick and Newmont Reach Agreement Regarding Nevada Gold Mines Joint Venture Barrick Mining Corporation",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "ALIANZA",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 0.55,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 10,
+          "decaimiento": 0.3715,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0276
+        },
+        {
+          "titulo": "Newmont & Barrick Settle Nevada Gold Mines Dispute Clearing Barrick IPO Path - Streetwise Reports",
+          "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPYkVfVXZPSG1aWXFkem90d2NfTWtYbW1RQlBtcmdFM0lWQXl5d0w0X0tUOU56WEVKMFZyRzQ3TDdJNkhyX0dVelU2Q1E5d3FWbWRwaEN5d2NJV3Jpc1lfT0c2VERpek1kd3F3QVBwVlBnNEY1ckRQYmlQYlp3YWo5eUFPVml2cnZ1dGhhaHBQdGpjNVV2Sy1zOWw0a1psdXhoTkJ1TTl4ZzhHQ1JIMGpDWmdZLV9aOUIxOU1vd1VQZGFlMmZoRll4RE5sX29kVmp2dHc?oc=5",
+          "fuente": "Streetwise Reports",
+          "fecha": "2026-08-14",
+          "extracto": "Newmont & Barrick Settle Nevada Gold Mines Dispute Clearing Barrick IPO Path Streetwise Reports",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 6,
+          "decaimiento": 0.552,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0186
+        },
+        {
+          "titulo": "Headwater Gold Signs New Earn-In Agreement with Newmont on the Jupiter Project, Nevada - Nasdaq",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOcS0tdnhDZlpXWWY5MkVUeHc2cjRaSmRnMXZSRWk5eTg4Zzhua0dtU1FHenN5QWo1dHhOd2hBa284c09Lc1pZRFFhSmwyVHUzd0RUTDU2STFoRnc1V243YWVOMEJtaUgtOFIweHEtOTRfb2hMLXJNNEczZ2VoZWt2OUx4bVF0cGZhZGZzdjQzaFhaMmpyeFVxZWwwTmpOMjA0Szc3b3FvOEZ6blZKa3lJQWVCMkJ2RkNKaUE?oc=5",
+          "fuente": "Nasdaq",
+          "fecha": "2026-08-13",
+          "extracto": "Headwater Gold Signs New Earn-In Agreement with Newmont on the Jupiter Project, Nevada Nasdaq",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 7,
+          "decaimiento": 0.5,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0169
+        },
+        {
+          "titulo": "Newmont (NEM) Reports Q2 Earnings: What Key Metrics Have to Say - Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPM09JNnNGamdMRml4NmJBMkpwSUlwVnhkVDBhd3pVT0dfc1o5RnA3UFhKakIwZzc4aFhlVGM2U2ZqQy1LcS10M0NET3JEdnVzaks4bGFjeG1XSjZzLXpxNUdDMjRNQkR6a1BZLVpmX1AwejB1WEVaMGJEcXl1WlpzelBldC1nUGhoZFZjT1BIQUlXU1RoVDVLNVRieVQ?oc=5",
+          "fuente": "Yahoo Finance",
+          "fecha": "2026-07-23",
+          "extracto": "Newmont (NEM) Reports Q2 Earnings: What Key Metrics Have to Say Yahoo Finance",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 28,
+          "decaimiento": 0.0625,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0127
+        },
+        {
+          "titulo": "Newmont Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:NEM) 2026-07-23 - Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPd3BZU3dpXzBlUjlJUGpqQkJDNEdaaWRXcnAxMzNfYW80M3czcFVVU0hpNUE4YkhXVXZ3YThRSC1zMHYxSmJ3TGVVWHZabUJSVEoyVHNKS1hfRy1icTUzajR3STU3b2hzTzZ0Nm1GVmhBVjhJeGNXUTZNdmVQeExrTE5NNjlRLTQ1cGdQZExkcmZMVm1qYVhYS19HMm9vUXhhR2tfUzVn?oc=5",
+          "fuente": "Seeking Alpha",
+          "fecha": "2026-07-23",
+          "extracto": "Newmont Corporation 2026 Q2 - Results - Earnings Call Presentation (NYSE:NEM) 2026-07-23 Seeking Alpha",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 28,
+          "decaimiento": 0.0625,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0127
+        },
+        {
+          "titulo": "Q2 2026 Newmont Corporation Earnings Call Transcript - GuruFocus",
+          "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1ZMkRJdEFUTkNSS3liOWNKUl9oSUV3UGt6Rk1YRVZfbGk5TERnTEItR2JEV3BXajFnV1I5RW8xamV3V2FwLWVXZTEycWh0VEgwOEZNNDBfeDhsY1NhZTVPekZOdTdwVVlEc05kTXZB?oc=5",
+          "fuente": "GuruFocus",
+          "fecha": "2026-07-23",
+          "extracto": "Q2 2026 Newmont Corporation Earnings Call Transcript GuruFocus",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 28,
+          "decaimiento": 0.0625,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0127
+        },
+        {
+          "titulo": "Newmont: Q2 Earnings Snapshot - KING5.com",
+          "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPaU91N3kySEI0MmthNkVwLWZmMFJscXJRbU4zbk1pcm5oVG40NjJOYnp4SGdqSlZJYUhOM1lkSEdBZF9wYXZaVmdKQW5RWkdiOUxLTlRfN09MWXY0MmVwTW5jX09VNUZXcXBnXzg5MTJHeVdvbF9zOWw2cWUzWjE2M3djdW9sUkZHMlVpUzFYc050R25jZ3h4SmNVQklCb1BiRmFGTXVXMnJhOGJKaXFqc2N2YW13WFZnQWRjd2ZWaGVCM09BdkE?oc=5",
+          "fuente": "KING5.com",
+          "fecha": "2026-07-23",
+          "extracto": "Newmont: Q2 Earnings Snapshot KING5.com",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "RESULTADOS",
+          "coincidencias_categoria": 1,
+          "peso_categoria": 1.0,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 28,
+          "decaimiento": 0.0625,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0084
+        },
+        {
+          "titulo": "Pacer Advisors Inc. Decreases Stock Position in Newmont Corporation $NEM - MarketBeat",
+          "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxONkw4UWtRQ2RDQ0dFTU9LTXpENmMzel9Nam1uUnJ5UzZ0Y2NxSmp4aEtpVFQ2Qzg4clpuTmQ3bTY3aXdOWTdid0xXbGRPU1RLWDFnZHJVMVRYcnY4MzJUdFVNQ0s0aHowXzN3SkVBeTg5N2d1eHF6NDBrYXcxbldxYnN3Sk1OeXBDdlJRYk8xeHpEU3I2d2tkaVB4ajM1UjNFX3VHT0tMYkRvb0gyMWNjZDlPTkdxY0xIQ2ZxWmIxczRnb1lBTzlfMllJZw?oc=5",
+          "fuente": "MarketBeat",
+          "fecha": "2026-08-03",
+          "extracto": "Pacer Advisors Inc. Decreases Stock Position in Newmont Corporation $NEM MarketBeat",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 17,
+          "decaimiento": 0.1857,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0063
+        },
+        {
+          "titulo": "Newmont shares dip as Q2 results miss on top and bottom lines - Investing.com",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNTmkwNngxaU9hSUpPRHdsdVZtMnByTExtblpQQzQ0dmdZSmI5ZFBsTTBrSGNNRWVPZG9PSDU4NVYzd3Q4ZjNBb1dyQXFuRXJyd2RsdG91bHNYSlNCYVY5dGdJMU1QcXdxNGE2S0lQTFFKckxzSHp2SlNzX1QxYTJDSWpadUtsQmQ5UWJPMndjQjg2aGhiNTJJMXRQS19OWVJmdGEtdThmLW14V0ZxQlRET1R0dDc?oc=5",
+          "fuente": "Investing.com",
+          "fecha": "2026-07-23",
+          "extracto": "Newmont shares dip as Q2 results miss on top and bottom lines Investing.com",
+          "tipo_fuente": "AGREGADOR",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.45,
+          "dias_antiguedad": 28,
+          "decaimiento": 0.0625,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0032
+        },
+        {
+          "titulo": "Newmont Corporation CHESS (NEM) Gets a Buy from UBS - The Globe and Mail",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxQVzhzZUFwRTM2Rl9PaXhTYVdZQWI4REFMaXpqeFNsRDVndnYwMVNSdWg1cE5KdjRPMzU0R3FSeTVWSl9hdXkxOTdaZmY5ZWxGVFoxZVZiVExnMWxEazlIbXBnY0VHZXR6OVM3MndRa0JEdGk3aFlSTlhCN1hPamtPRXNwOWFhaGRuUVNvMHg3ZGFVUW5FYnI5Z1lOdlBjWl9PV0tZMGdqa1lBWldsZVhGeVZKU0cwMkRpeXdaNy1vZGNBQVdzcUc1QTJLdGNzZw?oc=5",
+          "fuente": "The Globe and Mail",
+          "fecha": "2026-07-27",
+          "extracto": "Newmont Corporation CHESS (NEM) Gets a Buy from UBS The Globe and Mail",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 24,
+          "decaimiento": 0.0929,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0031
+        },
+        {
+          "titulo": "Why Newmont (NEM) Stock Is Up 3.7% Today - Quiver Quantitative",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPbzFjTmFnYU5tQld3eE8tY3RTSFJXTmFfVXYxRkhVN2E0SXFhNzVINktDdmE0OS1VaHh2b2JYVkc3M3lHbk16MG5KOXFpSUVyWEtZWWg2MHpYa2hxQnNNZHRCdmRZbkwyM2ViblluZkFiRGlCQmdWcHltdGpuclFTeC0wQ3lUQQ?oc=5",
+          "fuente": "Quiver Quantitative",
+          "fecha": "2026-07-22",
+          "extracto": "Why Newmont (NEM) Stock Is Up 3.7% Today Quiver Quantitative",
+          "tipo_fuente": "DESCONOCIDA",
+          "buscadores": [
+            "google_news_rss"
+          ],
+          "fuentes_corroborantes": [
+            "news.google.com"
+          ],
+          "n_corroboraciones": 1,
+          "categoria": "OTROS",
+          "coincidencias_categoria": 0,
+          "peso_categoria": 0.25,
+          "credibilidad": 0.3,
+          "dias_antiguedad": 29,
+          "decaimiento": 0.0566,
+          "factor_corroboracion": 1.0,
+          "ruido_promocional": false,
+          "direccion": "NEUTRA",
+          "terminos_alcistas": 0,
+          "terminos_bajistas": 0,
+          "probabilidad_impacto": 0.0019
+        }
+      ],
+      "n_items": 13,
+      "category_counts": {
+        "OTROS": 7,
+        "RESULTADOS": 5,
+        "ALIANZA": 1
+      },
+      "sources_ok": [
+        "sec_8k",
+        "google_news_rss"
+      ],
+      "sources_failed": [
+        {
+          "buscador": "tavily",
+          "motivo": "TavilyNoDisponible: TAVILY_API_KEY no está definida en el entorno"
+        }
+      ],
+      "from_cache": false,
+      "advisory_only": true,
+      "signals": [
+        "OTROS (2026-08-18, AGREGADOR, p=0.04): StrikePoint Announces Agreement to Purchase the Northumberland Project, a Gold Deposit in Nevada’s Walker Lane",
+        "RESULTADOS (2026-07-23, SEC_8K, p=0.03): Newmont Corporation presenta el formulario 8-K (Ítem 2.02: Results of Operations and Financial Condition)",
+        "ALIANZA (2026-08-10, DESCONOCIDA, p=0.03): Barrick and Newmont Reach Agreement Regarding Nevada Gold Mines Joint Venture - Barrick Mining Corporation",
+        "OTROS (2026-08-14, DESCONOCIDA, p=0.02): Newmont & Barrick Settle Nevada Gold Mines Dispute Clearing Barrick IPO Path - Streetwise Reports",
+        "OTROS (2026-08-13, DESCONOCIDA, p=0.02): Headwater Gold Signs New Earn-In Agreement with Newmont on the Jupiter Project, Nevada - Nasdaq"
+      ],
+      "summary": "Newmont Corporation ha reorganizado su portera mediante la venta del proyecto aurífero Northumberland en Nevada a StrikePoint y ha alcanzado nuevos acuerdos con Barrick en su empresa conjunta Nevada Gold Mines, además de reportar sus recientes resultados financieros. Estos movimientos corporativos y estratégicos redefinen su posicionamiento en activos clave, aunque su impacto directo en el precio se mantiene incierto y de baja probabilidad a corto plazo."
+    },
+    "debate_report": {
+      "bullish_case": "TESIS ALCISTA (NEM): Excelente crecimiento de ingresos (15.1%) demostrando expansión de mercado. Margen neto sólido del 33.4%, garantizando rentabilidad y generación de caja. Estructura técnica con clasificación NEUTRAL y RSI de 84.0 en zona de fuerte impulso.",
+      "bearish_case": "TESIS BAJISTA (NEM): RSI en nivel elevado (84.0), vulnerable a correcciones de corto plazo. Discrepancias encontradas en la reconciliación multi-fuente de datos.",
+      "synthesis": "A continuación, se presenta la síntesis del debate de inversión sobre Newmont (NEM):\n\n**Resumen del Debate:**\n*   **Argumentos Alcistas:** La tesis alcista se sustenta en un excelente crecimiento de los ingresos del 15.1% que refleja una clara expansión de mercado, acompañado de un sólido margen neto del 33.4% que garantiza rentabilidad y una fuerte generación de caja. Desde el punto de vista técnico, muestra un impulso fuerte, aunque con una clasificación neutral.\n*   **Argumentos Bajistas:** La principal preocupación radica en su RSI de 84.0, un nivel extremadamente elevado que deja al valor altamente vulnerable a correcciones de corto plazo. Además, se han detectado discrepancias en la reconciliación multi-fuente de datos, lo que añade incertidumbre operativa, un factor respaldado por un flujo de noticias irrelevante para alterar el dictamen actual.\n\n**Conclusión Imparcial:**\nNewmont (NEM) presenta fundamentales financieros excepcionales, respaldados por un robusto crecimiento de ingresos y una alta rentabilidad que justifican el interés a mediano y largo plazo. No obstante, el indicador RSI en 84.0 advierte sobre un claro riesgo de sobrecompra y una inminente corrección técnica en el corto plazo. Por lo tanto, los inversores deben sopesar la solidez del negocio frente a un momento de entrada técnicamente desfavorable, priorizando la prudencia hasta que se disipen las discrepancias de datos y se alivie la presión alcista en el precio."
+    },
+    "final_decision": {
+      "rating": "MANTENER",
+      "position_size_pct": "2.0% - 3.0%",
+      "current_price": 127.78500366210938,
+      "stop_loss_atr": 118.01,
+      "take_profit_atr": 144.9,
+      "rationale": "Fundamentales aprobados con éxito. Momentum técnico classified como NEUTRAL. Síntesis de debate: A continuación, se presenta la síntesis del debate de inversión sobre Newmont (NEM):\n\n**Resumen del Debate:**\n*   **Argumentos Alcistas:** La tesis alcista se sustenta en un excelente crecimiento de los ingresos del 15.1% que refleja una clara expansión de mercado, acompañado de un sólido margen neto del 33.4% que garantiza rentabilidad y una fuerte generación de caja. Desde el punto de vista técnico, muestra un impulso fuerte, aunque con una clasificación neutral.\n*   **Argumentos Bajistas:** La principal preocupación radica en su RSI de 84.0, un nivel extremadamente elevado que deja al valor altamente vulnerable a correcciones de corto plazo. Además, se han detectado discrepancias en la reconciliación multi-fuente de datos, lo que añade incertidumbre operativa, un factor respaldado por un flujo de noticias irrelevante para alterar el dictamen actual.\n\n**Conclusión Imparcial:**\nNewmont (NEM) presenta fundamentales financieros excepcionales, respaldados por un robusto crecimiento de ingresos y una alta rentabilidad que justifican el interés a mediano y largo plazo. No obstante, el indicador RSI en 84.0 advierte sobre un claro riesgo de sobrecompra y una inminente corrección técnica en el corto plazo. Por lo tanto, los inversores deben sopesar la solidez del negocio frente a un momento de entrada técnicamente desfavorable, priorizando la prudencia hasta que se disipen las discrepancias de datos y se alivie la presión alcista en el precio.",
+      "summary": "**ORDEN EJECUTIVA DE INVERSIÓN – NEM**\n\nTras una rigurosa evaluación que valida nuestros sólidos fundamentales pero advierte sobre un riesgo inminente de sobrecompra técnica (RSI de 84.0), se emite un dictamen de **MANTENER** con una asignación de cartera ajustada entre **2.0% y 3.0%**. Para mitigar la volatilidad de corto plazo, establecemos estrictamente un **Stop-Loss ATR en $118.01** y un **Take-Profit ATR en $144.9**, operando desde el precio actual de $127.79 bajo una estricta gestión de riesgos. Esta directriz prioriza la prudencia institucional a la espera de que el mercado asimile las discrepancias de datos y alivie la actual presión compradora."
+    },
+    "passed_fundamental_gatekeeper": true,
+    "workflow_status": "COMPLETED",
+    "logs": [
+      "[Ingesta] Recolectando datos multi-fuente para NEM...",
+      "[Reconciliación] Puntuación de confianza: 0.85, Fuentes: ['yfinance', 'SEC EDGAR (Oficial)', 'Finnhub']",
+      "[Gatekeeper Fundamental] Evaluando salud financiera para NEM...",
+      "[Gatekeeper Fundamental] Resultado: APROBADO -> Continuando a Análisis Técnico",
+      "[Analista de Noticias] 13 noticia(s) | Impacto: BAJA (0.14) | Dirección: INCIERTA | Fuentes sin respuesta: tavily",
+      "[Analista de Noticias] Capa ASESORA: no altera el rating ni el sizing.",
+      "[Analista Técnico] Evaluando indicadores de momentum para NEM...",
+      "[Analista Técnico] Momentum clasificado como: NEUTRAL",
+      "[Capa de Debate] Ejecutando confrontación Bullish vs Bearish para NEM...",
+      "[Capa de Debate] Síntesis finalizada.",
+      "[Fund Manager] Sintetizando informes y emitiendo recomendación final para NEM...",
       "[Fund Manager] DICTAMEN FINAL: MANTENER"
     ]
   }
