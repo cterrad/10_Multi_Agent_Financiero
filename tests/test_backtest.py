@@ -57,21 +57,64 @@ class StubPriceStore:
         return w if not w.empty else None
 
 
-class StubFundamentals:
-    """Fundamentales que siempre aprueban el gatekeeper."""
+def _serie(valor, factor=0.85, n=2):
+    """Serie anual sintética: el ejercicio más reciente y otro peor detrás."""
+    return [valor * (factor ** i) for i in range(n)]
 
-    def __init__(self, available=True, **overrides):
+
+class StubFundamentals:
+    """
+    Fundamentales que siempre aprueban el gatekeeper.
+
+    Implementa también `estados_financieros()` porque el `QualityAnalystAgent`
+    entró en la ruta de decisión del replay: sin estados, el agente degradaría
+    a DATOS_INSUFICIENTES y el Fund Manager limitaría todo a MANTENER, con lo
+    que los tests de la tabla de decisión dejarían de probar lo que dicen
+    probar.
+    """
+
+    def __init__(self, available=True, con_estados=True, **overrides):
         self.base = {"revenue_growth": 0.20, "net_margin": 0.15, "debt_to_equity": 1.0,
-                     "roe": 0.30, "pe_ratio": 20.0, "market_cap": 0,
+                     "roe": 0.30, "pe_ratio": 20.0, "market_cap": 1.0e10,
                      "available": available, "as_of_period_end": "2019-12-31",
                      "filed": "2020-02-15"}
         self.base.update(overrides)
+        self.con_estados = con_estados
 
     def as_of(self, ticker, date):
         return dict(self.base)
 
     def sec_payload(self, ticker, date):
         return {"status": "NOT_USED", "source": "SEC EDGAR"}
+
+    def estados_financieros(self, ticker, date):
+        if not self.con_estados:
+            return {"disponible": False, "bloques_ok": [],
+                    "bloques_fallidos": ["balance", "resultados", "flujos"],
+                    "balance": {}, "resultados": {}, "flujos": {}}
+        return {
+            "disponible": True, "bloques_ok": ["balance", "resultados", "flujos"],
+            "bloques_fallidos": [],
+            "balance": {
+                "activos_totales": _serie(1.0e10), "pasivos_totales": _serie(4.0e9),
+                "patrimonio": _serie(6.0e9), "activo_corriente": _serie(3.0e9),
+                "pasivo_corriente": _serie(1.2e9), "beneficios_retenidos": _serie(3.5e9),
+                "deuda_largo_plazo": _serie(1.8e9), "deuda_total": _serie(2.0e9),
+                "acciones_emitidas": _serie(5.0e8, 1.005), "efectivo": _serie(1.0e9),
+                "inmovilizado": _serie(3.0e9), "fondo_comercio": [], "intangibles": [],
+            },
+            "resultados": {
+                "ingresos": _serie(5.0e9), "beneficio_bruto": _serie(2.75e9),
+                "ebit": _serie(1.25e9), "beneficio_neto": _serie(7.5e8),
+                "gastos_financieros": _serie(8.0e7), "impuestos": _serie(2.0e8),
+                "beneficio_antes_impuestos": _serie(9.5e8),
+            },
+            "flujos": {
+                "flujo_operativo": _serie(9.0e8), "capex": _serie(-3.0e8),
+                "flujo_libre": _serie(6.0e8), "dividendos_pagados": [], "recompras": [],
+            },
+            "reconstruido_point_in_time": True,
+        }
 
 
 # --------------------------------------------------------------------------- #
@@ -218,24 +261,67 @@ def test_llm_is_decision_neutral():
 
 def test_replay_matches_production_decision_table():
     """
-    El replay debe reproducir la tabla de decisión de `fund_manager.py:43-65`,
-    no una reimplementación suya.
+    El replay debe reproducir la tabla de decisión del `FundManagerAgent`, no
+    una reimplementación suya.
+
+    Los múltiplos de ATR ya no son constantes: dependen del estilo asignado por
+    el Analista de Calidad (`ATR_AJUSTE_POR_ESTILO`), porque una compounder y
+    una cíclica volátil no necesitan el mismo aire. El test los lee de la misma
+    tabla que usa producción en lugar de fijar 2.0 y 3.5 a mano — así sigue
+    detectando una reimplementación en la capa de backtest, que es lo que debe
+    vigilar, sin romperse cada vez que se recalibra un múltiplo.
     """
+    from src.config import ATR_AJUSTE_POR_ESTILO
+
     df = make_prices(n=400, drift=0.0015, vol=0.008, seed=3)  # tendencia clara
     r = HistoricalReplayer(StubPriceStore({"T": df}), StubFundamentals(), mode="pit")
     s = r.signal("T", df.index[-1])
     assert s is not None
-    assert s.rating in {"COMPRA FUERTE", "COMPRA", "MANTENER", "VENTA", "VENTA FUERTE"}
+    assert s.rating in {"COMPRA FUERTE", "COMPRA", "MANTENER", "VENTA",
+                        "VENTA FUERTE", "SIN OPINION"}
 
     if s.rating in ("COMPRA FUERTE", "COMPRA"):
-        # SL = close - 2.0*ATR y TP = close + 3.5*ATR, redondeados a 2 decimales.
-        assert s.stop_loss == pytest.approx(round(s.close - 2.0 * s.atr, 2))
-        assert s.take_profit == pytest.approx(round(s.close + 3.5 * s.atr, 2))
-    if s.rating == "COMPRA FUERTE":
-        assert s.momentum == "ALCISTA_FUERTE" and s.rsi < 70
-        assert s.target_weight == pytest.approx(0.09)
-    if s.rating == "COMPRA":
-        assert s.target_weight == pytest.approx(0.055)
+        ajuste = ATR_AJUSTE_POR_ESTILO.get(s.estilo, ATR_AJUSTE_POR_ESTILO["MIXTA"])
+        assert s.stop_loss == pytest.approx(round(s.close - ajuste["stop"] * s.atr, 2))
+        assert s.take_profit == pytest.approx(round(s.close + ajuste["objetivo"] * s.atr, 2))
+        # El peso ya no sale de una tabla del backtest: lo emite el Fund Manager.
+        assert 0.0 < s.target_weight <= 0.10
+    else:
+        assert s.target_weight == 0.0
+
+
+def test_signal_arrastra_el_dictamen_de_calidad():
+    """
+    El replay ejecuta el Analista de Calidad y propaga su dictamen.
+
+    Desde que la convicción fundamental entra en el rating, omitirlo en el
+    backtest mediría una lógica distinta de la que decide en producción.
+    """
+    df = make_prices(n=400, drift=0.0015, vol=0.008, seed=3)
+    r = HistoricalReplayer(StubPriceStore({"T": df}), StubFundamentals(), mode="pit")
+    s = r.signal("T", df.index[-1])
+    assert s is not None
+    assert s.estilo is not None and s.estilo != "DATOS_INSUFICIENTES"
+    assert s.conviccion is not None and 0.0 <= s.conviccion <= 100.0
+    assert s.banderas_rojas >= 0
+
+
+def test_sin_estados_financieros_la_calidad_limita_el_dictamen():
+    """
+    Sin estados financieros reconstruibles, el sistema no puede tener
+    convicción y el Fund Manager no debe emitir una compra.
+
+    Es la traducción operativa de «no sé, luego no arriesgo»: la degradación
+    tiene que ser hacia la prudencia, nunca hacia una compra por defecto.
+    """
+    df = make_prices(n=400, drift=0.0015, vol=0.008, seed=3)
+    sin_estados = StubFundamentals(con_estados=False)
+    r = HistoricalReplayer(StubPriceStore({"T": df}), sin_estados, mode="pit")
+    s = r.signal("T", df.index[-1])
+    assert s is not None
+    assert s.estilo == "DATOS_INSUFICIENTES"
+    assert s.rating not in ("COMPRA", "COMPRA FUERTE")
+    assert s.target_weight == 0.0
 
 
 def test_gatekeeper_rejection_forces_sell_and_no_levels():
@@ -481,3 +567,134 @@ def test_backtest_is_deterministic():
                            BacktestConfig(), verbose=False)
         curves.append(res["equity"])
     pd.testing.assert_series_equal(curves[0], curves[1])
+
+
+# --------------------------------------------------------------------------- #
+# 9. Integración de la capa de cartera en el motor histórico
+# --------------------------------------------------------------------------- #
+def _señal(ticker, *, sector="Technology", peso=0.10, close=100.0, stop=90.0,
+           estilo="CALIDAD_COMPUESTA", conviccion=70.0, vol=0.25,
+           fecha="2021-06-30"):
+    return Signal(
+        ticker=ticker, date=pd.Timestamp(fecha), rating="COMPRA",
+        momentum="ALCISTA", passed_gatekeeper=True, close=close, atr=close * 0.02,
+        rsi=55.0, stop_loss=stop, take_profit=close * 1.2, target_weight=peso,
+        sector=sector, estilo=estilo, conviccion=conviccion, volatilidad=vol,
+    )
+
+
+def _motor(tickers, fecha="2021-06-30"):
+    from src.backtest.engine import BacktestConfig, PortfolioEngine
+    precios = {t: make_prices(n=400, start="2020-01-01", seed=i + 1)
+               for i, t in enumerate(tickers)}
+    # El calendario sintético no contiene la fecha exacta: se usa la última
+    # sesión disponible, que es lo que hace el bucle real.
+    fecha = precios[tickers[0]].index[-1]
+    return PortfolioEngine(precios, BacktestConfig()), precios, fecha
+
+
+def test_el_motor_aplica_el_tope_sectorial_de_la_capa_de_cartera():
+    """
+    Antes el backtest escalaba los pesos proporcionalmente hasta llenar la
+    exposición bruta y nada más: sin límite sectorial, la cartera simulada
+    podía concentrar todo el capital en un sector y las métricas describían una
+    estrategia distinta de la que el sistema recomienda en vivo.
+    """
+    from src.backtest.engine import BacktestConfig, build_orders
+    from src.config import LIMITE_POR_SECTOR
+    from src.portfolio import PortfolioConstructor
+
+    tickers = list("ABCDE")
+    engine, precios, fecha = _motor(tickers)
+    señales = [_señal(t, sector="Technology", peso=0.10, fecha=fecha) for t in tickers]
+
+    ordenes = build_orders(señales, engine, fecha, BacktestConfig(),
+                           PortfolioConstructor())
+    equity = engine.equity_at(fecha)
+    peso_total = sum(o["notional"] for o in ordenes if o["side"] == "BUY") / equity
+    assert peso_total <= LIMITE_POR_SECTOR + 1e-6
+
+
+def test_sin_constructor_el_motor_conserva_el_reparto_proporcional():
+    """`technical_only` no tiene convicciones que ordenar: se mantiene el reparto."""
+    from src.backtest.engine import BacktestConfig, build_orders
+    from src.config import LIMITE_POR_SECTOR
+
+    tickers = list("ABCDE")
+    engine, precios, fecha = _motor(tickers)
+    señales = [_señal(t, sector="Technology", peso=0.10, fecha=fecha) for t in tickers]
+
+    ordenes = build_orders(señales, engine, fecha, BacktestConfig(), None)
+    equity = engine.equity_at(fecha)
+    peso_total = sum(o["notional"] for o in ordenes if o["side"] == "BUY") / equity
+    assert peso_total > LIMITE_POR_SECTOR  # el reparto antiguo no conoce sectores
+
+
+def test_las_correlaciones_del_motor_se_calculan_solo_con_el_pasado():
+    """
+    Una matriz de correlaciones calculada con datos posteriores a `t` sería
+    look-ahead del más difícil de detectar: no cambia ninguna señal, solo los
+    pesos. `_series_hasta` corta en `t` inclusive.
+    """
+    from src.backtest.engine import _series_hasta
+
+    tickers = list("AB")
+    engine, precios, fecha = _motor(tickers)
+    corte = precios["A"].index[250]
+
+    series = _series_hasta(precios, tickers, corte, 120)
+    assert series, "sin series no se puede verificar el corte"
+    for t, serie in series.items():
+        assert serie.index.max() <= corte
+
+
+def test_las_operaciones_arrastran_el_estilo_para_atribucion():
+    """
+    Sin el estilo en el registro de operaciones no se puede responder si el
+    sistema pierde dinero en valor, en crecimiento o de forma transversal — la
+    hipótesis que el informe anterior planteaba sin poder medir.
+    """
+    from src.backtest.engine import BacktestConfig, PortfolioEngine, build_orders
+    from src.portfolio import PortfolioConstructor
+
+    engine, precios, fecha = _motor(["A"])
+    ordenes = build_orders([_señal("A", peso=0.05, fecha=fecha)], engine, fecha,
+                           BacktestConfig(), PortfolioConstructor())
+    compra = next(o for o in ordenes if o["side"] == "BUY")
+    assert compra["estilo"] == "CALIDAD_COMPUESTA"
+    assert compra["conviccion"] == 70.0
+    assert compra["volatilidad"] == 0.25
+
+    # Y llegan a la posición y de ahí al Trade.
+    siguiente = precios["A"].index[precios["A"].index.get_loc(fecha)]
+    engine.schedule(ordenes)
+    engine.process_open(siguiente)
+    pos = engine.positions.get("A")
+    if pos is not None:
+        assert pos.estilo == "CALIDAD_COMPUESTA"
+        engine.liquidate(siguiente)
+        assert engine.trades[0].estilo == "CALIDAD_COMPUESTA"
+
+
+def test_las_posiciones_abiertas_consumen_presupuesto_en_el_motor():
+    """El tope sectorial debe contar lo que ya está en cartera, no solo lo nuevo."""
+    from src.backtest.engine import BacktestConfig, build_orders, Position
+    from src.config import LIMITE_POR_SECTOR
+    from src.portfolio import PortfolioConstructor
+
+    tickers = ["A", "B"]
+    engine, precios, fecha = _motor(tickers)
+    precio_a = float(precios["A"].loc[fecha, "Close"])
+    # Posición abierta que ya ocupa el 25% del patrimonio en Technology.
+    engine.cash = 75_000.0
+    engine.positions["A"] = Position(
+        ticker="A", shares=25_000.0 / precio_a, entry_price=precio_a,
+        entry_date=fecha, stop=precio_a * 0.9, target=precio_a * 1.2,
+        rating="COMPRA", sector="Technology", cost_basis=25_000.0,
+        estilo="CALIDAD_COMPUESTA", conviccion=70.0, volatilidad=0.25)
+
+    ordenes = build_orders([_señal("B", sector="Technology", peso=0.10, fecha=fecha)],
+                           engine, fecha, BacktestConfig(), PortfolioConstructor())
+    equity = engine.equity_at(fecha)
+    nuevo = sum(o["notional"] for o in ordenes if o["side"] == "BUY") / equity
+    assert nuevo <= LIMITE_POR_SECTOR - 0.25 + 1e-6

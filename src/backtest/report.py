@@ -327,6 +327,7 @@ def generate_report(results: Dict[str, Any], out_dir: Path) -> Path:
 
     a("\n## 5. Atribución\n")
     for label, df in [("Por rating de entrada", results.get("attr_rating")),
+                      ("Por estilo de inversion", results.get("attr_estilo")),
                       ("Por sector", results.get("attr_sector")),
                       ("Por motivo de salida", results.get("attr_exit")),
                       ("Por año de salida", results.get("attr_year"))]:

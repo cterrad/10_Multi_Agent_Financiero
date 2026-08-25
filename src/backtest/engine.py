@@ -21,6 +21,8 @@ import numpy as np
 import pandas as pd
 
 from src.backtest.replay import Signal
+from src.config import CORRELACION_VENTANA_DIAS
+from src.portfolio import PortfolioConstructor
 
 
 @dataclass
@@ -52,6 +54,13 @@ class Position:
     rating: str
     sector: str
     cost_basis: float          # efectivo desembolsado, comisión incluida
+    # Dictamen del Analista de Calidad en el momento de la entrada. Se arrastra
+    # al registro de operaciones para poder atribuir el resultado por ESTILO:
+    # sin esto no se puede responder si el sistema pierde dinero en valor, en
+    # crecimiento o en ambos, que es la pregunta abierta del informe anterior.
+    estilo: Optional[str] = None
+    conviccion: Optional[float] = None
+    volatilidad: Optional[float] = None
 
 
 @dataclass
@@ -59,6 +68,8 @@ class Trade:
     ticker: str
     sector: str
     rating: str
+    estilo: Optional[str]
+    conviccion: Optional[float]
     entry_date: pd.Timestamp
     entry_price: float
     exit_date: pd.Timestamp
@@ -127,6 +138,7 @@ class PortfolioEngine:
         pnl = proceeds - pos.cost_basis
         self.trades.append(Trade(
             ticker=pos.ticker, sector=pos.sector, rating=pos.rating,
+            estilo=pos.estilo, conviccion=pos.conviccion,
             entry_date=pos.entry_date, entry_price=pos.entry_price,
             exit_date=date, exit_price=fill, shares=pos.shares,
             exit_reason=reason, pnl=pnl,
@@ -158,6 +170,8 @@ class PortfolioEngine:
             stop=order.get("stop"), target=order.get("target"),
             rating=order["rating"], sector=order.get("sector", "Desconocido"),
             cost_basis=gross + commission,
+            estilo=order.get("estilo"), conviccion=order.get("conviccion"),
+            volatilidad=order.get("volatilidad"),
         )
 
     def process_open(self, date: pd.Timestamp) -> None:
@@ -241,14 +255,64 @@ class PortfolioEngine:
     def trades_frame(self) -> pd.DataFrame:
         if not self.trades:
             return pd.DataFrame(columns=[
-                "ticker", "sector", "rating", "entry_date", "entry_price", "exit_date",
+                "ticker", "sector", "rating", "estilo", "conviccion",
+                "entry_date", "entry_price", "exit_date",
                 "exit_price", "shares", "exit_reason", "pnl", "ret", "holding_days"])
         return pd.DataFrame([t.__dict__ for t in self.trades])
 
 
 # --------------------------------------------------------------------------- #
+def _resultado_desde_señal(s: Signal) -> Dict[str, Any]:
+    """
+    Adapta una `Signal` al formato que consume `PortfolioConstructor`.
+
+    La capa de cartera es la MISMA que usa `cli.py` en vivo. Este adaptador
+    existe para no duplicarla: si el backtest reimplementara los límites
+    sectoriales o el presupuesto de riesgo, volvería a haber reglas de decisión
+    fuera de su sitio, que es lo que la arquitectura del proyecto prohíbe.
+    """
+    return {
+        "ticker": s.ticker,
+        "company_name": s.ticker,
+        "sector": s.sector,
+        "quality_report": {"style_classification": s.estilo,
+                           "conviccion_fundamental": {"valor": s.conviccion}},
+        "technical_report": {"volatilidad_anual": s.volatilidad},
+        "final_decision": {
+            "rating": s.rating,
+            "peso_objetivo": s.target_weight,
+            "current_price": s.close,
+            "stop_loss_atr": s.stop_loss,
+            "take_profit_atr": s.take_profit,
+            "dimensionado": {"motivo": f"dictamen {s.rating}"},
+        },
+    }
+
+
+def _series_hasta(price_data: Dict[str, pd.DataFrame], tickers: List[str],
+                  date: pd.Timestamp, sesiones: int) -> Dict[str, pd.Series]:
+    """
+    Cierres de cada ticker HASTA `date` inclusive.
+
+    El corte es la razón de que esta función exista en lugar de pasar el
+    histórico completo: una matriz de correlaciones calculada con datos
+    posteriores a `t` sería look-ahead puro, y del más difícil de detectar
+    porque no cambia ninguna señal — solo los pesos.
+    """
+    out: Dict[str, pd.Series] = {}
+    for t in tickers:
+        df = price_data.get(t)
+        if df is None:
+            continue
+        serie = df.loc[df.index <= date, "Close"].tail(sesiones + 5)
+        if len(serie) >= 30:
+            out[t] = serie
+    return out
+
+
 def build_orders(signals: List[Signal], engine: PortfolioEngine,
-                 date: pd.Timestamp, cfg: BacktestConfig) -> List[Dict[str, Any]]:
+                 date: pd.Timestamp, cfg: BacktestConfig,
+                 constructor: Optional[PortfolioConstructor] = None) -> List[Dict[str, Any]]:
     """
     Traduce las señales del cierre de `date` en órdenes para la apertura de la
     sesión siguiente.
@@ -258,10 +322,22 @@ def build_orders(signals: List[Signal], engine: PortfolioEngine,
     día (por ejemplo, sin fundamentales publicados) se MANTIENE: la ausencia de
     dato no es una señal de venta, y tratarla como tal generaría rotación
     fantasma.
+
+    El dimensionamiento lo hace `PortfolioConstructor`, la misma capa que usa
+    `cli.py`. Antes el backtest escalaba los pesos proporcionalmente hasta
+    llenar la exposición bruta y nada más: no había límite sectorial, ni
+    penalización por correlación, ni presupuesto de riesgo agregado. La cartera
+    simulada podía por tanto concentrar todo el capital en un sector o en cinco
+    valores que se movían al unísono, y las métricas resultantes describían una
+    estrategia distinta de la que el sistema recomienda hoy en vivo.
+
+    Con `constructor=None` se conserva el reparto proporcional antiguo, que
+    sigue siendo el comportamiento del régimen `technical_only`: ahí no hay
+    Analista de Calidad y las convicciones son todas nulas, así que la capa de
+    cartera no tendría nada que ordenar.
     """
     orders: List[Dict[str, Any]] = []
     by_ticker = {s.ticker: s for s in signals}
-    buys = [s for s in signals if s.is_buy]
 
     for ticker, pos in engine.positions.items():
         sig = by_ticker.get(ticker)
@@ -271,42 +347,91 @@ def build_orders(signals: List[Signal], engine: PortfolioEngine,
     equity = engine.equity_at(date)
     held = set(engine.positions.keys())
     sold = {o["ticker"] for o in orders}
-    new_buys = [s for s in buys if s.ticker not in held]
+    new_buys = [s for s in signals if s.is_buy and s.ticker not in held]
     if not new_buys or equity <= 0:
         return orders
 
-    # Peso comprometido por las posiciones que se mantienen.
+    # Posiciones que se mantienen: consumen presupuesto sectorial, de riesgo y
+    # de exposición, pero no se reescalan.
+    existentes: List[Dict[str, Any]] = []
     committed = 0.0
     for ticker, pos in engine.positions.items():
         if ticker in sold:
             continue
         px = engine._last_close(ticker, date)
-        if px:
-            committed += (pos.shares * px) / equity
+        if not px:
+            continue
+        peso = (pos.shares * px) / equity
+        committed += peso
+        existentes.append({
+            "ticker": ticker, "sector": pos.sector, "peso": peso,
+            "rating": pos.rating, "estilo": pos.estilo, "conviccion": pos.conviccion,
+            "precio": px, "stop": pos.stop, "volatilidad": pos.volatilidad,
+        })
 
-    budget = max(0.0, cfg.max_gross_exposure - committed)
-    wanted = sum(s.target_weight for s in new_buys)
-    scale = min(1.0, budget / wanted) if wanted > 0 else 0.0
-    if scale <= 0:
+    if constructor is None:
+        # Reparto proporcional hasta llenar la exposición bruta (comportamiento
+        # histórico, conservado para `technical_only`).
+        budget = max(0.0, cfg.max_gross_exposure - committed)
+        wanted = sum(s.target_weight for s in new_buys)
+        scale = min(1.0, budget / wanted) if wanted > 0 else 0.0
+        if scale <= 0:
+            return orders
+        for s in sorted(new_buys, key=lambda x: -x.target_weight):
+            notional = equity * s.target_weight * scale
+            if notional > 0:
+                orders.append({
+                    "side": "BUY", "ticker": s.ticker, "notional": notional,
+                    "stop": s.stop_loss, "target": s.take_profit,
+                    "rating": s.rating, "sector": s.sector,
+                    "estilo": s.estilo, "conviccion": s.conviccion,
+                    "volatilidad": s.volatilidad,
+                })
         return orders
 
-    for s in sorted(new_buys, key=lambda x: -x.target_weight):
-        notional = equity * s.target_weight * scale
+    tickers_matriz = [s.ticker for s in new_buys] + [e["ticker"] for e in existentes]
+    series = _series_hasta(engine.px, tickers_matriz, date, CORRELACION_VENTANA_DIAS)
+
+    cartera = constructor.construir(
+        [_resultado_desde_señal(s) for s in new_buys],
+        series_precios=series,
+        posiciones_existentes=existentes,
+    )
+
+    por_ticker = {s.ticker: s for s in new_buys}
+    for p in cartera.posiciones:
+        if p.fija or p.peso_final <= 0:
+            continue
+        s = por_ticker.get(p.ticker)
+        if s is None:
+            continue
+        notional = equity * p.peso_final
         if notional <= 0:
             continue
         orders.append({
             "side": "BUY", "ticker": s.ticker, "notional": notional,
             "stop": s.stop_loss, "target": s.take_profit,
             "rating": s.rating, "sector": s.sector,
+            "estilo": s.estilo, "conviccion": s.conviccion,
+            "volatilidad": s.volatilidad,
         })
     return orders
 
 
 def run_backtest(replayer, tickers: List[str], calendar: pd.DatetimeIndex,
                  rebal_dates: List[pd.Timestamp], price_data: Dict[str, pd.DataFrame],
-                 cfg: BacktestConfig, verbose: bool = True) -> Dict[str, Any]:
-    """Bucle diario principal. Devuelve curva de capital, operaciones y señales."""
+                 cfg: BacktestConfig, verbose: bool = True,
+                 usar_capa_de_cartera: bool = True) -> Dict[str, Any]:
+    """
+    Bucle diario principal. Devuelve curva de capital, operaciones y señales.
+
+    `usar_capa_de_cartera` enruta el dimensionamiento por `PortfolioConstructor`
+    —la misma capa que corre en vivo— en lugar del reparto proporcional
+    histórico. Se desactiva en el régimen `technical_only`, donde el Analista de
+    Calidad no interviene y todas las convicciones son nulas.
+    """
     engine = PortfolioEngine(price_data, cfg)
+    constructor = PortfolioConstructor(capital=cfg.initial_capital)         if usar_capa_de_cartera else None
     rebal = set(pd.DatetimeIndex(rebal_dates))
     all_signals: List[Signal] = []
 
@@ -318,7 +443,7 @@ def run_backtest(replayer, tickers: List[str], calendar: pd.DatetimeIndex,
         if date in rebal and i < len(calendar) - 1:
             sigs = replayer.signals_for_date(tickers, date)
             all_signals.extend(sigs)
-            engine.schedule(build_orders(sigs, engine, date, cfg))
+            engine.schedule(build_orders(sigs, engine, date, cfg, constructor))
             if verbose:
                 n_buy = sum(1 for s in sigs if s.is_buy)
                 print(f"  {date.date()}  señales={len(sigs):3d}  compras={n_buy:3d}  "
