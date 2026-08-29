@@ -18,23 +18,31 @@ El sistema organiza agentes analíticos especializados en un flujo condicional d
 ```mermaid
 graph TD
     A[Ticker de Entrada] --> B[Ingesta Multi-Fuente: SEC EDGAR + Finnhub + yfinance]
-    B --> CC[Consistency Checker - Reconciliación Cruzada]
-    CC --> C1[Gatekeeper Fundamental]
-    C1 -->|Rechazado: Salud Débil| D1[Estado: VENTA / VENTA FUERTE - Detiene Cómputo]
-    C1 -->|Aprobado: Crecimiento y Margen OK| E1[Analista Técnico de Momentum]
+    B --> CC[Consistency Checker - Reconciliación con procedencia]
+    CC --> Q1[Analista de Calidad y Valoración]
+    Q1 --> C1[Gatekeeper Fundamental]
+    Q1 --> N1[Analista de Noticias - capa asesora]
+    C1 --> J1[Unión de análisis]
+    N1 --> J1
+    J1 -->|Rechazado o sin datos| D1[VENTA / VENTA FUERTE / SIN OPINION]
+    J1 -->|Aprobado| E1[Analista Técnico de Momentum]
     E1 --> F1[Unidad de Debate: Bullish vs Bearish]
-    F1 --> G1[Síntesis de Mitigación de Sesgos]
-    G1 --> H1[Fund Manager - Decisión Final & Riesgo ATR]
-    H1 --> I1[Generación de daily_selection.md / JSON]
+    F1 --> H1[Fund Manager - Rating, tamaño y riesgo]
+    D1 --> H1
+    H1 --> P1[Construcción de cartera: correlación, sectores, riesgo agregado]
+    P1 --> I1[daily_selection.md / JSON]
 ```
 
 ### Componentes Principales
 
 * 🏛️ **Ingesta Multi-Fuente & Consistency Checker**: Extrae datos auditados directamente de la **SEC EDGAR API (10-K/10-Q)**, **Finnhub API** e **yfinance**. Valida consistencia cruzada y calcula un índice de confianza en los datos.
-* 🛡️ **Gatekeeper Fundamental (Filtro Inteligente)**: Evalúa crecimiento de ingresos, margen neto y relación deuda/capital. Si la empresa no aprueba la salud básica, detiene el flujo para evitar el gasto computacional de análisis técnicos innecesarios.
-* 📈 **Analista Técnico de Momentum (Technical ISA)**: Analiza **RSI (14)**, **MACD (12, 26, 9)**, **Bandas de Bollinger**, **Medias Móviles (SMA 50/200)** y **ATR (14)**.
-* ⚖️ **Capa de Debate & Mitigación de Sesgos**: Confrontación entre un **Bullish Researcher** y un **Bearish Researcher** (Abogado del Diablo) para evitar el sesgo de confirmación.
-* 💼 **Fund Manager**: Emite el dictamen final, calcula el porcentaje de cartera recomendado (%) y establece parámetros de riesgo basados en volatilidad ATR (**Stop-Loss** y **Take-Profit**).
+* 🛡️ **Gatekeeper Fundamental (Filtro Inteligente)**: Evalúa crecimiento de ingresos, margen neto y relación deuda/capital, con umbrales **ajustados por sector** (el apalancamiento de un banco no se juzga como el de una empresa de software). Emite tres veredictos: APROBADO, RECHAZADO y **DATOS_INSUFICIENTES** — porque la ausencia de un dato no es evidencia de deterioro.
+* 🎓 **Analista de Calidad y Valoración**: Codifica siete escuelas clásicas como reglas deterministas —**F-Score de Piotroski**, **Z-Score de Altman**, **Número de Graham**, **ROIC vs coste de capital (Buffett)**, **PEG (Lynch)**, **fórmula mágica (Greenblatt)** y **ratio de devengos (Sloan)**— y produce cuatro puntuaciones de 0 a 100 (calidad, valoración, crecimiento, solvencia), una convicción fundamental y una **etiqueta de estilo**: `VALOR`, `CRECIMIENTO`, `GARP`, `CALIDAD_COMPUESTA`, `CICLICA`, `TRAMPA_DE_VALOR` o `ESPECULATIVA`.
+* 📈 **Analista Técnico de Momentum (Technical ISA)**: **RSI (14)**, **MACD (12, 26, 9)**, **Bandas de Bollinger**, **SMA 50/200**, **ATR (14)** y momentum de precio a 12 meses **relativo al índice**. Produce una puntuación continua en `[-100, +100]`, monótona por construcción.
+* 📰 **Analista de Noticias** (capa **asesora**): estima la probabilidad de que la actualidad mueva la cotización. Aporta argumentos al debate y aparece en el informe, pero **no toca el rating ni el tamaño de posición**.
+* ⚖️ **Capa de Debate & Mitigación de Sesgos**: Confrontación entre un **Bullish Researcher** y un **Bearish Researcher** (Abogado del Diablo). Cada argumento está condicionado a la cifra que lo sostiene, y el debate declara las **condiciones que invalidarían la tesis**.
+* 💼 **Fund Manager**: Cruza convicción fundamental y momentum en una puntuación compuesta, aplica vetos de riesgo (que **solo pueden bajar** un dictamen) y calcula el tamaño de posición como **número** a partir de un presupuesto de riesgo: `peso = riesgo asumible / distancia al stop × factor de volatilidad`. Los múltiplos de ATR y el horizonte dependen del estilo asignado.
+* 🧮 **Construcción de cartera**: convierte los dictámenes individuales en pesos con penalización por **correlación**, límites por **sector**, presupuesto de **riesgo agregado** y tope de exposición bruta. Reporta posiciones efectivas, ratio de diversificación y liquidez.
 
 ---
 

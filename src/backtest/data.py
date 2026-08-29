@@ -65,6 +65,58 @@ EQUITY_CONCEPTS = [
 DEBT_CURRENT_CONCEPTS = ["DebtCurrent", "LongTermDebtCurrent", "ShortTermBorrowings"]
 DEBT_NONCURRENT_CONCEPTS = ["LongTermDebtNoncurrent", "LongTermDebt"]
 
+# Conceptos que consume el `QualityAnalystAgent`. Se reconstruyen aqui con la
+# MISMA disciplina point-in-time que los del gatekeeper —filtro por `filed <= t`
+# y deduplicacion por reexpresion—, porque desde que la conviccion fundamental
+# entra en el rating, el F-Score de Piotroski y el Z-Score de Altman son
+# variables de decision y no adornos del informe.
+CURRENT_ASSETS_CONCEPTS = ["AssetsCurrent"]
+CURRENT_LIABILITIES_CONCEPTS = ["LiabilitiesCurrent"]
+RETAINED_EARNINGS_CONCEPTS = ["RetainedEarningsAccumulatedDeficit"]
+GROSS_PROFIT_CONCEPTS = ["GrossProfit"]
+OPERATING_INCOME_CONCEPTS = ["OperatingIncomeLoss"]
+OCF_CONCEPTS = ["NetCashProvidedByUsedInOperatingActivities"]
+CAPEX_CONCEPTS = ["PaymentsToAcquirePropertyPlantAndEquipment",
+                  "PaymentsToAcquireProductiveAssets"]
+CASH_CONCEPTS = ["CashAndCashEquivalentsAtCarryingValue"]
+INTEREST_CONCEPTS = ["InterestExpense", "InterestExpenseDebt"]
+TAX_CONCEPTS = ["IncomeTaxExpenseBenefit"]
+PRETAX_CONCEPTS = [
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+]
+PPE_CONCEPTS = ["PropertyPlantAndEquipmentNet"]
+SHARES_CONCEPTS = ["CommonStockSharesOutstanding",
+                   "WeightedAverageNumberOfDilutedSharesOutstanding"]
+
+# Magnitudes de flujo (duracion anual) frente a magnitudes de stock (balance).
+# La distincion importa: una serie de flujo se selecciona por duracion 330-400
+# dias y una de stock por fecha de cierre.
+CONCEPTOS_FLUJO_CALIDAD = {
+    "ingresos": REVENUE_CONCEPTS,
+    "beneficio_neto": NET_INCOME_CONCEPTS,
+    "beneficio_bruto": GROSS_PROFIT_CONCEPTS,
+    "ebit": OPERATING_INCOME_CONCEPTS,
+    "gastos_financieros": INTEREST_CONCEPTS,
+    "impuestos": TAX_CONCEPTS,
+    "beneficio_antes_impuestos": PRETAX_CONCEPTS,
+}
+CONCEPTOS_FLUJO_CAJA_CALIDAD = {
+    "flujo_operativo": OCF_CONCEPTS,
+    "capex": CAPEX_CONCEPTS,
+}
+CONCEPTOS_STOCK_CALIDAD = {
+    "activos_totales": ["Assets"],
+    "pasivos_totales": ["Liabilities"],
+    "patrimonio": EQUITY_CONCEPTS,
+    "activo_corriente": CURRENT_ASSETS_CONCEPTS,
+    "pasivo_corriente": CURRENT_LIABILITIES_CONCEPTS,
+    "beneficios_retenidos": RETAINED_EARNINGS_CONCEPTS,
+    "deuda_largo_plazo": DEBT_NONCURRENT_CONCEPTS,
+    "efectivo": CASH_CONCEPTS,
+    "inmovilizado": PPE_CONCEPTS,
+    "acciones_emitidas": SHARES_CONCEPTS,
+}
+
 
 def _ensure_dirs() -> None:
     PRICE_CACHE.mkdir(parents=True, exist_ok=True)
@@ -296,8 +348,16 @@ class FundamentalStore:
             REVENUE_CONCEPTS + NET_INCOME_CONCEPTS + EQUITY_CONCEPTS
             + DEBT_CURRENT_CONCEPTS + DEBT_NONCURRENT_CONCEPTS + ["Assets", "Liabilities"]
         )
+        for grupo in (CONCEPTOS_FLUJO_CALIDAD, CONCEPTOS_FLUJO_CAJA_CALIDAD,
+                      CONCEPTOS_STOCK_CALIDAD):
+            for conceptos in grupo.values():
+                wanted.update(conceptos)
         for concept in wanted & set(gaap.keys()):
-            items = gaap[concept].get("units", {}).get("USD", [])
+            unidades = gaap[concept].get("units", {})
+            # Las acciones en circulacion se publican en la unidad `shares`, no
+            # en USD: sin esta linea el criterio de dilucion de Piotroski nunca
+            # seria evaluable.
+            items = unidades.get("USD") or unidades.get("shares") or []
             parsed: List[Fact] = []
             for it in items:
                 try:
@@ -396,8 +456,8 @@ class FundamentalStore:
         """
         as_of = pd.Timestamp(date)
         empty = {
-            "revenue_growth": 0.0, "net_margin": 0.0, "debt_to_equity": 0.0,
-            "roe": 0.0, "pe_ratio": 0.0, "market_cap": 0,
+            "revenue_growth": None, "net_margin": None, "debt_to_equity": None,
+            "roe": None, "pe_ratio": None, "market_cap": 0,
             "available": False, "as_of_period_end": None, "filed": None,
         }
 
@@ -426,11 +486,14 @@ class FundamentalStore:
         debt = (self._instant_sum(ticker, DEBT_CURRENT_CONCEPTS, as_of)
                 + self._instant_sum(ticker, DEBT_NONCURRENT_CONCEPTS, as_of))
 
-        # Producción hace `info.get("debtToEquity", 0.0)`: cuando el dato falta,
-        # vale 0.0 y el filtro de deuda pasa. Se replica ese comportamiento en
-        # lugar de inventar un valor, para no introducir una divergencia.
-        debt_to_equity = 0.0
-        roe = 0.0
+        # Sin patrimonio conocido, deuda/patrimonio y ROE son DESCONOCIDOS, no
+        # cero. La versión anterior devolvía 0.0 para replicar el
+        # `info.get("debtToEquity", 0.0)` de producción, pero ese default era
+        # justamente el defecto que se ha corregido: hacía que el filtro de
+        # deuda pasara por ausencia de dato. Ahora ambos lados propagan None y
+        # el gatekeeper responde DATOS_INSUFICIENTES.
+        debt_to_equity = None
+        roe = None
         if equity and equity > 0:
             debt_to_equity = debt / equity if debt > 0 else 0.0
             roe = net_cur.val / equity
@@ -438,13 +501,103 @@ class FundamentalStore:
         return {
             "revenue_growth": float(revenue_growth),
             "net_margin": float(net_margin),
-            "debt_to_equity": float(debt_to_equity),
-            "roe": float(roe),
-            "pe_ratio": 0.0,  # no interviene en la decisión; solo en texto del debate
+            "debt_to_equity": float(debt_to_equity) if debt_to_equity is not None else None,
+            "roe": float(roe) if roe is not None else None,
+            # El P/E no es reconstruible sin precio histórico por acción: se
+            # declara ausente en lugar de fingir un 0.0 que el clasificador de
+            # estilo leería como «gratis».
+            "pe_ratio": None,
             "market_cap": 0,
             "available": True,
             "as_of_period_end": rev_cur.end.strftime("%Y-%m-%d"),
             "filed": max(rev_cur.filed, net_cur.filed).strftime("%Y-%m-%d"),
+        }
+
+    def _serie_stock(self, ticker: str, concepts: List[str], as_of: pd.Timestamp,
+                     n: int = 4) -> List[Optional[float]]:
+        """
+        Serie de una magnitud de BALANCE, de la fecha de cierre más reciente a
+        la más antigua, filtrada por `filed <= as_of`.
+
+        Se toma un valor por fecha de cierre —el último presentado, para
+        respetar las reexpresiones— igual que hace `_instant`, pero devolviendo
+        la serie completa en vez del último elemento. Piotroski necesita el
+        ejercicio anterior para cada variación.
+        """
+        parsed = self._parse(ticker)
+        for concept in concepts:
+            if concept not in parsed:
+                continue
+            vis = [f for f in parsed[concept] if f.filed <= as_of and f.duration_days is None]
+            if not vis:
+                vis = [f for f in parsed[concept] if f.filed <= as_of]
+            if not vis:
+                continue
+            best = self._dedup_latest_filed(vis)
+            ordenados = sorted(best.values(), key=lambda f: f.end, reverse=True)
+            return [float(f.val) for f in ordenados[:n]]
+        return []
+
+    def _serie_flujo(self, ticker: str, concepts: List[str], as_of: pd.Timestamp,
+                     n: int = 4) -> List[Optional[float]]:
+        """Serie anual de una magnitud de FLUJO, ya filtrada por `filed <= as_of`."""
+        facts = self._flow_series(ticker, concepts, as_of)
+        return [float(f.val) for f in facts[:n]]
+
+    def estados_financieros(self, ticker: str, date) -> Dict[str, Any]:
+        """
+        Balance, cuenta de resultados y flujos de caja conocibles en `date`, con
+        el MISMO formato que `DataFetcher._fetch_estados_financieros()`.
+
+        Existe desde que el `QualityAnalystAgent` entró en la decisión: su
+        F-Score, su Z-Score y su ratio de devengos son ahora variables de
+        rating, así que el backtest tiene que reconstruirlos con la misma
+        disciplina point-in-time que el resto —`filed <= t`— o dejaría de medir
+        la lógica que decide en producción.
+
+        Un bloque vacío no es un error: el agente degrada las métricas que
+        dependen de él y lo declara en su cobertura.
+        """
+        as_of = pd.Timestamp(date)
+
+        balance = {k: self._serie_stock(ticker, conceptos, as_of)
+                   for k, conceptos in CONCEPTOS_STOCK_CALIDAD.items()}
+        # `deuda_total` no es un concepto XBRL: se compone de corriente y no
+        # corriente, igual que en `as_of()`.
+        corriente = self._serie_stock(ticker, DEBT_CURRENT_CONCEPTS, as_of)
+        no_corriente = self._serie_stock(ticker, DEBT_NONCURRENT_CONCEPTS, as_of)
+        if corriente or no_corriente:
+            largo = max(len(corriente), len(no_corriente))
+            corriente = corriente + [0.0] * (largo - len(corriente))
+            no_corriente = no_corriente + [0.0] * (largo - len(no_corriente))
+            balance["deuda_total"] = [a + b for a, b in zip(corriente, no_corriente)]
+        else:
+            balance["deuda_total"] = []
+        balance.setdefault("fondo_comercio", [])
+        balance.setdefault("intangibles", [])
+
+        resultados = {k: self._serie_flujo(ticker, conceptos, as_of)
+                      for k, conceptos in CONCEPTOS_FLUJO_CALIDAD.items()}
+        flujos = {k: self._serie_flujo(ticker, conceptos, as_of)
+                  for k, conceptos in CONCEPTOS_FLUJO_CAJA_CALIDAD.items()}
+        # El capex se publica en XBRL como salida en positivo; el resto del
+        # sistema lo espera con el signo del estado de flujos (negativo).
+        flujos["capex"] = [-abs(v) for v in flujos.get("capex", []) if v is not None]
+        flujos.setdefault("flujo_libre", [])
+        flujos.setdefault("dividendos_pagados", [])
+        flujos.setdefault("recompras", [])
+
+        ok = [nombre for nombre, datos in (("balance", balance), ("resultados", resultados),
+                                           ("flujos", flujos)) if any(datos.values())]
+        return {
+            "disponible": bool(ok),
+            "bloques_ok": ok,
+            "bloques_fallidos": [n for n in ("balance", "resultados", "flujos") if n not in ok],
+            "balance": balance,
+            "resultados": resultados,
+            "flujos": flujos,
+            "reconstruido_point_in_time": True,
+            "as_of": as_of.strftime("%Y-%m-%d"),
         }
 
     def sec_payload(self, ticker: str, date) -> Dict[str, Any]:
@@ -502,15 +655,23 @@ class TodayFundamentalStore:
                 print(f"[TodayFundamentalStore] {ticker}: {exc}")
                 info = {}
 
-        dte = info.get("debtToEquity") or 0.0
-        if dte and dte > 10:
-            dte = dte / 100.0
+        # yfinance publica `debtToEquity` SIEMPRE en porcentaje: la división es
+        # incondicional, igual que en `DataFetcher`. La regla `if dte > 10`
+        # anterior dejaba sin convertir a las empresas con menos de un 10% de
+        # deuda y las leía como si tuvieran hasta 10x de apalancamiento.
+        dte = info.get("debtToEquity")
+        dte = float(dte) / 100.0 if dte is not None else None
+
+        def _f(v):
+            return float(v) if v is not None else None
+
         out = {
-            "revenue_growth": float(info.get("revenueGrowth") or 0.0),
-            "net_margin": float(info.get("profitMargins") or 0.0),
-            "debt_to_equity": float(dte),
-            "roe": float(info.get("returnOnEquity") or 0.0),
-            "pe_ratio": float(info.get("trailingPE") or info.get("forwardPE") or 0.0),
+            "revenue_growth": _f(info.get("revenueGrowth")),
+            "net_margin": _f(info.get("profitMargins")),
+            "debt_to_equity": dte,
+            "roe": _f(info.get("returnOnEquity")),
+            "pe_ratio": _f(info.get("trailingPE") if info.get("trailingPE") is not None
+                           else info.get("forwardPE")),
             "market_cap": info.get("marketCap", 0),
             "available": bool(info),
             "as_of_period_end": "TODAY (SESGADO)",
@@ -521,6 +682,22 @@ class TodayFundamentalStore:
 
     def sec_payload(self, ticker: str, date) -> Dict[str, Any]:  # noqa: ARG002
         return {"status": "NOT_USED", "source": "SEC EDGAR"}
+
+    def estados_financieros(self, ticker: str, date) -> Dict[str, Any]:  # noqa: ARG002
+        """
+        Sin estados financieros en el régimen sesgado.
+
+        Este almacén existe para medir el tamaño del look-ahead de los RATIOS de
+        `yfinance.info`, no para producir un análisis de calidad. Devolver aquí
+        los estados de hoy añadiría una segunda vía de sesgo —Piotroski y Altman
+        calculados con memorias que en la fecha simulada no existían— y
+        confundiría las dos mediciones. El `QualityAnalystAgent` degradará a
+        DATOS_INSUFICIENTES, que es la lectura honesta en este régimen.
+        """
+        return {"disponible": False, "bloques_ok": [],
+                "bloques_fallidos": ["balance", "resultados", "flujos"],
+                "balance": {}, "resultados": {}, "flujos": {},
+                "motivo": "régimen SESGADO: los estados financieros no se reconstruyen"}
 
 
 def trading_calendar(price_store: PriceStore, tickers: List[str],

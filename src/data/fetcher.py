@@ -1,140 +1,444 @@
-import yfinance as yf
-import pandas as pd
+"""
+Ingesta de precios, indicadores técnicos y fundamentales desde yfinance.
+
+Tres defectos verificados que este módulo corrige respecto de la versión
+anterior, y que conviene no reintroducir:
+
+1. `info.get("revenueGrowth", 0.0)` convertía la AUSENCIA de dato en un cero
+   contable. El gatekeeper rechazaba después la empresa por «crecimiento 0.0%
+   por debajo del umbral», afirmando un hecho que nadie había medido. Ahora
+   todo campo ausente viaja como `None` y se declara en `campos_ausentes`.
+
+2. `if debt_to_equity > 10: debt_to_equity /= 100` intentaba adivinar la unidad.
+   yfinance devuelve `debtToEquity` SIEMPRE en porcentaje, así que la regla
+   funcionaba para las empresas apalancadas y fallaba justo en las sanas: una
+   compañía con un 8% de deuda sobre patrimonio se leía como 8.0x y el
+   gatekeeper la rechazaba por exceso de apalancamiento. Ahora se divide
+   siempre entre 100 y se conserva el valor bruto para auditoría.
+
+3. `info.get("trailingPE", info.get("forwardPE", 0.0))` mezclaba dos métricas
+   distintas sin dejar rastro de cuál se había usado. Ahora se publican por
+   separado y `pe_origen` dice cuál alimentó la decisión.
+"""
+
 import numpy as np
-from typing import Dict, Any
+import pandas as pd
+import yfinance as yf
+from typing import Any, Dict, List, Optional
+
+# Campos de `yfinance.info` que se recogen tal cual, con el nombre interno que
+# usará el resto del sistema. La lista es explícita a propósito: un `info`
+# completo trae ~150 claves de estabilidad desigual y solo estas se auditan.
+CAMPOS_INFO = {
+    "revenue_growth": "revenueGrowth",
+    "earnings_growth": "earningsGrowth",
+    "net_margin": "profitMargins",
+    "gross_margin": "grossMargins",
+    "operating_margin": "operatingMargins",
+    "ebitda_margin": "ebitdaMargins",
+    "roe": "returnOnEquity",
+    "roa": "returnOnAssets",
+    "trailing_pe": "trailingPE",
+    "forward_pe": "forwardPE",
+    "price_to_book": "priceToBook",
+    "price_to_sales": "priceToSalesTrailing12Months",
+    "enterprise_value": "enterpriseValue",
+    "ev_to_ebitda": "enterpriseToEbitda",
+    "ev_to_revenue": "enterpriseToRevenue",
+    "ebitda": "ebitda",
+    "market_cap": "marketCap",
+    "shares_outstanding": "sharesOutstanding",
+    "book_value_per_share": "bookValue",
+    "trailing_eps": "trailingEps",
+    "forward_eps": "forwardEps",
+    "free_cashflow": "freeCashflow",
+    "operating_cashflow": "operatingCashflow",
+    "total_cash": "totalCash",
+    "total_debt": "totalDebt",
+    "total_revenue": "totalRevenue",
+    "current_ratio": "currentRatio",
+    "quick_ratio": "quickRatio",
+    "beta": "beta",
+    "dividend_yield": "dividendYield",
+    "payout_ratio": "payoutRatio",
+    "held_percent_insiders": "heldPercentInsiders",
+    "short_percent_of_float": "shortPercentOfFloat",
+}
+
+# Filas de los estados financieros anuales que alimentan Piotroski, Altman,
+# ROIC y el ratio de devengos. Cada entrada lista los nombres alternativos con
+# que yfinance las etiqueta según el sector y la versión.
+FILAS_BALANCE = {
+    "activos_totales": ["Total Assets"],
+    "pasivos_totales": ["Total Liabilities Net Minority Interest", "Total Liabilities"],
+    "activo_corriente": ["Current Assets", "Total Current Assets"],
+    "pasivo_corriente": ["Current Liabilities", "Total Current Liabilities"],
+    "patrimonio": ["Stockholders Equity", "Total Stockholder Equity",
+                   "Common Stock Equity"],
+    "deuda_total": ["Total Debt"],
+    "deuda_largo_plazo": ["Long Term Debt"],
+    "beneficios_retenidos": ["Retained Earnings"],
+    "efectivo": ["Cash And Cash Equivalents", "Cash Cash Equivalents And Short Term Investments"],
+    "acciones_emitidas": ["Ordinary Shares Number", "Share Issued"],
+    "inmovilizado": ["Net PPE", "Net Property Plant And Equipment"],
+    "fondo_comercio": ["Goodwill"],
+    "intangibles": ["Goodwill And Other Intangible Assets"],
+}
+
+FILAS_RESULTADOS = {
+    "ingresos": ["Total Revenue", "Operating Revenue"],
+    "beneficio_bruto": ["Gross Profit"],
+    "ebit": ["EBIT", "Operating Income"],
+    "beneficio_neto": ["Net Income", "Net Income Common Stockholders"],
+    "gastos_financieros": ["Interest Expense"],
+    "impuestos": ["Tax Provision"],
+    "beneficio_antes_impuestos": ["Pretax Income"],
+}
+
+FILAS_FLUJOS = {
+    "flujo_operativo": ["Operating Cash Flow", "Total Cash From Operating Activities"],
+    "capex": ["Capital Expenditure"],
+    "flujo_libre": ["Free Cash Flow"],
+    "dividendos_pagados": ["Cash Dividends Paid", "Common Stock Dividend Paid"],
+    "recompras": ["Repurchase Of Capital Stock"],
+}
+
+
+def _fila(df: Optional[pd.DataFrame], nombres: List[str]) -> List[Optional[float]]:
+    """
+    Serie anual de una fila del estado financiero, de más reciente a más
+    antigua. Devuelve `[]` si la fila no existe en ninguno de sus alias.
+    """
+    if df is None or df.empty:
+        return []
+    for nombre in nombres:
+        if nombre in df.index:
+            serie = df.loc[nombre]
+            valores: List[Optional[float]] = []
+            for v in serie.tolist():
+                try:
+                    f = float(v)
+                    valores.append(None if (np.isnan(f) or np.isinf(f)) else f)
+                except (TypeError, ValueError):
+                    valores.append(None)
+            return valores
+    return []
+
+
+def _limpio(valor: Any) -> Optional[float]:
+    """Convierte a float o devuelve None. Nunca inventa un cero."""
+    if valor is None or valor == "":
+        return None
+    try:
+        f = float(valor)
+    except (TypeError, ValueError):
+        return None
+    if np.isnan(f) or np.isinf(f):
+        return None
+    return f
+
 
 class DataFetcher:
-    """Fetcher de datos bursátiles e indicadores técnicos de precios mediante yfinance."""
+    """Fetcher de datos bursátiles, indicadores técnicos y estados financieros."""
+
+    def __init__(self, con_estados_financieros: bool = True):
+        # Los estados financieros son tres peticiones extra por ticker. Se
+        # pueden desactivar para análisis rápidos: el resto del sistema degrada
+        # a `NO_DISPONIBLE` en las métricas que dependen de ellos en vez de
+        # fallar.
+        self.con_estados_financieros = con_estados_financieros
 
     def fetch_all(self, ticker: str) -> Dict[str, Any]:
-        """Obtiene datos fundamentales brutos e historial técnico completo para un ticker."""
+        """Datos brutos e indicadores técnicos para un ticker."""
         symbol = ticker.upper()
         stock = yf.Ticker(symbol)
-        
-        # Info general y métricas
+
         try:
             info = stock.info or {}
         except Exception as e:
             print(f"[DataFetcher] Advertencia info yfinance {symbol}: {e}")
             info = {}
 
-        # Historial de precios de los últimos 12 meses
-        df = stock.history(period="1y")
-        if df.empty:
+        try:
+            df = stock.history(period="1y")
+        except Exception as e:
+            return {"status": "ERROR", "ticker": symbol,
+                    "error": f"Fallo al descargar precios de {symbol}: {e}"}
+
+        if df is None or df.empty:
             return {
                 "status": "ERROR",
                 "error": f"No se encontraron precios para el ticker {symbol}",
-                "ticker": symbol
+                "ticker": symbol,
             }
 
-        # Calcular Indicadores Técnicos
         df = self._add_technical_indicators(df)
         latest_tech = self._extract_latest_tech_metrics(df)
 
-        # Extraer Métricas Fundamentales de yfinance
-        revenue_growth = info.get("revenueGrowth", 0.0)
-        net_margin = info.get("profitMargins", 0.0)
-        debt_to_equity = info.get("debtToEquity", 0.0)
-        if debt_to_equity and debt_to_equity > 10:
-            # yfinance a veces devuelve debtToEquity en porcentaje (ej 150 -> 1.5)
-            debt_to_equity = debt_to_equity / 100.0
-
-        roe = info.get("returnOnEquity", 0.0)
-        pe_ratio = info.get("trailingPE", info.get("forwardPE", 0.0))
+        fundamentals, ausentes = self._extraer_fundamentales(info)
+        estados = self._fetch_estados_financieros(stock) if self.con_estados_financieros else {}
 
         return {
             "status": "SUCCESS",
             "ticker": symbol,
-            "company_name": info.get("shortName", info.get("longName", symbol)),
-            "sector": info.get("sector", "Desconocido"),
-            "industry": info.get("industry", "Desconocido"),
+            "company_name": info.get("shortName") or info.get("longName") or symbol,
+            "sector": info.get("sector") or "Desconocido",
+            "industry": info.get("industry") or "Desconocido",
             "current_price": float(df["Close"].iloc[-1]),
-            "fundamentals": {
-                "revenue_growth": float(revenue_growth) if revenue_growth is not None else 0.0,
-                "net_margin": float(net_margin) if net_margin is not None else 0.0,
-                "debt_to_equity": float(debt_to_equity) if debt_to_equity is not None else 0.0,
-                "roe": float(roe) if roe is not None else 0.0,
-                "pe_ratio": float(pe_ratio) if pe_ratio is not None else 0.0,
-                "market_cap": info.get("marketCap", 0),
-            },
+            "fundamentals": fundamentals,
+            "campos_ausentes": ausentes,
+            "estados_financieros": estados,
             "technical": latest_tech,
-            "price_history_summary": {
-                "min_52w": float(df["Low"].min()),
-                "max_52w": float(df["High"].max()),
-                "close_today": float(df["Close"].iloc[-1]),
-                "change_1m_pct": float((df["Close"].iloc[-1] - df["Close"].iloc[-20]) / df["Close"].iloc[-20]) if len(df) >= 20 else 0.0
-            }
+            "price_history_summary": self._resumen_precios(df),
         }
 
+    # ------------------------------------------------------------------ #
+    # Fundamentales
+    # ------------------------------------------------------------------ #
+    def _extraer_fundamentales(self, info: Dict[str, Any]):
+        """
+        Traduce `yfinance.info` a las claves internas, sin defaults silenciosos.
+
+        Devuelve `(fundamentals, campos_ausentes)`. Un campo ausente vale `None`
+        y aparece listado, de modo que el reconciliador pueda penalizar la
+        confianza y el gatekeeper distinga «no lo sé» de «vale cero».
+        """
+        fundamentals: Dict[str, Any] = {}
+        ausentes: List[str] = []
+
+        for interno, externo in CAMPOS_INFO.items():
+            v = _limpio(info.get(externo))
+            fundamentals[interno] = v
+            if v is None:
+                ausentes.append(interno)
+
+        # --- Deuda / patrimonio -------------------------------------------
+        # yfinance publica `debtToEquity` en PORCENTAJE (212.5 significa 2.125x).
+        # La conversión es incondicional: la regla anterior `if v > 10: v /= 100`
+        # dejaba sin convertir a las empresas con menos de un 10% de deuda y las
+        # rechazaba después como si tuvieran hasta 10x de apalancamiento.
+        de_bruto = _limpio(info.get("debtToEquity"))
+        fundamentals["debt_to_equity_bruto_pct"] = de_bruto
+        fundamentals["debt_to_equity"] = de_bruto / 100.0 if de_bruto is not None else None
+        if de_bruto is None:
+            ausentes.append("debt_to_equity")
+
+        # --- P/E ------------------------------------------------------------
+        # Se conserva cuál de los dos alimentó la decisión: mezclar trailing y
+        # forward sin dejar rastro impide comparar dos informes entre sí.
+        trailing, forward = fundamentals.get("trailing_pe"), fundamentals.get("forward_pe")
+        if trailing is not None:
+            fundamentals["pe_ratio"], fundamentals["pe_origen"] = trailing, "trailingPE"
+        elif forward is not None:
+            fundamentals["pe_ratio"], fundamentals["pe_origen"] = forward, "forwardPE"
+        else:
+            fundamentals["pe_ratio"], fundamentals["pe_origen"] = None, None
+            ausentes.append("pe_ratio")
+
+        # yfinance devuelve `dividendYield` unas veces en tanto por uno y otras
+        # en porcentaje. Un 450% de rentabilidad por dividendo no existe.
+        dy = fundamentals.get("dividend_yield")
+        if dy is not None and dy > 1.0:
+            fundamentals["dividend_yield"] = dy / 100.0
+
+        return fundamentals, sorted(set(ausentes))
+
+    def _fetch_estados_financieros(self, stock: "yf.Ticker") -> Dict[str, Any]:
+        """
+        Series anuales de balance, resultados y flujos de caja.
+
+        Sin esto no hay Piotroski (necesita variaciones interanuales), ni Altman
+        (necesita capital circulante y beneficios retenidos), ni ROIC, ni ratio
+        de devengos. Cada bloque se captura por separado: que falte el cash-flow
+        no debe impedir calcular el Z-Score.
+        """
+        estados: Dict[str, Any] = {"disponible": False, "bloques_ok": [], "bloques_fallidos": []}
+
+        for clave, atributo, filas in (
+            ("balance", "balance_sheet", FILAS_BALANCE),
+            ("resultados", "income_stmt", FILAS_RESULTADOS),
+            ("flujos", "cashflow", FILAS_FLUJOS),
+        ):
+            try:
+                df = getattr(stock, atributo)
+                datos = {nombre: _fila(df, alias) for nombre, alias in filas.items()}
+                if any(datos.values()):
+                    estados[clave] = datos
+                    estados["bloques_ok"].append(clave)
+                else:
+                    estados[clave] = {}
+                    estados["bloques_fallidos"].append(clave)
+            except Exception as e:
+                estados[clave] = {}
+                estados["bloques_fallidos"].append(clave)
+                print(f"[DataFetcher] Advertencia {atributo}: {e}")
+
+        estados["disponible"] = bool(estados["bloques_ok"])
+        return estados
+
+    # ------------------------------------------------------------------ #
+    # Técnico
+    # ------------------------------------------------------------------ #
     def _add_technical_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Calcula RSI, MACD, Bandas de Bollinger, Medias Móviles (SMA 50/200) y ATR."""
+        """Calcula RSI, MACD, Bandas de Bollinger, SMA 50/200, ATR y volumen relativo."""
         close = df["Close"]
         high = df["High"]
         low = df["Low"]
 
-        # 1. Medias Móviles
         df["SMA_50"] = close.rolling(window=min(50, len(close))).mean()
         df["SMA_200"] = close.rolling(window=min(200, len(close))).mean()
 
-        # 2. RSI (14 periodos)
         delta = close.diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
         rs = gain / (loss + 1e-9)
         df["RSI"] = 100 - (100 / (1 + rs))
 
-        # 3. MACD (12, 26, 9)
         ema_12 = close.ewm(span=12, adjust=False).mean()
         ema_26 = close.ewm(span=26, adjust=False).mean()
         df["MACD"] = ema_12 - ema_26
         df["MACD_signal"] = df["MACD"].ewm(span=9, adjust=False).mean()
         df["MACD_hist"] = df["MACD"] - df["MACD_signal"]
 
-        # 4. Bandas de Bollinger (20, 2)
         sma_20 = close.rolling(window=20).mean()
         std_20 = close.rolling(window=20).std()
         df["BB_upper"] = sma_20 + (std_20 * 2)
         df["BB_lower"] = sma_20 - (std_20 * 2)
         df["BB_middle"] = sma_20
 
-        # 5. ATR (Average True Range - 14 periodos)
         tr1 = high - low
         tr2 = (high - close.shift(1)).abs()
         tr3 = (low - close.shift(1)).abs()
         tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
         df["ATR"] = tr.rolling(window=14).mean()
 
-        # 6. Volume Relative (vs 20d avg)
         vol_avg = df["Volume"].rolling(window=20).mean()
         df["Volume_Rel"] = df["Volume"] / (vol_avg + 1e-9)
 
         return df
 
     def _extract_latest_tech_metrics(self, df: pd.DataFrame) -> Dict[str, Any]:
-        """Extrae el último valor limpio de los indicadores calculados."""
+        """
+        Último valor limpio de cada indicador, más el contexto de tendencia que
+        el clasificador de momentum necesita para no confundir el retardo de una
+        media móvil con una tendencia bajista vigente.
+        """
         last = df.iloc[-1]
         close = float(last["Close"])
-        rsi = float(last["RSI"]) if not np.isnan(last["RSI"]) else 50.0
-        macd = float(last["MACD"]) if not np.isnan(last["MACD"]) else 0.0
-        macd_signal = float(last["MACD_signal"]) if not np.isnan(last["MACD_signal"]) else 0.0
-        macd_hist = float(last["MACD_hist"]) if not np.isnan(last["MACD_hist"]) else 0.0
-        bb_upper = float(last["BB_upper"]) if not np.isnan(last["BB_upper"]) else close * 1.05
-        bb_lower = float(last["BB_lower"]) if not np.isnan(last["BB_lower"]) else close * 0.95
-        atr = float(last["ATR"]) if not np.isnan(last["ATR"]) else close * 0.02
-        sma_50 = float(last["SMA_50"]) if not np.isnan(last["SMA_50"]) else close
-        sma_200 = float(last["SMA_200"]) if not np.isnan(last["SMA_200"]) else close
-        vol_rel = float(last["Volume_Rel"]) if not np.isnan(last["Volume_Rel"]) else 1.0
+
+        def val(col: str, defecto: float) -> float:
+            v = last[col]
+            return float(v) if not pd.isna(v) else defecto
+
+        sma_50 = val("SMA_50", close)
+        sma_200 = val("SMA_200", close)
+        cierres = df["Close"]
+
+        # Pendiente normalizada de la SMA50 sobre 20 sesiones: distingue una
+        # media que sube de una que baja aunque el cruce siga sin producirse.
+        pendiente_sma50 = 0.0
+        if len(df) >= 21 and not pd.isna(df["SMA_50"].iloc[-21]) and df["SMA_50"].iloc[-21] != 0:
+            pendiente_sma50 = float(df["SMA_50"].iloc[-1] / df["SMA_50"].iloc[-21] - 1.0)
+
+        max_52w = float(df["High"].max())
+        min_52w = float(df["Low"].min())
+        rango = max_52w - min_52w
 
         return {
             "close": close,
-            "rsi": round(rsi, 2),
-            "macd": round(macd, 3),
-            "macd_signal": round(macd_signal, 3),
-            "macd_hist": round(macd_hist, 3),
-            "bb_upper": round(bb_upper, 2),
-            "bb_lower": round(bb_lower, 2),
-            "atr": round(atr, 2),
+            "rsi": round(val("RSI", 50.0), 2),
+            "macd": round(val("MACD", 0.0), 3),
+            "macd_signal": round(val("MACD_signal", 0.0), 3),
+            "macd_hist": round(val("MACD_hist", 0.0), 3),
+            "bb_upper": round(val("BB_upper", close * 1.05), 2),
+            "bb_lower": round(val("BB_lower", close * 0.95), 2),
+            "atr": round(val("ATR", close * 0.02), 2),
             "sma_50": round(sma_50, 2),
             "sma_200": round(sma_200, 2),
-            "volume_rel": round(vol_rel, 2),
+            "volume_rel": round(val("Volume_Rel", 1.0), 2),
+            # --- contexto de tendencia ---
+            "dist_sma_50_pct": round(close / sma_50 - 1.0, 4) if sma_50 else 0.0,
+            "dist_sma_200_pct": round(close / sma_200 - 1.0, 4) if sma_200 else 0.0,
+            "pendiente_sma_50": round(pendiente_sma50, 4),
+            "posicion_rango_52w": round((close - min_52w) / rango, 4) if rango > 0 else 0.5,
+            "volatilidad_anual": self._volatilidad_anualizada(cierres),
+            "atr_pct": round(val("ATR", close * 0.02) / close, 4) if close else 0.0,
         }
+
+    @staticmethod
+    def _volatilidad_anualizada(cierres: pd.Series, ventana: int = 60) -> float:
+        """Volatilidad realizada anualizada. Es el insumo del dimensionamiento."""
+        if len(cierres) < 20:
+            return 0.0
+        rets = cierres.pct_change().dropna().tail(ventana)
+        if rets.empty:
+            return 0.0
+        v = float(rets.std() * np.sqrt(252))
+        return round(v, 4) if not (np.isnan(v) or np.isinf(v)) else 0.0
+
+    def _resumen_precios(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """Rentabilidades a varios plazos y peor caída del año."""
+        close = df["Close"]
+        ultimo = float(close.iloc[-1])
+
+        def retorno(sesiones: int) -> Optional[float]:
+            """
+            Rentabilidad a `sesiones` vista.
+
+            Con `period="1y"` yfinance devuelve unas 250 sesiones, así que
+            exigir estrictamente más de 252 dejaba `change_12m_pct` en None
+            SIEMPRE y anulaba en silencio la pata de momentum del analista
+            técnico. Se admite hasta un 10% menos de histórico usando la barra
+            más antigua disponible; por debajo de eso el dato no se estima.
+            """
+            if len(close) < 2:
+                return None
+            disponibles = len(close) - 1
+            if disponibles < sesiones * 0.9:
+                return None
+            base = float(close.iloc[-1 - min(sesiones, disponibles)])
+            return round(ultimo / base - 1.0, 4) if base else None
+
+        acumulado = close / close.cummax() - 1.0
+        return {
+            "min_52w": float(df["Low"].min()),
+            "max_52w": float(df["High"].max()),
+            "close_today": ultimo,
+            "change_1m_pct": retorno(20),
+            "change_3m_pct": retorno(63),
+            "change_6m_pct": retorno(126),
+            "change_12m_pct": retorno(252),
+            "max_drawdown_1y": round(float(acumulado.min()), 4),
+            "sesiones": int(len(close)),
+        }
+
+    def fetch_series_precios(self, tickers: List[str], periodo: str = "1y") -> Dict[str, pd.Series]:
+        """
+        Series de cierre para varios tickers, usadas por la capa de cartera para
+        estimar la matriz de correlaciones. Se pide en una sola llamada: hacerlo
+        ticker a ticker multiplicaría la latencia sin ganar nada.
+        """
+        limpios = [t.upper() for t in tickers if t]
+        if not limpios:
+            return {}
+        try:
+            datos = yf.download(limpios, period=periodo, progress=False,
+                                auto_adjust=True, group_by="ticker")
+        except Exception as e:
+            print(f"[DataFetcher] Advertencia al descargar series conjuntas: {e}")
+            return {}
+
+        series: Dict[str, pd.Series] = {}
+        for t in limpios:
+            try:
+                if len(limpios) == 1:
+                    serie = datos["Close"] if "Close" in datos else None
+                else:
+                    serie = datos[t]["Close"] if t in datos else None
+                if serie is not None:
+                    serie = serie.dropna()
+                    if not serie.empty:
+                        series[t] = serie
+            except Exception:
+                continue
+        return series
