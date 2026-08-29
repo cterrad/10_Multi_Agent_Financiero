@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Pipeline multi-agente (LangGraph) que selecciona acciones: ingiere y reconcilia datos de yfinance/SEC EDGAR/Finnhub, filtra con un gatekeeper fundamental, puntúa calidad y valoración con siete escuelas clásicas (Piotroski, Altman, Graham, Buffett, Lynch, Greenblatt, Sloan), cruza momentum técnico y una capa de noticias asesora, y emite un rating en 5 categorías con tamaño de posición y niveles de stop/objetivo — todo por reglas deterministas (ver «La invariante que sostiene todo el proyecto» más abajo). `src/backtest/` reejecuta esos mismos agentes sobre datos históricos point-in-time para medir si la selección aporta sobre el índice o el azar.
+
 El código, los comentarios y la documentación de este proyecto están en español. Mantén ese idioma al escribir código nuevo, docstrings o informes.
 
 ## Entorno
