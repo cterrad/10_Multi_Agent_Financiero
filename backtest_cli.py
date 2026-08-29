@@ -38,6 +38,7 @@ from src.backtest.replay import (
     HistoricalReplayer, Signal, assert_llm_is_decision_neutral, disable_llm,
 )
 from src.backtest.report import generate_report
+from src.config import RIESGO_POR_POSICION_PCT
 
 # Universo por defecto: grandes capitalizaciones estadounidenses con historia
 # larga y cobertura XBRL completa en EDGAR.
@@ -113,12 +114,18 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
             "conclusión no cambia, pero la cifra publicada es algo más pesimista de lo que "
             "sería con una gestión de tesorería realista.")
         lims.append(
-            "**El sistema no define qué hacer con el efectivo sobrante.** Emite pesos por "
-            "posición (8-10% / 4-7%) pero nunca dice cuántas posiciones abrir ni cómo "
-            "invertir el resto. La exposición del "
-            f"{avg_exposure:.0%} es una consecuencia emergente de cuántas señales de compra "
-            "aparecen, no una decisión de diseño. Buena parte de la diferencia frente al "
-            "índice es simplemente no estar invertido.")
+            "**La exposición es una CONSECUENCIA del presupuesto de riesgo, no un objetivo.** "
+            "El motor histórico dimensiona ya con `src/portfolio/construccion.py` —la misma "
+            "capa que corre en vivo: límites por sector, penalización por correlación y "
+            "presupuesto de riesgo agregado—, así que la cartera simulada es la que el "
+            "sistema recomendaría hoy. Pero el tamaño de cada posición sale de arriesgar un "
+            f"{RIESGO_POR_POSICION_PCT:.2%} del patrimonio contra la distancia al stop, y con "
+            f"pocas señales simultáneas eso deja la exposición bruta en el {avg_exposure:.0%}. "
+            "**El sistema no define qué hacer con el resto**, y esa es una decisión de diseño "
+            "que falta: una estrategia estructuralmente invertida a un tercio no puede "
+            "compararse contra un índice invertido al 100% sin decirlo. Las métricas "
+            "ajustadas por riesgo (Sharpe, Sortino) son la comparación honesta; el CAGR "
+            "absoluto no lo es.")
 
     if regime == "pit":
         lims.append(
@@ -138,6 +145,21 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
         lims.append(
             "**Gatekeeper neutralizado.** Este régimen desactiva el filtro fundamental para "
             "aislar la capa técnica. No mide el sistema completo, sino la mitad de él.")
+
+    lims.append(
+        "**Normas sectoriales estáticas.** El contexto de valoración compara cada múltiplo "
+        "contra una mediana de largo plazo del mercado estadounidense (`SECTOR_NORMAS` en "
+        "`src/config.py`), no contra la mediana viva del sector en la fecha simulada. En un "
+        "backtest de once años eso introduce un anacronismo: el P/E mediano del software en "
+        "2015 no era el de 2025. Las etiquetas de estilo ordenan y contextualizan, pero no "
+        "deben leerse como una valoración relativa exacta.")
+
+    lims.append(
+        "**Coste de capital constante.** El ROIC se compara contra un WACC de referencia "
+        "único (`WACC_REFERENCIA`) en lugar de estimarlo por empresa y por fecha. Es una "
+        "decisión consciente —la dispersión de un WACC estimado con beta y estructura de "
+        "capital superaría la señal que aporta— pero implica que «crea valor» significa "
+        "«supera un umbral fijo», no «supera su propio coste de capital».")
 
     lims.append(
         f"**Sesgo de supervivencia.** El universo son {n_universe} valores seleccionados hoy "
@@ -160,6 +182,18 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
         "**Finnhub ausente en el backtest.** No hay histórico point-in-time gratuito, así que "
         "el `confidence_score` de la reconciliación difiere del de producción. Verificado en "
         "la Fase 1 que no altera ninguna decisión (solo añade texto), pero es una divergencia real.")
+
+    lims.append(
+        "**Analista de Noticias excluido del backtest.** El grafo de producción ejecuta un "
+        "nodo `news_analysis` que este replay NO recorre. Dos de sus tres fuentes (Google News "
+        "RSS y Tavily) son buscadores \"de hoy\": no existe forma asequible de recuperar qué "
+        "estaba publicado y visible en una fecha pasada, y sus corpus indexados hoy omiten lo "
+        "que se borró y fechan por republicación, no por el hecho. Solo el 8-K con Ítem 2.02 "
+        "tiene `filed` exacto y sería reconstruible. Por eso las noticias son hoy una CAPA "
+        "ASESORA: aparecen en el informe diario y alimentan el debate, pero no tocan `rating` "
+        "ni `position_size_pct`, de modo que su ausencia aquí no altera ni una sola señal. "
+        "La contrapartida es que el valor predictivo de esa capa está SIN MEDIR: no hay "
+        "ninguna evidencia en este informe de que las noticias aporten nada.")
 
     lims.append(
         "**Sin datos intradía.** Cuando stop y objetivo se tocan en la misma sesión se asume "
@@ -190,10 +224,13 @@ NEXT_STEPS = [
     "costes, comprobar si el event study mantiene el orden invertido (VENTA FUERTE rindiendo "
     "más que COMPRA FUERTE) en otros universos y periodos. Si se confirma, el problema está "
     "en la señal y ningún ajuste de gestión de cartera lo arreglará.",
-    "Contrastar la hipótesis más probable de esa inversión: el gatekeeper exige crecimiento "
-    "de ingresos ≥5% y margen neto ≥3%, lo que descarta sistemáticamente los valores de "
-    "estilo *value* y las recuperaciones cíclicas, que son justamente los que más rindieron "
-    "en varios tramos del periodo. Es un sesgo de estilo, no un fallo de implementación.",
+    "HIPÓTESIS DESCARTADA CON DATOS: no es un sesgo contra el *value*. La atribución por "
+    "estilo (`attr_estilo`) muestra que las operaciones etiquetadas VALOR son las de MEJOR "
+    "rentabilidad media del sistema, y que el lastre está en CRECIMIENTO, con rentabilidad "
+    "media negativa pese a un número de operaciones similar. La línea de investigación "
+    "correcta es por qué el sistema paga múltiplos de crecimiento que después no se "
+    "materializan: revisar el peso del momentum en la puntuación compuesta y el umbral de "
+    "PEG que habilita GARP.",
     "Medir por separado el efecto del stop de 2·ATR. Con más de la mitad de las salidas "
     "disparadas por stop y una tenencia media inferior a 20 sesiones, el sistema puede estar "
     "cortando posiciones ganadoras antes de que maduren. Ejecutar una variante sin stop y "
@@ -207,8 +244,37 @@ NEXT_STEPS = [
     "evaluar 2020-2025 como out-of-sample estricto, sin volver a mirar el periodo de test.",
     "Añadir datos intradía (o al menos barras horarias) para resolver correctamente el "
     "orden entre stop y objetivo dentro de la misma sesión.",
-    "Corregir `_extract_recent_fact()` en `src/data/sec_edgar.py` para que ordene por `filed` "
-    "y no por `end`: hoy es un look-ahead latente que también afecta a producción en tiempo real.",
+    "Definir una política explícita para el capital no invertido. La exposición bruta que "
+    "produce el presupuesto de riesgo es estructuralmente baja, y hoy el remanente se queda "
+    "en efectivo al 0%. Las tres opciones razonables —remunerarlo a letras, invertirlo en el "
+    "índice como posición residual, o subir el riesgo por posición— tienen implicaciones muy "
+    "distintas y ninguna está tomada. Mientras no se decida, el CAGR absoluto compara una "
+    "cartera a un tercio de exposición contra un índice al 100%.",
+    "Sustituir `SECTOR_NORMAS` por la mediana calculada sobre un conjunto de comparables en "
+    "cada fecha. Es lo que convierte el contexto sectorial de una referencia estática en una "
+    "valoración relativa point-in-time, y elimina el anacronismo declarado en las "
+    "limitaciones.",
+    "Investigar por qué el rating sigue sin ordenar el rendimiento futuro pese a que la "
+    "convicción fundamental ya entra en la decisión. La incorporación del Analista de "
+    "Calidad mejoró notablemente el perfil de riesgo —el Sharpe casi se dobló y el drawdown "
+    "máximo se redujo a la mitad— pero el orden de las categorías sigue invertido. Eso apunta "
+    "a que el problema no está en la calidad del análisis fundamental sino en el corte que "
+    "convierte la convicción en rating, o en el horizonte al que se mide: doce meses puede ser "
+    "un plazo inadecuado para señales cuya tenencia media es de 33 sesiones.",
+    "Reconstruir el riesgo legal y regulatorio de forma point-in-time desde EDGAR (8-K "
+    "Ítem 8.01 y el apartado de Procedimientos Legales del 10-K). Es la única vía para que un "
+    "litigio material entre en la decisión sin romper el backtest: a diferencia de la prensa, "
+    "esas presentaciones tienen fecha `filed` exacta.",
+    "Construir un `NewsStore` point-in-time antes de dejar que las noticias entren en la "
+    "decisión. El único camino barato es el histórico completo de 8-K/10-Q de EDGAR filtrado "
+    "por `filed <= t` (mismo patrón que `FundamentalStore`), que cubre resultados y hechos "
+    "relevantes pero no prensa general; el resto exigiría un proveedor de archivo de noticias "
+    "con marca temporal (RavenPack, Dow Jones DNA). Hasta entonces, subir el Analista de "
+    "Noticias de capa asesora a variable de decisión dejaría el sistema sin backtest válido.",
+    "Medir la capa de noticias por separado con un event study sobre los 8-K con Ítem 2.02, "
+    "que sí son reconstruibles point-in-time: comparar el rendimiento a 1, 5 y 20 sesiones "
+    "tras la presentación frente al resto del universo. Es la forma de saber si la "
+    "`impact_probability` correlaciona con algo antes de darle peso en el rating.",
     "Ampliar el universo más allá de las megacaps estadounidenses y comprobar si el resultado "
     "sobrevive en small caps, donde los costes y el slippage son materialmente mayores.",
     "Ejecutar paper trading en directo durante 6-12 meses y comparar las señales reales con "
@@ -304,7 +370,13 @@ def main() -> int:
     cfg = BacktestConfig(initial_capital=args.capital, commission_bps=half,
                          slippage_bps=half, max_holding_days=args.max_holding_days)
     pre = PrecomputedReplayer(by_date, replayer.skips)
-    res = run_backtest(pre, tickers, calendar, rebals, price_data, cfg, verbose=not args.quiet)
+    # La capa de cartera se desactiva en `technical_only`: allí el Analista de
+    # Calidad no interviene, todas las convicciones son nulas y no habría nada
+    # que ordenar. En los otros dos regímenes el dimensionamiento pasa por
+    # `PortfolioConstructor`, la misma capa que corre en vivo.
+    usar_cartera = args.regime != "technical_only"
+    res = run_backtest(pre, tickers, calendar, rebals, price_data, cfg,
+                       verbose=not args.quiet, usar_capa_de_cartera=usar_cartera)
 
     equity = res["equity"]
     trades = res["trades"]
@@ -370,7 +442,8 @@ def main() -> int:
         c = BacktestConfig(initial_capital=args.capital, commission_bps=bps / 2,
                            slippage_bps=bps / 2, max_holding_days=args.max_holding_days)
         r = run_backtest(PrecomputedReplayer(by_date, {}), tickers, calendar, rebals,
-                         price_data, c, verbose=False)
+                         price_data, c, verbose=False,
+                         usar_capa_de_cartera=usar_cartera)
         if not r["equity"].empty:
             sens_rows[f"{bps:.0f} bps ida y vuelta"] = {
                 "CAGR": M.cagr(r["equity"]),
@@ -408,6 +481,11 @@ def main() -> int:
         "random_cagrs": mc["cagrs"],
         "bootstrap": M.bootstrap_cagr(equity),
         "attr_rating": M.attribution(trades, "rating"),
+        # Atribucion por ESTILO: responde si el sistema pierde dinero en valor,
+        # en crecimiento o de forma transversal. El informe anterior planteaba
+        # esa hipotesis en NEXT_STEPS pero no podia medirla, porque las
+        # operaciones no arrastraban la etiqueta.
+        "attr_estilo": M.attribution(trades, "estilo"),
         "attr_sector": M.attribution(trades, "sector"),
         "attr_exit": M.attribution(trades, "exit_reason"),
         "attr_year": M.attribution_by_year(trades),

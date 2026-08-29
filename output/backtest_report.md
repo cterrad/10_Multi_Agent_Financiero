@@ -1,24 +1,24 @@
 # Backtest del sistema multi-agente de recomendaciones de compra
 
-_Generado el 2026-08-19 11:11._
+_Generado el 2026-08-21 12:00._
 
 > **Régimen de datos:** POINT-IN-TIME (fundamentales SEC filtrados por `filed <= t`) — régimen limpio
 
 ## 1. Veredicto ejecutivo
 
-**NO.** Y el motivo es más grave que el rendimiento: **el rating no ordena el futuro en la dirección que afirma.** Los valores calificados VENTA FUERTE rindieron de media 35.06% a 12 meses, frente al 21.02% de los COMPRA FUERTE.
+**NO.** Y el motivo es más grave que el rendimiento: **el rating no ordena el futuro en la dirección que afirma.** Los valores calificados VENTA FUERTE rindieron de media 34.24% a 12 meses, frente al 18.76% de los COMPRA FUERTE.
 
   Matiz obligado antes de concluir que la señal está *invertida*: el sesgo de supervivencia golpea de forma desigual a cada categoría. VENTA FUERTE recoge sobre todo empresas con fundamentales deteriorados, y de esas solo están en el universo las que sobrevivieron hasta hoy — precisamente las que se recuperaron. La lectura defendible es más prudente: **el rating no separa ganadores de perdedores**, y el signo aparente de la inversión no puede afirmarse sin composiciones históricas del índice.
 
 - Régimen de datos del resultado principal: POINT-IN-TIME (fundamentales SEC filtrados por `filed <= t`) — régimen limpio
-- CAGR estrategia 2.11% vs SPY 13.51% (exceso -11.40%); Sharpe 0.35 vs 0.80.
-- Máximo drawdown -22.57%; 928 operaciones; tasa de acierto 43.53% frente al 36.36% de equilibrio que exige el R:R 1.75 del sistema.
-- Alfa anualizado -0.41% (t=-0.24); percentil frente a señales aleatorias: 1.9.
-- Rendimiento medio a 12 meses por rating: VENTA FUERTE 35.06% · COMPRA 23.75% · MANTENER 21.11% · COMPRA FUERTE 21.02% · VENTA 17.51%. El mejor es **VENTA FUERTE**.
+- CAGR estrategia 3.95% vs SPY 13.51% (exceso -9.56%); Sharpe 0.68 vs 0.80.
+- Máximo drawdown -13.80%; 563 operaciones; tasa de acierto 44.58% frente al 36.36% de equilibrio que exige el R:R 1.75 del sistema.
+- Alfa anualizado 0.91% (t=0.67); percentil frente a señales aleatorias: 7.4.
+- Rendimiento medio a 12 meses por rating: VENTA FUERTE 34.24% · COMPRA 27.40% · SIN OPINION 25.23% · MANTENER 19.06% · COMPRA FUERTE 18.76% · VENTA 17.89%. El mejor es **VENTA FUERTE**.
 
 **Las tres limitaciones más serias, antes de cualquier lectura positiva:**
-1. **La liquidez ociosa no renta nada, y es la mayor parte de la cartera.** La exposición bruta media es del 27.8%, así que un 72% del capital permanece en efectivo al 0%. Remunerarlo a letras del Tesoro (~2% medio en 2015-2025) añadiría del orden de 1.4% anual al resultado. La conclusión no cambia, pero la cifra publicada es algo más pesimista de lo que sería con una gestión de tesorería realista.
-2. **El sistema no define qué hacer con el efectivo sobrante.** Emite pesos por posición (8-10% / 4-7%) pero nunca dice cuántas posiciones abrir ni cómo invertir el resto. La exposición del 28% es una consecuencia emergente de cuántas señales de compra aparecen, no una decisión de diseño. Buena parte de la diferencia frente al índice es simplemente no estar invertido.
+1. **La liquidez ociosa no renta nada, y es la mayor parte de la cartera.** La exposición bruta media es del 30.4%, así que un 70% del capital permanece en efectivo al 0%. Remunerarlo a letras del Tesoro (~2% medio en 2015-2025) añadiría del orden de 1.4% anual al resultado. La conclusión no cambia, pero la cifra publicada es algo más pesimista de lo que sería con una gestión de tesorería realista.
+2. **La exposición es una CONSECUENCIA del presupuesto de riesgo, no un objetivo.** El motor histórico dimensiona ya con `src/portfolio/construccion.py` —la misma capa que corre en vivo: límites por sector, penalización por correlación y presupuesto de riesgo agregado—, así que la cartera simulada es la que el sistema recomendaría hoy. Pero el tamaño de cada posición sale de arriesgar un 0.75% del patrimonio contra la distancia al stop, y con pocas señales simultáneas eso deja la exposición bruta en el 30%. **El sistema no define qué hacer con el resto**, y esa es una decisión de diseño que falta: una estrategia estructuralmente invertida a un tercio no puede compararse contra un índice invertido al 100% sin decirlo. Las métricas ajustadas por riesgo (Sharpe, Sortino) son la comparación honesta; el CAGR absoluto no lo es.
 3. **Divergencia de definición fundamental.** Producción lee métricas TTM de `yfinance.info`; el backtest usa cifras ANUALES (10-K) point-in-time de SEC EDGAR, porque el TTM histórico de yfinance no es recuperable retroactivamente. El gatekeeper se evalúa por tanto con una ventana contable distinta a la de producción: los ratings del backtest son fieles a la *lógica* del sistema, no necesariamente idénticos a los que habría emitido en directo.
 
 
@@ -26,17 +26,17 @@ _Generado el 2026-08-19 11:11._
 
 | Cartera | CAGR | Retorno total | Volatilidad | Sharpe | Sortino | Calmar | Máx. drawdown | Capital final |
 |---|---|---|---|---|---|---|---|---|
-| Estrategia | 2.11% | 25.83% | 6.58% | 0.35 | 0.39 | 0.09 | -22.57% | $125,828 |
+| Estrategia | 3.95% | 53.04% | 5.96% | 0.68 | 0.86 | 0.29 | -13.80% | $153,037 |
 | SPY comprar y mantener | 13.51% | 302.73% | 17.79% | 0.80 | 0.98 | 0.40 | -33.72% | $402,727 |
 | Universo equiponderado | 20.30% | 662.35% | 18.93% | 1.07 | 1.31 | 0.61 | -33.17% | $762,350 |
 
 
 **Contraste contra selección aleatoria (Monte Carlo, hipótesis nula):**
 
-Las carteras aleatorias replican el perfil observado de la estrategia — 4 posiciones simultáneas, 18 días de tenencia media y 27.81% de exposición bruta — pero eligen los valores al azar. Aísla la habilidad de selección de la mera exposición al mercado.
+Las carteras aleatorias replican el perfil observado de la estrategia — 5 posiciones simultáneas, 33 días de tenencia media y 30.38% de exposición bruta — pero eligen los valores al azar. Aísla la habilidad de selección de la mera exposición al mercado.
 
-- CAGR medio de las carteras aleatorias: 4.34% (p05 2.53%, p95 6.11%).
-- La estrategia queda en el percentil **1.9** de esa distribución. p-valor unilateral: **0.9810**.
+- CAGR medio de las carteras aleatorias: 5.42% (p05 3.72%, p95 6.96%).
+- La estrategia queda en el percentil **7.4** de esa distribución. p-valor unilateral: **0.9260**.
 
 
 ## 3. Métricas completas de la estrategia
@@ -46,41 +46,41 @@ Las carteras aleatorias replican el perfil observado de la estrategia — 4 posi
 | Periodo | 2015-01-02 → 2025-12-30 |
 | Años | 11.0 |
 | Capital inicial | $100,000 |
-| Capital final | $125,828 |
-| Retorno total | 25.83% |
-| CAGR | 2.11% |
-| Volatilidad anualizada | 6.58% |
-| Sharpe | 0.35 |
-| Sortino | 0.39 |
-| Calmar | 0.09 |
-| Máximo drawdown | -22.57% |
-| Duración máx. del drawdown (días) | 1499 |
-| VaR 95% diario | -0.67% |
-| CVaR 95% diario | -1.08% |
-| Mejor año | 16.80% |
-| Peor año | -17.56% |
-| Beta vs SPY | 0.19 |
-| Alfa anualizado vs SPY | -0.41% |
-| t-stat del alfa | -0.24 |
-| R² vs SPY | 0.27 |
-| Exposición bruta media | 27.81% |
-| Posiciones simultáneas medias | 4.3 |
-| Rotación anualizada | 10.89 |
-| Costes totales pagados | $13,551 |
+| Capital final | $153,037 |
+| Retorno total | 53.04% |
+| CAGR | 3.95% |
+| Volatilidad anualizada | 5.96% |
+| Sharpe | 0.68 |
+| Sortino | 0.86 |
+| Calmar | 0.29 |
+| Máximo drawdown | -13.80% |
+| Duración máx. del drawdown (días) | 1392 |
+| VaR 95% diario | -0.61% |
+| CVaR 95% diario | -0.93% |
+| Mejor año | 13.89% |
+| Peor año | -10.78% |
+| Beta vs SPY | 0.22 |
+| Alfa anualizado vs SPY | 0.91% |
+| t-stat del alfa | 0.67 |
+| R² vs SPY | 0.43 |
+| Exposición bruta media | 30.38% |
+| Posiciones simultáneas medias | 4.7 |
+| Rotación anualizada | 6.73 |
+| Costes totales pagados | $9,514 |
 | —— Operaciones —— |  |
-| Número de operaciones | 928 |
-| Tasa de acierto | 43.53% |
+| Número de operaciones | 563 |
+| Tasa de acierto | 44.58% |
 | Tasa de equilibrio exigida (R:R 1.75) | 36.36% |
-| Profit factor | 1.15 |
-| Ganancia media | 7.00% |
-| Pérdida media | -4.61% |
-| Esperanza por operación | 0.44% |
-| Días medios en cartera | 18.1 |
-| Mejor operación | 40.43% |
-| Peor operación | -14.95% |
+| Profit factor | 1.38 |
+| Ganancia media | 9.98% |
+| Pérdida media | -5.81% |
+| Esperanza por operación | 1.23% |
+| Días medios en cartera | 33.4 |
+| Mejor operación | 39.76% |
+| Peor operación | -18.10% |
 
 
-**Intervalo de confianza del CAGR (bootstrap de retornos diarios, 2000 muestras):** p05 -1.08% · mediana 2.19% · p95 5.65%. Probabilidad de CAGR negativo: 14.05%.
+**Intervalo de confianza del CAGR (bootstrap de retornos diarios, 2000 muestras):** p05 0.96% · mediana 3.91% · p95 7.16%. Probabilidad de CAGR negativo: 1.20%.
 
 
 ## 4. Curva de capital y drawdown
@@ -95,17 +95,17 @@ Las carteras aleatorias replican el perfil observado de la estrategia — 4 posi
 
 | Año | Estrategia | SPY |
 |---|---|---|
-| 2015 | -0.72% | 1.29% |
-| 2016 | 1.00% | 12.00% |
-| 2017 | 7.21% | 21.71% |
-| 2018 | -8.63% | -4.57% |
-| 2019 | 12.46% | 31.22% |
-| 2020 | 16.80% | 18.33% |
-| 2021 | 5.23% | 28.73% |
-| 2022 | -17.56% | -18.18% |
-| 2023 | 2.82% | 26.18% |
-| 2024 | 7.44% | 24.89% |
-| 2025 | 1.77% | 18.60% |
+| 2015 | 2.53% | 1.29% |
+| 2016 | 3.58% | 12.00% |
+| 2017 | 13.89% | 21.71% |
+| 2018 | -2.76% | -4.57% |
+| 2019 | 11.79% | 31.22% |
+| 2020 | 2.67% | 18.33% |
+| 2021 | 12.34% | 28.73% |
+| 2022 | -10.78% | -18.18% |
+| 2023 | 7.89% | 26.18% |
+| 2024 | 1.54% | 24.89% |
+| 2025 | 3.24% | 18.60% |
 
 
 ## 5. Atribución
@@ -115,51 +115,59 @@ Las carteras aleatorias replican el perfil observado de la estrategia — 4 posi
 
 | rating | n | hit_rate | avg_ret | total_pnl | avg_holding_days |
 |---|---|---|---|---|---|
-| COMPRA | 672 | 0.4271 | 0.0044 | 15109.4636 | 17.5640 |
-| COMPRA FUERTE | 256 | 0.4570 | 0.0046 | 10718.5492 | 19.5547 |
+| COMPRA | 478 | 0.4351 | 0.0097 | 37549.1258 | 32.4749 |
+| COMPRA FUERTE | 85 | 0.5059 | 0.0267 | 15487.8736 | 38.6000 |
+
+
+### Por estilo de inversion
+
+| estilo | n | hit_rate | avg_ret | total_pnl | avg_holding_days |
+|---|---|---|---|---|---|
+| CALIDAD_COMPUESTA | 382 | 0.4450 | 0.0141 | 41324.9076 | 37.7199 |
+| VALOR | 89 | 0.4831 | 0.0185 | 10077.8611 | 31.7978 |
+| CRECIMIENTO | 88 | 0.4091 | -0.0011 | 1901.9583 | 16.9886 |
+| MIXTA | 4 | 0.5000 | -0.0049 | -267.7275 | 17.5000 |
 
 
 ### Por sector
 
 | sector | n | hit_rate | avg_ret | total_pnl | avg_holding_days |
 |---|---|---|---|---|---|
-| Technology | 440 | 0.4636 | 0.0097 | 25115.9928 | 18.0227 |
-| Communication Services | 101 | 0.4554 | 0.0077 | 6930.5498 | 20.4059 |
-| Consumer Cyclical | 80 | 0.4375 | 0.0047 | 3410.0361 | 16.4125 |
-| Financial Services | 126 | 0.4206 | 0.0000 | 913.0522 | 16.9286 |
-| Industrials | 41 | 0.3902 | 0.0023 | 565.1977 | 20.3415 |
-| Consumer Defensive | 20 | 0.3500 | -0.0056 | -710.0794 | 17.1000 |
-| Energy | 17 | 0.2941 | -0.0155 | -1564.7765 | 13.2941 |
-| Healthcare | 103 | 0.3689 | -0.0097 | -8831.9599 | 19.1262 |
+| Technology | 362 | 0.4530 | 0.0147 | 35761.8755 | 32.9006 |
+| Communication Services | 50 | 0.4600 | 0.0240 | 9801.0353 | 27.5800 |
+| Financial Services | 50 | 0.5200 | 0.0098 | 4272.5908 | 36.5400 |
+| Consumer Defensive | 26 | 0.4231 | 0.0051 | 2366.5944 | 28.0000 |
+| Industrials | 6 | 0.5000 | 0.0364 | 1986.1820 | 35.6667 |
+| Healthcare | 56 | 0.3929 | 0.0033 | 1112.8796 | 43.4107 |
+| Consumer Cyclical | 13 | 0.1538 | -0.0481 | -2264.1582 | 24.2308 |
 
 
 ### Por motivo de salida
 
 | exit_reason | n | hit_rate | avg_ret | total_pnl | avg_holding_days |
 |---|---|---|---|---|---|
-| take_profit | 341 | 0.9971 | 0.0763 | 188277.4421 | 20.8475 |
-| downgrade_MANTENER | 86 | 0.5698 | 0.0127 | 6606.3672 | 35.6047 |
-| downgrade_VENTA | 13 | 0.6923 | 0.0267 | 2085.0276 | 30.1538 |
-| fin_backtest | 2 | 0.5000 | -0.0023 | -30.2161 | 43.0000 |
-| downgrade_VENTA FUERTE | 13 | 0.3846 | -0.0119 | -1193.4257 | 37.4615 |
-| stop_loss | 473 | 0.0000 | -0.0490 | -169917.1823 | 11.9937 |
+| take_profit | 226 | 1.0000 | 0.1070 | 185853.4632 | 43.0088 |
+| fin_backtest | 6 | 0.6667 | 0.0165 | 1534.8611 | 33.6667 |
+| downgrade_VENTA | 8 | 0.7500 | 0.0301 | 1275.1913 | 53.1250 |
+| downgrade_MANTENER | 41 | 0.3659 | -0.0017 | -201.1740 | 49.1463 |
+| stop_loss | 282 | 0.0000 | -0.0621 | -135425.3421 | 22.8440 |
 
 
 ### Por año de salida
 
 | year | n | hit_rate | avg_ret | total_pnl | avg_holding_days |
 |---|---|---|---|---|---|
-| 2015 | 51 | 0.3333 | -0.0019 | -1038.9030 | 14.3529 |
-| 2016 | 67 | 0.4328 | 0.0036 | 845.0204 | 20.9104 |
-| 2017 | 86 | 0.5814 | 0.0142 | 7730.3842 | 24.1860 |
-| 2018 | 95 | 0.3263 | -0.0128 | -9345.1338 | 14.0211 |
-| 2019 | 115 | 0.5217 | 0.0152 | 11374.4836 | 19.9304 |
-| 2020 | 62 | 0.6613 | 0.0422 | 18104.5874 | 23.4194 |
-| 2021 | 84 | 0.5238 | 0.0109 | 8097.0554 | 17.6071 |
-| 2022 | 79 | 0.2152 | -0.0392 | -23566.7944 | 14.7975 |
-| 2023 | 94 | 0.3830 | 0.0037 | 2292.7613 | 17.7021 |
-| 2024 | 114 | 0.4123 | 0.0082 | 9150.0642 | 15.9825 |
-| 2025 | 81 | 0.3951 | 0.0064 | 2184.4876 | 17.1111 |
+| 2015 | 27 | 0.2963 | 0.0103 | 2540.2001 | 29.1852 |
+| 2016 | 36 | 0.4444 | 0.0115 | 3336.1404 | 38.4444 |
+| 2017 | 55 | 0.6364 | 0.0320 | 14611.6621 | 29.4182 |
+| 2018 | 60 | 0.3167 | -0.0169 | -2948.1682 | 31.9833 |
+| 2019 | 69 | 0.5072 | 0.0359 | 12029.8484 | 33.5942 |
+| 2020 | 39 | 0.6154 | 0.0420 | 4165.1911 | 39.3590 |
+| 2021 | 49 | 0.5918 | 0.0339 | 17032.8922 | 43.0408 |
+| 2022 | 56 | 0.1964 | -0.0455 | -15999.8691 | 27.7143 |
+| 2023 | 56 | 0.4643 | 0.0246 | 10365.6636 | 39.3571 |
+| 2024 | 66 | 0.4091 | 0.0083 | 3248.3430 | 28.8788 |
+| 2025 | 50 | 0.4200 | 0.0066 | 4655.0960 | 29.4200 |
 
 
 ### Event study: rendimiento futuro por rating
@@ -168,48 +176,52 @@ Independiente del gestor de cartera: mide si el rating por sí solo anticipa el 
 
 | rating | n | fwd_1m_media | fwd_1m_mediana | fwd_1m_pct_positivo | fwd_1m_tstat | fwd_3m_media | fwd_3m_mediana | fwd_3m_pct_positivo | fwd_3m_tstat | fwd_6m_media | fwd_6m_mediana | fwd_6m_pct_positivo | fwd_6m_tstat | fwd_12m_media | fwd_12m_mediana | fwd_12m_pct_positivo | fwd_12m_tstat |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| COMPRA | 755 | 0.0117 | 0.0086 | 0.5523 | 3.7322 | 0.0451 | 0.0327 | 0.6066 | 7.7423 | 0.0978 | 0.0715 | 0.6702 | 11.0705 | 0.2375 | 0.1731 | 0.7364 | 15.1490 |
-| COMPRA FUERTE | 295 | 0.0101 | 0.0073 | 0.5593 | 2.3302 | 0.0441 | 0.0443 | 0.6373 | 5.4297 | 0.0961 | 0.0816 | 0.7051 | 7.9932 | 0.2102 | 0.1886 | 0.7525 | 10.1929 |
-| MANTENER | 848 | 0.0201 | 0.0206 | 0.6167 | 6.9469 | 0.0532 | 0.0459 | 0.6521 | 10.8473 | 0.1129 | 0.0968 | 0.7005 | 14.0950 | 0.2111 | 0.1818 | 0.7465 | 16.0408 |
-| VENTA | 3259 | 0.0139 | 0.0122 | 0.5775 | 10.4898 | 0.0429 | 0.0346 | 0.6244 | 18.5779 | 0.0855 | 0.0668 | 0.6809 | 25.0771 | 0.1751 | 0.1292 | 0.7383 | 32.5033 |
-| VENTA FUERTE | 420 | 0.0280 | 0.0196 | 0.5833 | 5.2364 | 0.0741 | 0.0489 | 0.6310 | 7.3024 | 0.1545 | 0.1142 | 0.6690 | 9.3027 | 0.3506 | 0.2706 | 0.7429 | 12.6300 |
+| COMPRA | 765 | 0.0180 | 0.0170 | 0.5895 | 5.8768 | 0.0565 | 0.0419 | 0.6340 | 10.3349 | 0.1192 | 0.0996 | 0.7124 | 13.6191 | 0.2740 | 0.2018 | 0.7712 | 16.1119 |
+| COMPRA FUERTE | 171 | 0.0094 | 0.0116 | 0.5731 | 1.8008 | 0.0407 | 0.0389 | 0.6784 | 4.0870 | 0.0768 | 0.0656 | 0.6316 | 4.9086 | 0.1876 | 0.1435 | 0.7135 | 7.6557 |
+| MANTENER | 929 | 0.0161 | 0.0135 | 0.5845 | 5.7010 | 0.0467 | 0.0423 | 0.6340 | 9.4788 | 0.0940 | 0.0716 | 0.6760 | 12.3840 | 0.1906 | 0.1627 | 0.7244 | 15.9263 |
+| SIN OPINION | 285 | 0.0159 | 0.0069 | 0.5649 | 2.8445 | 0.0493 | 0.0288 | 0.6035 | 4.5223 | 0.1095 | 0.0784 | 0.6842 | 5.8564 | 0.2523 | 0.1262 | 0.7579 | 6.3777 |
+| VENTA | 3216 | 0.0142 | 0.0126 | 0.5784 | 10.6314 | 0.0434 | 0.0361 | 0.6231 | 18.4903 | 0.0887 | 0.0670 | 0.6816 | 25.5280 | 0.1789 | 0.1356 | 0.7397 | 35.2350 |
+| VENTA FUERTE | 211 | 0.0250 | 0.0133 | 0.5640 | 3.1512 | 0.0752 | 0.0426 | 0.6303 | 5.1932 | 0.1578 | 0.1423 | 0.6635 | 7.2758 | 0.3424 | 0.4349 | 0.7062 | 10.8941 |
 
 
 ## 6. Robustez por subperiodo
 
 | Subperiodo | Retorno estrategia | Retorno SPY | Sharpe | Máx. drawdown |
 |---|---|---|---|---|
-| Pre-COVID 2015-2019 | 0.1046 | 0.7289 | 0.3634 | -0.1153 |
-| Crash COVID 2020-02→2020-04 | 0.0388 | -0.0985 | 3.1371 | -0.0092 |
-| Recuperación 2020-2021 | 0.1574 | 0.7236 | 1.2059 | -0.0494 |
-| Bajista 2022 | -0.1815 | -0.1865 | -2.3465 | -0.2054 |
-| Post-2023 | 0.1256 | 0.8767 | 0.6600 | -0.0640 |
+| Pre-COVID 2015-2019 | 0.3148 | 0.7289 | 1.0506 | -0.0896 |
+| Crash COVID 2020-02→2020-04 | -0.0311 | -0.0985 | -1.2752 | -0.0649 |
+| Recuperación 2020-2021 | 0.1703 | 0.7236 | 1.7105 | -0.0430 |
+| Bajista 2022 | -0.1162 | -0.1865 | -1.4416 | -0.1338 |
+| Post-2023 | 0.1337 | 0.8767 | 0.7678 | -0.0623 |
 
 
 ## 7. Sensibilidad a costes de transacción
 
 | Nivel de coste | CAGR | Sharpe | Máx. drawdown | Capital final |
 |---|---|---|---|---|
-| 0 bps ida y vuelta | 0.0320 | 0.5135 | -0.2182 | 141449.9243 |
-| 5 bps ida y vuelta | 0.0265 | 0.4302 | -0.2220 | 133246.5737 |
-| 10 bps ida y vuelta | 0.0211 | 0.3512 | -0.2257 | 125828.0128 |
-| 25 bps ida y vuelta | 0.0044 | 0.0991 | -0.2402 | 104911.8303 |
+| 0 bps ida y vuelta | 0.0463 | 0.7924 | -0.1316 | 164511.2837 |
+| 5 bps ida y vuelta | 0.0429 | 0.7366 | -0.1348 | 158670.1758 |
+| 10 bps ida y vuelta | 0.0395 | 0.6808 | -0.1380 | 153036.9995 |
+| 25 bps ida y vuelta | 0.0293 | 0.5137 | -0.1476 | 137312.1627 |
 
 
 ## 8. Limitaciones y sesgos residuales
 
 Esta sección no se suaviza. Cada punto es una razón concreta por la que el resultado de arriba podría no repetirse fuera de muestra.
 
-1. **La liquidez ociosa no renta nada, y es la mayor parte de la cartera.** La exposición bruta media es del 27.8%, así que un 72% del capital permanece en efectivo al 0%. Remunerarlo a letras del Tesoro (~2% medio en 2015-2025) añadiría del orden de 1.4% anual al resultado. La conclusión no cambia, pero la cifra publicada es algo más pesimista de lo que sería con una gestión de tesorería realista.
-2. **El sistema no define qué hacer con el efectivo sobrante.** Emite pesos por posición (8-10% / 4-7%) pero nunca dice cuántas posiciones abrir ni cómo invertir el resto. La exposición del 28% es una consecuencia emergente de cuántas señales de compra aparecen, no una decisión de diseño. Buena parte de la diferencia frente al índice es simplemente no estar invertido.
+1. **La liquidez ociosa no renta nada, y es la mayor parte de la cartera.** La exposición bruta media es del 30.4%, así que un 70% del capital permanece en efectivo al 0%. Remunerarlo a letras del Tesoro (~2% medio en 2015-2025) añadiría del orden de 1.4% anual al resultado. La conclusión no cambia, pero la cifra publicada es algo más pesimista de lo que sería con una gestión de tesorería realista.
+2. **La exposición es una CONSECUENCIA del presupuesto de riesgo, no un objetivo.** El motor histórico dimensiona ya con `src/portfolio/construccion.py` —la misma capa que corre en vivo: límites por sector, penalización por correlación y presupuesto de riesgo agregado—, así que la cartera simulada es la que el sistema recomendaría hoy. Pero el tamaño de cada posición sale de arriesgar un 0.75% del patrimonio contra la distancia al stop, y con pocas señales simultáneas eso deja la exposición bruta en el 30%. **El sistema no define qué hacer con el resto**, y esa es una decisión de diseño que falta: una estrategia estructuralmente invertida a un tercio no puede compararse contra un índice invertido al 100% sin decirlo. Las métricas ajustadas por riesgo (Sharpe, Sortino) son la comparación honesta; el CAGR absoluto no lo es.
 3. **Divergencia de definición fundamental.** Producción lee métricas TTM de `yfinance.info`; el backtest usa cifras ANUALES (10-K) point-in-time de SEC EDGAR, porque el TTM histórico de yfinance no es recuperable retroactivamente. El gatekeeper se evalúa por tanto con una ventana contable distinta a la de producción: los ratings del backtest son fieles a la *lógica* del sistema, no necesariamente idénticos a los que habría emitido en directo.
-4. **Sesgo de supervivencia.** El universo son 50 valores seleccionados hoy por su relevancia actual. Las empresas que quebraron o fueron excluidas nunca entran en la muestra, lo que infla el resultado en una magnitud no cuantificada aquí (la literatura sitúa el efecto entre 1 y 4 puntos de CAGR según periodo y universo).
-5. **Deuda/Capital ausente se trata como 0.0.** Se replica el comportamiento de producción (`info.get("debtToEquity", 0.0)`), lo que hace que el filtro de apalancamiento se salte silenciosamente cuando el dato falta en EDGAR, en lugar de rechazar el valor.
-6. **Finnhub ausente en el backtest.** No hay histórico point-in-time gratuito, así que el `confidence_score` de la reconciliación difiere del de producción. Verificado en la Fase 1 que no altera ninguna decisión (solo añade texto), pero es una divergencia real.
-7. **Sin datos intradía.** Cuando stop y objetivo se tocan en la misma sesión se asume que saltó el stop. Es conservador, pero desconoce el orden real y sesga el resultado a la baja en una cuantía desconocida.
-8. **Costes estimados, no reales.** Comisión y slippage son parámetros fijos en puntos básicos. No modelan impacto de mercado, y para tamaños grandes de cartera el deslizamiento real crecería con el volumen.
-9. **Cobertura incompleta de señales.** Descartes por falta de datos: {'sin_fundamentales': 979}. Los tickers sin fundamentales publicados en una fecha simplemente no generan señal, lo que reduce el universo efectivo en los primeros años del estudio.
-10. **Contrastes múltiples.** Se han evaluado varios regímenes, frecuencias y niveles de coste sobre el mismo periodo histórico. El p-valor mostrado no está corregido por multiplicidad: interprétese como orientativo, no como una prueba formal.
+4. **Normas sectoriales estáticas.** El contexto de valoración compara cada múltiplo contra una mediana de largo plazo del mercado estadounidense (`SECTOR_NORMAS` en `src/config.py`), no contra la mediana viva del sector en la fecha simulada. En un backtest de once años eso introduce un anacronismo: el P/E mediano del software en 2015 no era el de 2025. Las etiquetas de estilo ordenan y contextualizan, pero no deben leerse como una valoración relativa exacta.
+5. **Coste de capital constante.** El ROIC se compara contra un WACC de referencia único (`WACC_REFERENCIA`) en lugar de estimarlo por empresa y por fecha. Es una decisión consciente —la dispersión de un WACC estimado con beta y estructura de capital superaría la señal que aporta— pero implica que «crea valor» significa «supera un umbral fijo», no «supera su propio coste de capital».
+6. **Sesgo de supervivencia.** El universo son 50 valores seleccionados hoy por su relevancia actual. Las empresas que quebraron o fueron excluidas nunca entran en la muestra, lo que infla el resultado en una magnitud no cuantificada aquí (la literatura sitúa el efecto entre 1 y 4 puntos de CAGR según periodo y universo).
+7. **Deuda/Capital ausente se trata como 0.0.** Se replica el comportamiento de producción (`info.get("debtToEquity", 0.0)`), lo que hace que el filtro de apalancamiento se salte silenciosamente cuando el dato falta en EDGAR, en lugar de rechazar el valor.
+8. **Finnhub ausente en el backtest.** No hay histórico point-in-time gratuito, así que el `confidence_score` de la reconciliación difiere del de producción. Verificado en la Fase 1 que no altera ninguna decisión (solo añade texto), pero es una divergencia real.
+9. **Analista de Noticias excluido del backtest.** El grafo de producción ejecuta un nodo `news_analysis` que este replay NO recorre. Dos de sus tres fuentes (Google News RSS y Tavily) son buscadores "de hoy": no existe forma asequible de recuperar qué estaba publicado y visible en una fecha pasada, y sus corpus indexados hoy omiten lo que se borró y fechan por republicación, no por el hecho. Solo el 8-K con Ítem 2.02 tiene `filed` exacto y sería reconstruible. Por eso las noticias son hoy una CAPA ASESORA: aparecen en el informe diario y alimentan el debate, pero no tocan `rating` ni `position_size_pct`, de modo que su ausencia aquí no altera ni una sola señal. La contrapartida es que el valor predictivo de esa capa está SIN MEDIR: no hay ninguna evidencia en este informe de que las noticias aporten nada.
+10. **Sin datos intradía.** Cuando stop y objetivo se tocan en la misma sesión se asume que saltó el stop. Es conservador, pero desconoce el orden real y sesga el resultado a la baja en una cuantía desconocida.
+11. **Costes estimados, no reales.** Comisión y slippage son parámetros fijos en puntos básicos. No modelan impacto de mercado, y para tamaños grandes de cartera el deslizamiento real crecería con el volumen.
+12. **Cobertura incompleta de señales.** Descartes por falta de datos: {'sin_fundamentales': 979}. Los tickers sin fundamentales publicados en una fecha simplemente no generan señal, lo que reduce el universo efectivo en los primeros años del estudio.
+13. **Contrastes múltiples.** Se han evaluado varios regímenes, frecuencias y niveles de coste sobre el mismo periodo histórico. El p-valor mostrado no está corregido por multiplicidad: interprétese como orientativo, no como una prueba formal.
 
 ## 9. Próximos pasos para reforzar la validez
 
@@ -220,9 +232,14 @@ Esta sección no se suaviza. Cada punto es una razón concreta por la que el res
 5. Sustituir los fundamentales anuales por TTM point-in-time encadenando los cuatro trimestres XBRL disponibles en cada fecha, para acercar el backtest a la definición exacta que usa producción.
 6. Validación walk-forward: fijar los umbrales del gatekeeper con datos hasta 2019 y evaluar 2020-2025 como out-of-sample estricto, sin volver a mirar el periodo de test.
 7. Añadir datos intradía (o al menos barras horarias) para resolver correctamente el orden entre stop y objetivo dentro de la misma sesión.
-8. Corregir `_extract_recent_fact()` en `src/data/sec_edgar.py` para que ordene por `filed` y no por `end`: hoy es un look-ahead latente que también afecta a producción en tiempo real.
-9. Ampliar el universo más allá de las megacaps estadounidenses y comprobar si el resultado sobrevive en small caps, donde los costes y el slippage son materialmente mayores.
-10. Ejecutar paper trading en directo durante 6-12 meses y comparar las señales reales con las que el replay produce para esas mismas fechas: es la única validación no retrospectiva.
+8. Definir una política explícita para el capital no invertido. La exposición bruta que produce el presupuesto de riesgo es estructuralmente baja, y hoy el remanente se queda en efectivo al 0%. Las tres opciones razonables —remunerarlo a letras, invertirlo en el índice como posición residual, o subir el riesgo por posición— tienen implicaciones muy distintas y ninguna está tomada. Mientras no se decida, el CAGR absoluto compara una cartera a un tercio de exposición contra un índice al 100%.
+9. Sustituir `SECTOR_NORMAS` por la mediana calculada sobre un conjunto de comparables en cada fecha. Es lo que convierte el contexto sectorial de una referencia estática en una valoración relativa point-in-time, y elimina el anacronismo declarado en las limitaciones.
+10. Revalidar el sistema completo tras la incorporación del Analista de Calidad a la decisión. El track record publicado corresponde a la versión anterior, en la que el rating salía de momentum y RSI únicamente; las cifras de rendimiento no son transferibles a la versión actual hasta ejecutar de nuevo el régimen `pit`.
+11. Reconstruir el riesgo legal y regulatorio de forma point-in-time desde EDGAR (8-K Ítem 8.01 y el apartado de Procedimientos Legales del 10-K). Es la única vía para que un litigio material entre en la decisión sin romper el backtest: a diferencia de la prensa, esas presentaciones tienen fecha `filed` exacta.
+12. Construir un `NewsStore` point-in-time antes de dejar que las noticias entren en la decisión. El único camino barato es el histórico completo de 8-K/10-Q de EDGAR filtrado por `filed <= t` (mismo patrón que `FundamentalStore`), que cubre resultados y hechos relevantes pero no prensa general; el resto exigiría un proveedor de archivo de noticias con marca temporal (RavenPack, Dow Jones DNA). Hasta entonces, subir el Analista de Noticias de capa asesora a variable de decisión dejaría el sistema sin backtest válido.
+13. Medir la capa de noticias por separado con un event study sobre los 8-K con Ítem 2.02, que sí son reconstruibles point-in-time: comparar el rendimiento a 1, 5 y 20 sesiones tras la presentación frente al resto del universo. Es la forma de saber si la `impact_probability` correlaciona con algo antes de darle peso en el rating.
+14. Ampliar el universo más allá de las megacaps estadounidenses y comprobar si el resultado sobrevive en small caps, donde los costes y el slippage son materialmente mayores.
+15. Ejecutar paper trading en directo durante 6-12 meses y comparar las señales reales con las que el replay produce para esas mismas fechas: es la única validación no retrospectiva.
 
 ---
 
