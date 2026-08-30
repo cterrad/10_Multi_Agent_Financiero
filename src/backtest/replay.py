@@ -49,14 +49,22 @@ conecta a la decisión, este backtest deja de ser válido hasta que exista un
 
 Hallazgo de la Fase 1 en el que se apoya todo lo demás
 ------------------------------------------------------
-En los cinco agentes el LLM solo sobrescribe campos de texto, y siempre DESPUÉS
-de que las variables de decisión estén fijadas:
+En los seis agentes el LLM solo sobrescribe campos de texto, y siempre DESPUÉS
+de que las variables de decisión estén fijadas.
 
-    fundamental.py:66   summary = texto      (passed_gatekeeper ya calculado, l.30-40)
-    technical.py:95     summary = texto      (momentum_classification ya calculado, l.68-75)
-    news.py:370         summary = texto      (probabilidad/categoría/dirección ya calculadas)
-    debate.py:101       synthesis = texto    (solo texto)
-    fund_manager.py:94  summary = texto      (rating/size/SL/TP ya calculados, l.31-65)
+Ese orden ya no depende de que cada agente lo respete por su cuenta: lo impone
+`AgenteBase.analyze()` (`src/agents/base.py`), que llama a `decidir()` —todo el
+cálculo determinista— y solo después a `_redactar()`. El LLM únicamente puede
+escribir la clave que el agente declara en `campo_texto`: `summary` en cinco de
+ellos, `synthesis` en el debate. La versión anterior de este docstring
+enumeraba línea por línea dónde ocurría en cada fichero, y esa lista quedaba
+obsoleta con cualquier edición.
+
+Los agentes invocan ahora tools reales (`src/tools/`), pero el PLAN de llamadas
+lo escribe el código, no el modelo: `usar_tool()` emite los `tool_calls` con
+nombre y argumentos fijos. La forma es la de un ReAct; la sustancia, la de una
+función pura. El único ReAct de verdad del sistema —`src/agents/investigador.py`—
+está fuera de la ruta de decisión y este replay no lo ejecuta.
 
 `texto` sale de `src.config.texto_de_respuesta_llm()`, que aplana la respuesta
 del proveedor a cadena y devuelve None si no hay nada utilizable — en ese caso
@@ -81,6 +89,7 @@ import pandas as pd
 
 import src.agents.debate as debate_mod
 import src.agents.fund_manager as fm_mod
+import src.agents.investigador as investigador_mod
 import src.agents.fundamental as fund_mod
 import src.agents.news as news_mod
 import src.agents.quality as quality_mod
@@ -110,8 +119,17 @@ def disable_llm() -> None:
     Incluye a `src.agents.news` aunque el replay no ejecute su nodo: la
     verificación de neutralidad sí lo recorre, y dejarlo sin parchear abriría
     una llamada de red y de coste a mitad de un backtest offline.
+
+    Incluye también a `src.agents.investigador` por el mismo motivo y con más
+    razón: es el único agente ReAct del sistema, encadena varias llamadas al
+    proveedor por invocación y no tiene motor heurístico al que degradar. Con el
+    parche puesto, `modelo_con_tools()` levanta `LLMNoConfigurado` en lugar de
+    abrir una factura en mitad de un backtest offline. El replay no lo ejecuta
+    —es capa asesora, como las noticias— y este parche cierra la vía por si
+    alguien lo conectara sin reparar en ello.
     """
-    for mod in (fund_mod, quality_mod, tech_mod, news_mod, debate_mod, fm_mod):
+    for mod in (fund_mod, quality_mod, tech_mod, news_mod, debate_mod, fm_mod,
+                investigador_mod):
         mod.get_llm = lambda: None
 
 

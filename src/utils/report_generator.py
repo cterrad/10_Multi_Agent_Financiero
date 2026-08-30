@@ -127,6 +127,34 @@ def _si_no(valor: Optional[bool]) -> str:
     return "✅" if valor else "❌"
 
 
+def _estado_serializable(estado: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Prepara el estado para `daily_selection.json`.
+
+    El canal `messages` contiene objetos `BaseMessage`, que `json.dump` solo
+    puede volcar a través de `default=str` — es decir, como el `repr` de una
+    lista de objetos de LangChain: ilegible y sin estructura sobre la que
+    consultar nada. Se sustituyen por su forma tipada, que es la misma que ya
+    guarda cada informe en `_traza`.
+    """
+    salida = dict(estado)
+    mensajes = salida.get("messages")
+    if mensajes:
+        salida["messages"] = [
+            {
+                "tipo": type(m).__name__,
+                "id": getattr(m, "id", None),
+                "contenido": _texto(getattr(m, "content", "")),
+                "tool_calls": [{"name": tc.get("name"), "id": tc.get("id")}
+                               for tc in (getattr(m, "tool_calls", None) or [])],
+                "tool_call_id": getattr(m, "tool_call_id", None),
+                "name": getattr(m, "name", None),
+            }
+            for m in mensajes
+        ]
+    return salida
+
+
 class ReportGenerator:
     """Genera el informe de inversión en Markdown y su equivalente en JSON."""
 
@@ -134,10 +162,26 @@ class ReportGenerator:
                                  cartera: Optional[Any] = None,
                                  benchmark: Optional[Dict[str, Any]] = None,
                                  filename: str = "daily_selection.md") -> str:
+        """
+        Escribe los tres documentos y el JSON.
+
+        La versión anterior producía un único fichero de 75 KB en el que la
+        decisión agregada —lo que hay que leer primero— quedaba enterrada bajo
+        las fichas. Ahora se separa por AUDIENCIA, no por tamaño:
+
+          · `resumen_ejecutivo.md` — la decisión y nada más. Es lo que se lee.
+          · `daily_selection.md`   — el informe completo, sin recortes.
+          · `detalle/{TICKER}.md`  — una ficha por compañía MÁS la traza de qué
+            tools se invocaron y con qué datos. Es lo que se consulta cuando un
+            dictamen sorprende.
+
+        Devuelve la ruta del resumen ejecutivo: es el punto de entrada.
+        """
         filepath = os.path.join(OUTPUT_DIR, filename)
         ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cartera_dict = cartera.a_dict() if cartera is not None and hasattr(cartera, "a_dict") else None
 
+        # --- 1. Informe completo -----------------------------------------
         lineas: List[str] = []
         lineas += self._cabecera(ahora, results, benchmark)
         lineas += self._resumen_ejecutivo(results)
@@ -152,21 +196,174 @@ class ReportGenerator:
         lineas += self._limitaciones()
         lineas += self._anexo_metodologico()
 
-        contenido = "\n".join(lineas)
         with open(filepath, "w", encoding="utf-8") as f:
-            f.write(contenido)
+            f.write("\n".join(lineas))
 
+        # --- 2. Resumen ejecutivo ----------------------------------------
+        ruta_resumen = os.path.join(OUTPUT_DIR, "resumen_ejecutivo.md")
+        with open(ruta_resumen, "w", encoding="utf-8") as f:
+            f.write("\n".join(self.documento_ejecutivo(results, cartera_dict,
+                                                       benchmark, ahora)))
+
+        # --- 3. Detalle por compañía --------------------------------------
+        dir_detalle = os.path.join(OUTPUT_DIR, "detalle")
+        os.makedirs(dir_detalle, exist_ok=True)
+        for res in results:
+            ticker = res.get("ticker", "?")
+            with open(os.path.join(dir_detalle, f"{ticker}.md"), "w", encoding="utf-8") as f:
+                f.write("\n".join(self.documento_detalle(res, ahora)))
+
+        # --- 4. JSON ------------------------------------------------------
         json_path = os.path.join(OUTPUT_DIR, "daily_selection.json")
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump({
                 "generado": ahora,
                 "benchmark": benchmark or {},
                 "cartera": cartera_dict,
-                "analisis": results,
+                "analisis": [_estado_serializable(r) for r in results],
             }, f, indent=2, ensure_ascii=False, default=str)
 
-        print(f"[ReportGenerator] Informe generado en: {filepath}")
-        return filepath
+        print(f"[ReportGenerator] Resumen ejecutivo: {ruta_resumen}")
+        print(f"[ReportGenerator] Informe completo:  {filepath}")
+        print(f"[ReportGenerator] Detalle por valor: {dir_detalle}")
+        return ruta_resumen
+
+    # ================================================================== #
+    # Documento 1: resumen ejecutivo
+    # ================================================================== #
+    def documento_ejecutivo(self, results: List[Dict[str, Any]],
+                            cartera: Optional[Dict[str, Any]] = None,
+                            benchmark: Optional[Dict[str, Any]] = None,
+                            ahora: Optional[str] = None) -> List[str]:
+        """
+        La decisión agregada, sin nada más.
+
+        Cierra enlazando al informe completo y a la ficha de cada valor: el
+        lector que quiera el pormenorizado tiene que poder llegar en un clic, y
+        el que no lo quiera no debería tener que desplazarse por 75 KB.
+        """
+        ahora = ahora or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        lineas = self._cabecera(ahora, results, benchmark)
+        lineas[0] = "# Resumen ejecutivo — Selección Multi-Agente"
+        lineas += self._resumen_ejecutivo(results)
+        lineas += self._cartera(cartera)
+        lineas += self._reparto_por_estilo(results)
+        lineas += self._track_record()
+        lineas += [
+            "## Dónde seguir leyendo",
+            "",
+            "| Documento | Qué contiene |",
+            "| :--- | :--- |",
+            "| [Informe completo](daily_selection.md) | Fichas de todos los valores, "
+            "calidad de los datos, limitaciones y anexo metodológico. |",
+        ]
+        for res in results:
+            ticker = res.get("ticker", "?")
+            fd = res.get("final_decision", {}) or {}
+            lineas.append(
+                f"| [{ticker}](detalle/{ticker}.md) | "
+                f"{res.get('company_name', '')[:40]} — dictamen "
+                f"**{fd.get('rating', SIN_DATO)}**, con la traza de las herramientas "
+                f"que lo produjeron. |")
+        lineas += ["", "---", ""]
+        return lineas
+
+    # ================================================================== #
+    # Documento 2: detalle por compañía
+    # ================================================================== #
+    def documento_detalle(self, res: Dict[str, Any],
+                          ahora: Optional[str] = None) -> List[str]:
+        """Ficha completa de un valor más la traza de su análisis."""
+        ticker = res.get("ticker", "?")
+        ahora = ahora or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        lineas = [
+            f"# {ticker} — {res.get('company_name', ticker)}",
+            "",
+            f"**Fecha de análisis:** `{ahora}`  ",
+            f"**Estado del flujo:** {res.get('workflow_status', SIN_DATO)}  ",
+            "[← Volver al resumen ejecutivo](../resumen_ejecutivo.md)",
+            "",
+            "---",
+            "",
+        ]
+        lineas += self._ficha(res)
+        lineas += self._traza_de_agentes(res)
+        lineas += self._registro_de_ejecucion(res)
+        return lineas
+
+    def _traza_de_agentes(self, res: Dict[str, Any]) -> List[str]:
+        """
+        Qué herramienta se invocó, con qué argumentos y qué devolvió.
+
+        Es la sección que el informe anterior no podía tener: los cálculos vivían
+        dentro de los agentes como métodos privados y no dejaban rastro. Ahora
+        cada escuela, cada bloque técnico y cada paso de la decisión pasa por el
+        registro de tools y queda aquí registrado.
+        """
+        bloques = [
+            ("Analista de Calidad", res.get("quality_report")),
+            ("Gatekeeper Fundamental", res.get("fundamental_report")),
+            ("Analista de Noticias", res.get("news_report")),
+            ("Analista Técnico", res.get("technical_report")),
+            ("Unidad de Debate", res.get("debate_report")),
+            ("Fund Manager", res.get("final_decision")),
+        ]
+        con_traza = [(nombre, inf) for nombre, inf in bloques
+                     if isinstance(inf, dict) and inf.get("_traza")]
+        if not con_traza:
+            return []
+
+        lineas = [
+            "## Traza de agentes y herramientas",
+            "",
+            "Cada fila es una llamada real a una herramienta del registro "
+            "(`src/tools/`). El orden es el de ejecución; en el Analista de "
+            "Calidad y en el Fund Manager ese orden no es intercambiable, porque "
+            "cada paso consume la salida del anterior.",
+            "",
+        ]
+        for nombre, informe in con_traza:
+            traza = informe["_traza"]
+            lineas += [
+                f"### {nombre}",
+                "",
+                f"`{traza['n_mensajes']}` mensajes · `{len(traza['tools'])}` "
+                f"llamada(s) a herramientas",
+                "",
+                "| # | Herramienta | Argumentos | Resultado |",
+                "| ---: | :--- | :--- | :--- |",
+            ]
+            for i, t in enumerate(traza["tools"], 1):
+                args = t.get("argumentos", {})
+                resumen_args = ", ".join(f"{k}={v}" for k, v in list(args.items())[:4]) or "—"
+                if t.get("error"):
+                    resultado = f"⚠️ {t['error']}"
+                else:
+                    r = t.get("resultado")
+                    resultado = (f"{r['n_claves']} campos" if isinstance(r, dict) and "n_claves" in r
+                                 else f"{r['n_elementos']} elementos"
+                                 if isinstance(r, dict) and "n_elementos" in r
+                                 else _texto(r))
+                lineas.append(f"| {i} | `{t['tool']}` | {resumen_args[:110]} | {resultado} |")
+            lineas += ["", ""]
+        return lineas
+
+    def _registro_de_ejecucion(self, res: Dict[str, Any]) -> List[str]:
+        """Las líneas de log del grafo, en orden."""
+        logs = res.get("logs") or []
+        if not logs:
+            return []
+        lineas = [
+            "## Registro de ejecución",
+            "",
+            "Resumen legible del recorrido por el grafo. La traza completa con "
+            "tiempos por herramienta está en `output/logs/`.",
+            "",
+            "```",
+        ]
+        lineas += list(logs)
+        lineas += ["```", ""]
+        return lineas
 
     # ================================================================== #
     def _cabecera(self, ahora: str, results: List[Dict[str, Any]],

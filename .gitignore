@@ -17,3 +17,7 @@ __pycache__/
 .env
 .venv/
 venv/
+
+output/logs/
+output/detalle/
+output/resumen_ejecutivo.md

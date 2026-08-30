@@ -1,24 +1,68 @@
-from typing import Dict, Any, List
-from langgraph.graph import StateGraph, END
-from src.state import FinancialAnalysisState
-from src.data.fetcher import DataFetcher
-from src.data.sec_edgar import SECEdgarClient
-from src.data.finnhub_client import FinnhubClient
-from src.data.reconciler import DataReconciler
-from src.data.news import recolectar as recolectar_noticias
-from src.agents.fundamental import FundamentalAnalystAgent
-from src.agents.quality import QualityAnalystAgent
-from src.agents.technical import TechnicalAnalystAgent
-from src.agents.news import NewsAnalystAgent
+"""
+Grafo de producción: máquina de estados LangGraph sobre `FinancialAnalysisState`.
+
+FORMA DEL GRAFO
+
+                              ┌─ gatekeeper ────┐
+ingest → quality_analysis ────┤                 ├─ join_analisis → [route] ─┬─ aprobado → technical → debate → fund_manager → END
+                              └─ news_analysis ─┘                          └─ rechazado ─────────────────────→ fund_manager → END
+
+CONTRATO DE ESCRITURA DE LOS NODOS
+----------------------------------
+`logs` y `messages` declaran reductor en `src/state.py` (`operator.add` y
+`add_messages`), así que cada nodo devuelve SOLO lo que él produce, nunca el
+acumulado. Devolver la lista entera —que es lo que hacía la versión anterior,
+cuando no había reductores— la duplicaría en silencio: no rompe nada, solo
+ensucia el informe con cada línea repetida tantas veces como nodos hayan pasado.
+
+Los reductores además resolvieron una limitación real. Antes `news_analysis`
+tenía PROHIBIDO escribir `logs`, porque coincidía en superstep con el gatekeeper
+y `FinancialAnalysisState` no declaraba ninguno: LangGraph abortaba con
+`InvalidUpdateError: can receive only one value per step`. Sus trazas las tenía
+que volcar `join_analisis` en su nombre. Ahora escribe las suyas.
+
+`workflow_status` sigue SIN reductor a propósito —es un escalar, y dos nodos
+paralelos escribiéndolo no tendrían un valor correcto que fusionar—, así que
+`news_analysis` sigue sin tocarlo. Esa parte de la restricción no ha cambiado.
+
+POR QUÉ `quality_analysis` VA ANTES DEL FAN-OUT
+-----------------------------------------------
+Es cálculo puro sobre datos ya ingeridos, así que paralelizarlo no ahorraría
+latencia. Y colocarlo antes del gatekeeper deja sus puntuaciones y banderas
+rojas disponibles TAMBIÉN para los valores rechazados: un Altman en zona de
+insolvencia es justo lo que se quiere leer sobre una empresa que no pasa el
+filtro.
+
+POR QUÉ SIGUE EXISTIENDO `join_analisis`
+-----------------------------------------
+Su segunda razón de ser es independiente de los reductores y sigue vigente:
+colgar el enrutado condicional del gatekeeper y llevar `news_analysis`
+directamente a `debate_unit` haría que las dos ramas tuvieran longitudes
+distintas y que `debate_unit` coincidiera con `fund_manager` en un superstep.
+Unir antes de ramificar lo resuelve y además deja `news_report` disponible en
+las dos ramas, incluida la de rechazo.
+
+Este módulo instancia los agentes y compila el grafo A NIVEL DE MÓDULO
+(`financial_app`), así que importarlo tiene efectos secundarios.
+"""
+
+from typing import Any, Dict, List
+
+from langchain_core.messages import BaseMessage, HumanMessage
+from langgraph.graph import END, StateGraph
+
+from src.agents.base import Traza, usar_tool
 from src.agents.debate import DebateUnitAgent
 from src.agents.fund_manager import FundManagerAgent
+from src.agents.fundamental import FundamentalAnalystAgent
+from src.agents.news import NewsAnalystAgent
+from src.agents.quality import QualityAnalystAgent
+from src.agents.technical import TechnicalAnalystAgent
+from src.state import FinancialAnalysisState
 
-# Instancias de componentes
-fetcher = DataFetcher()
-sec_client = SECEdgarClient()
-finnhub_client = FinnhubClient()
-reconciler = DataReconciler()
-
+# Instancias de los agentes. Las clases de datos (fetchers, reconciliador) ya no
+# se instancian aquí: viven detrás de las tools de `src/tools/extraccion.py`,
+# que son las únicas del sistema que salen a la red.
 fundamental_agent = FundamentalAnalystAgent()
 quality_agent = QualityAnalystAgent()
 technical_agent = TechnicalAnalystAgent()
@@ -26,17 +70,49 @@ news_agent = NewsAnalystAgent()
 debate_agent = DebateUnitAgent()
 fund_manager_agent = FundManagerAgent()
 
+
+def _salida(informe: Dict[str, Any], clave: str, logs: List[str],
+            **extra: Any) -> Dict[str, Any]:
+    """
+    Actualización de estado de un nodo de agente.
+
+    Extrae los mensajes de la traza al canal `messages` y deja el informe sin
+    ellos: los objetos de mensaje no son JSON-serializables y `daily_selection.json`
+    los rompería. La forma serializada sigue en `informe["_traza"]`.
+    """
+    mensajes: List[BaseMessage] = informe.pop("_mensajes", [])
+    return {clave: informe, "logs": logs, "messages": mensajes, **extra}
+
+
+# --------------------------------------------------------------------------- #
+# Nodos
+# --------------------------------------------------------------------------- #
 def node_ingest_and_reconcile(state: FinancialAnalysisState) -> Dict[str, Any]:
+    """
+    Ingesta multi-fuente y reconciliación.
+
+    Es el ÚNICO nodo que sale a la red en la ruta de decisión. Los cuatro
+    agentes posteriores consumen el estado ya reconciliado y son puros, que es
+    lo que los hace testeables sin red y reproducibles en el backtest.
+
+    No es un agente —no tiene dictamen que emitir ni texto que redactar— pero sí
+    deja traza: las cuatro llamadas quedan en `messages` con sus argumentos y su
+    resultado, igual que las de cualquier scorer.
+    """
     ticker = state["ticker"]
-    logs = state.get("logs", [])
-    logs.append(f"[Ingesta] Recolectando datos multi-fuente para {ticker}...")
+    traza = Traza("ingesta", ticker)
+    traza.añadir(HumanMessage(content=f"Ingesta multi-fuente de {ticker}."))
 
-    yf_data = fetcher.fetch_all(ticker)
-    sec_data = sec_client.get_fundamental_facts(ticker)
-    fh_data = finnhub_client.get_basic_financials(ticker)
+    yf_data = usar_tool("obtener_datos_yfinance", {"ticker": ticker}, traza)
+    sec_data = usar_tool("obtener_hechos_sec", {"ticker": ticker}, traza)
+    fh_data = usar_tool("obtener_datos_finnhub", {"ticker": ticker}, traza)
+    rec_data = usar_tool("reconciliar_fuentes", {
+        "ticker": ticker, "datos_yfinance": yf_data,
+        "hechos_sec": sec_data, "datos_finnhub": fh_data}, traza)
 
-    rec_data = reconciler.reconcile(ticker, yf_data, sec_data, fh_data)
-    logs.append(f"[Reconciliación] Puntuación de confianza: {rec_data['confidence_score']}, Fuentes: {rec_data['sources_consulted']}")
+    traza.log.info(
+        f"confianza {rec_data['confidence_score']} · fuentes {rec_data['sources_consulted']}",
+        extra={"evento": "dictamen", "confianza": rec_data["confidence_score"]})
 
     return {
         "company_name": yf_data.get("company_name", ticker),
@@ -47,86 +123,78 @@ def node_ingest_and_reconcile(state: FinancialAnalysisState) -> Dict[str, Any]:
         "finnhub_data": fh_data,
         "reconciliation_data": rec_data,
         "workflow_status": "INGESTED",
-        "logs": logs
+        "messages": traza.mensajes,
+        "logs": [
+            f"[Ingesta] Recolectando datos multi-fuente para {ticker}...",
+            f"[Reconciliación] Puntuación de confianza: {rec_data['confidence_score']}, "
+            f"Fuentes: {rec_data['sources_consulted']}",
+        ],
     }
+
 
 def node_quality_analysis(state: FinancialAnalysisState) -> Dict[str, Any]:
     """
     Analista de Calidad y Valoración.
-
-    Corre SECUENCIALMENTE entre `ingest` y el fan-out, no en paralelo, por dos
-    motivos:
-
-      1. Es cálculo puro sobre datos ya ingeridos —no toca la red—, así que
-         paralelizarlo no ahorra latencia; solo añadiría un tercer escritor al
-         mismo superstep, y `FinancialAnalysisState` no declara reductores.
-      2. Situarlo ANTES del gatekeeper hace que sus puntuaciones y banderas
-         rojas estén disponibles para TODOS los valores, incluidos los que el
-         gatekeeper rechace. Un Altman en zona de insolvencia es justamente la
-         información que se quiere leer sobre una empresa rechazada, y con el
-         orden inverso se habría perdido.
 
     A diferencia del Analista de Noticias, este dictamen SÍ es variable de
     decisión: el Fund Manager cruza `conviccion_fundamental` con el momentum.
     Por eso el backtest lo ejecuta.
     """
     ticker = state["ticker"]
-    logs = state.get("logs", [])
-    logs.append(f"[Analista de Calidad] Evaluando calidad, valoración y solvencia de {ticker}...")
+    informe = quality_agent.analyze(state)
+    conviccion = (informe.get("conviccion_fundamental") or {}).get("valor")
 
-    report = quality_agent.analyze(state)
-    conviccion = (report.get("conviccion_fundamental") or {}).get("valor")
-    logs.append(
-        f"[Analista de Calidad] Estilo: {report.get('style_classification')} | "
+    logs = [
+        f"[Analista de Calidad] Evaluando calidad, valoración y solvencia de {ticker}...",
+        f"[Analista de Calidad] Estilo: {informe.get('style_classification')} | "
         f"Convicción: {conviccion} | "
-        f"Piotroski: {report.get('piotroski', {}).get('score')} | "
-        f"Altman: {report.get('altman', {}).get('zona')} | "
-        f"Cobertura de datos: {report.get('cobertura_global', 0.0):.0%}"
-    )
-    if report.get("banderas_rojas"):
-        logs.append(f"[Analista de Calidad] Banderas rojas: {'; '.join(report['banderas_rojas'])}")
+        f"Piotroski: {informe.get('piotroski', {}).get('score')} | "
+        f"Altman: {informe.get('altman', {}).get('zona')} | "
+        f"Cobertura de datos: {informe.get('cobertura_global', 0.0):.0%}",
+    ]
+    if informe.get("banderas_rojas"):
+        logs.append(f"[Analista de Calidad] Banderas rojas: "
+                    f"{'; '.join(informe['banderas_rojas'])}")
 
-    return {
-        "quality_report": report,
-        "workflow_status": "QUALITY_EVALUATED",
-        "logs": logs
-    }
+    return _salida(informe, "quality_report", logs,
+                   workflow_status="QUALITY_EVALUATED")
+
 
 def node_fundamental_gatekeeper(state: FinancialAnalysisState) -> Dict[str, Any]:
     ticker = state["ticker"]
-    logs = state.get("logs", [])
-    logs.append(f"[Gatekeeper Fundamental] Evaluando salud financiera para {ticker}...")
+    informe = fundamental_agent.analyze(state)
+    passed = informe["passed_gatekeeper"]
 
-    report = fundamental_agent.analyze(state)
-    passed = report["passed_gatekeeper"]
+    estado = ("APROBADO -> Continuando a Análisis Técnico" if passed
+              else "RECHAZADO -> Deteniendo flujo avanzado (Ahorro de Cómputo)")
+    logs = [
+        f"[Gatekeeper Fundamental] Evaluando salud financiera para {ticker}...",
+        f"[Gatekeeper Fundamental] Resultado: {estado}",
+    ]
 
-    status_log = "APROBADO -> Continuando a Análisis Técnico" if passed else "RECHAZADO -> Deteniendo flujo avanzado (Ahorro de Cómputo)"
-    logs.append(f"[Gatekeeper Fundamental] Resultado: {status_log}")
+    return _salida(informe, "fundamental_report", logs,
+                   passed_fundamental_gatekeeper=passed,
+                   workflow_status="FUNDAMENTAL_EVALUATED")
 
-    return {
-        "fundamental_report": report,
-        "passed_fundamental_gatekeeper": passed,
-        "workflow_status": "FUNDAMENTAL_EVALUATED",
-        "logs": logs
-    }
 
 def node_news_analysis(state: FinancialAnalysisState) -> Dict[str, Any]:
     """
     Analista de Noticias. Corre EN PARALELO al gatekeeper (fan-out desde
-    `ingest`), porque sus tres buscadores son de red y el gatekeeper es puro
-    cálculo sobre datos ya ingeridos.
+    `quality_analysis`), porque sus tres buscadores son de red y el gatekeeper es
+    puro cálculo sobre datos ya ingeridos.
 
-    Devuelve deliberadamente SOLO `news_data` y `news_report`: `logs` y
-    `workflow_status` los escribe el gatekeeper en este mismo superstep y
-    `FinancialAnalysisState` no declara reductores, así que escribirlos aquí
-    provocaría `InvalidUpdateError: can receive only one value per step`. Las
-    trazas de este nodo se vuelcan a `logs` en `node_join_analisis`.
+    Ahora SÍ escribe sus propias trazas: `logs` y `messages` tienen reductor. Lo
+    que sigue sin escribir es `workflow_status`, que es un escalar sin reductor y
+    lo escribe el gatekeeper en este mismo superstep.
     """
     ticker = state["ticker"]
     empresa = state.get("company_name") or ticker
+    traza = Traza("noticias_ingesta", ticker)
+    traza.añadir(HumanMessage(content=f"Recolecta la prensa reciente de {empresa} ({ticker})."))
 
     try:
-        news_data = recolectar_noticias(ticker, empresa=empresa)
+        news_data = usar_tool("obtener_noticias",
+                              {"ticker": ticker, "empresa": empresa}, traza)
     except Exception as e:
         # Red inaccesible, caché ilegible o cualquier fallo del agregador: se
         # emite un dosier vacío para que el agente produzca un informe
@@ -138,42 +206,36 @@ def node_news_analysis(state: FinancialAnalysisState) -> Dict[str, Any]:
             "fuentes_fallidas": [{"buscador": "agregador", "motivo": f"{type(e).__name__}: {e}"}],
         }
 
-    report = news_agent.analyze({**state, "news_data": news_data})
+    informe = news_agent.analyze({**state, "news_data": news_data})
+    fallidas = ", ".join(f["buscador"] for f in informe.get("sources_failed", [])) or "ninguna"
 
-    return {
-        "news_data": news_data,
-        "news_report": report
-    }
+    logs = [
+        f"[Analista de Noticias] {informe.get('n_items', 0)} noticia(s) | "
+        f"Impacto: {informe.get('impact_classification', 'N/A')} "
+        f"({informe.get('impact_probability', 0.0):.2f}) | "
+        f"Dirección: {informe.get('direction_classification', 'N/A')} | "
+        f"Fuentes sin respuesta: {fallidas}",
+        "[Analista de Noticias] Capa ASESORA: no altera el rating ni el sizing.",
+    ]
+
+    mensajes = traza.mensajes + informe.pop("_mensajes", [])
+    return {"news_data": news_data, "news_report": informe,
+            "logs": logs, "messages": mensajes}
+
 
 def node_join_analisis(state: FinancialAnalysisState) -> Dict[str, Any]:
     """
     Punto de encuentro del fan-out `gatekeeper` / `news_analysis`.
 
-    Existe por una razón concreta y verificada: si `news_analysis` desembocara
-    directamente en `debate_unit`, las dos ramas tendrían longitudes distintas y
-    `debate_unit` y `fund_manager` coincidirían en el mismo superstep,
-    reventando el grafo con `InvalidUpdateError`. Unir ANTES del enrutado
-    condicional resuelve el problema sin renunciar al paralelismo y deja
-    `news_report` disponible en las dos ramas, también en la de rechazo.
-
-    Aquí se consolidan además las trazas del nodo de noticias, que no puede
-    escribirlas por su cuenta.
+    Ya no vuelca las trazas del nodo de noticias —ese nodo escribe las suyas
+    desde que `logs` tiene reductor—, pero el nodo sigue siendo necesario: sin
+    él, las dos ramas tendrían longitudes distintas y `debate_unit` coincidiría
+    con `fund_manager` en un superstep, reventando el grafo con
+    `InvalidUpdateError`. Unir ANTES del enrutado condicional lo resuelve sin
+    renunciar al paralelismo.
     """
-    logs = state.get("logs", [])
-    news = state.get("news_report", {})
+    return {"logs": []}
 
-    if news:
-        fallidas = ", ".join(f["buscador"] for f in news.get("sources_failed", [])) or "ninguna"
-        logs.append(
-            f"[Analista de Noticias] {news.get('n_items', 0)} noticia(s) | "
-            f"Impacto: {news.get('impact_classification', 'N/A')} "
-            f"({news.get('impact_probability', 0.0):.2f}) | "
-            f"Dirección: {news.get('direction_classification', 'N/A')} | "
-            f"Fuentes sin respuesta: {fallidas}"
-        )
-        logs.append("[Analista de Noticias] Capa ASESORA: no altera el rating ni el sizing.")
-
-    return {"logs": logs}
 
 def route_after_gatekeeper(state: FinancialAnalysisState) -> str:
     """Condición explícita de LangGraph para ramificación condicional."""
@@ -181,53 +243,47 @@ def route_after_gatekeeper(state: FinancialAnalysisState) -> str:
         return "technical_analysis"
     return "fund_manager"
 
+
 def node_technical_analysis(state: FinancialAnalysisState) -> Dict[str, Any]:
     ticker = state["ticker"]
-    logs = state.get("logs", [])
-    logs.append(f"[Analista Técnico] Evaluando indicadores de momentum para {ticker}...")
+    informe = technical_agent.analyze(state)
+    logs = [
+        f"[Analista Técnico] Evaluando indicadores de momentum para {ticker}...",
+        f"[Analista Técnico] Momentum clasificado como: {informe['momentum_classification']}",
+    ]
+    return _salida(informe, "technical_report", logs,
+                   workflow_status="TECHNICAL_COMPLETED")
 
-    report = technical_agent.analyze(state)
-    logs.append(f"[Analista Técnico] Momentum clasificado como: {report['momentum_classification']}")
-
-    return {
-        "technical_report": report,
-        "workflow_status": "TECHNICAL_COMPLETED",
-        "logs": logs
-    }
 
 def node_debate_unit(state: FinancialAnalysisState) -> Dict[str, Any]:
     ticker = state["ticker"]
-    logs = state.get("logs", [])
-    logs.append(f"[Capa de Debate] Ejecutando confrontación Bullish vs Bearish para {ticker}...")
+    informe = debate_agent.analyze(state)
+    logs = [
+        f"[Capa de Debate] Ejecutando confrontación Bullish vs Bearish para {ticker}...",
+        f"[Capa de Debate] Síntesis finalizada: {informe['n_alcistas']} argumento(s) "
+        f"alcista(s) frente a {informe['n_bajistas']} bajista(s).",
+    ]
+    return _salida(informe, "debate_report", logs,
+                   workflow_status="DEBATE_COMPLETED")
 
-    report = debate_agent.analyze(state)
-    logs.append(f"[Capa de Debate] Síntesis finalizada.")
-
-    return {
-        "debate_report": report,
-        "workflow_status": "DEBATE_COMPLETED",
-        "logs": logs
-    }
 
 def node_fund_manager(state: FinancialAnalysisState) -> Dict[str, Any]:
     ticker = state["ticker"]
-    logs = state.get("logs", [])
-    logs.append(f"[Fund Manager] Sintetizando informes y emitiendo recomendación final para {ticker}...")
+    informe = fund_manager_agent.analyze(state)
+    logs = [
+        f"[Fund Manager] Sintetizando informes y emitiendo recomendación final para {ticker}...",
+        f"[Fund Manager] DICTAMEN FINAL: {informe['rating']}",
+    ]
+    return _salida(informe, "final_decision", logs, workflow_status="COMPLETED")
 
-    report = fund_manager_agent.analyze(state)
-    logs.append(f"[Fund Manager] DICTAMEN FINAL: {report['rating']}")
 
-    return {
-        "final_decision": report,
-        "workflow_status": "COMPLETED",
-        "logs": logs
-    }
-
+# --------------------------------------------------------------------------- #
+# Construcción del grafo
+# --------------------------------------------------------------------------- #
 def build_financial_workflow():
     """Construye y compila el gráfico de estados de LangGraph."""
     workflow = StateGraph(FinancialAnalysisState)
 
-    # Agregar Nodos
     workflow.add_node("ingest", node_ingest_and_reconcile)
     workflow.add_node("quality_analysis", node_quality_analysis)
     workflow.add_node("gatekeeper", node_fundamental_gatekeeper)
@@ -237,7 +293,6 @@ def build_financial_workflow():
     workflow.add_node("debate_unit", node_debate_unit)
     workflow.add_node("fund_manager", node_fund_manager)
 
-    # Transiciones / Edges
     workflow.set_entry_point("ingest")
 
     # Fan-out: el gatekeeper (cálculo puro) y el analista de noticias (tres
@@ -246,14 +301,10 @@ def build_financial_workflow():
     workflow.add_edge("quality_analysis", "gatekeeper")
     workflow.add_edge("quality_analysis", "news_analysis")
 
-    # Unión antes de ramificar. El enrutado condicional cuelga del nodo de
-    # unión, no del gatekeeper: así las dos ramas del fan-out han terminado
-    # cuando se decide el camino, y `news_report` está disponible tanto en la
-    # rama aprobada como en la de rechazo.
+    # Unión antes de ramificar. Ver el encabezado del módulo.
     workflow.add_edge("gatekeeper", "join_analisis")
     workflow.add_edge("news_analysis", "join_analisis")
 
-    # Transición Condicional
     workflow.add_conditional_edges(
         "join_analisis",
         route_after_gatekeeper,
@@ -269,8 +320,10 @@ def build_financial_workflow():
 
     return workflow.compile()
 
+
 # Instancia del grafo compilado
 financial_app = build_financial_workflow()
+
 
 def run_stock_analysis(ticker: str,
                        benchmark_data: Dict[str, Any] = None) -> FinancialAnalysisState:
@@ -286,12 +339,12 @@ def run_stock_analysis(ticker: str,
     initial_state: FinancialAnalysisState = {
         "ticker": ticker.upper(),
         "logs": [],
+        "messages": [],
         "passed_fundamental_gatekeeper": False,
         "workflow_status": "INITIALIZED",
         "benchmark_data": benchmark_data or {},
     }
-    result = financial_app.invoke(initial_state)
-    return result
+    return financial_app.invoke(initial_state)
 
 
 def cargar_benchmark(ticker: str = "SPY") -> Dict[str, Any]:
@@ -304,19 +357,9 @@ def cargar_benchmark(ticker: str = "SPY") -> Dict[str, Any]:
     a la estrategia. Un fallo de red devuelve un dict vacío y el sistema
     degrada a momentum absoluto en lugar de detenerse.
     """
+    from src.tools.extraccion import obtener_benchmark
     try:
-        datos = fetcher.fetch_all(ticker)
-        if datos.get("status") != "SUCCESS":
-            return {}
-        resumen = datos.get("price_history_summary", {})
-        return {
-            "ticker": ticker.upper(),
-            "change_1m_pct": resumen.get("change_1m_pct"),
-            "change_3m_pct": resumen.get("change_3m_pct"),
-            "change_6m_pct": resumen.get("change_6m_pct"),
-            "change_12m_pct": resumen.get("change_12m_pct"),
-            "volatilidad_anual": datos.get("technical", {}).get("volatilidad_anual"),
-        }
+        return obtener_benchmark.invoke({"ticker": ticker})
     except Exception as e:
         print(f"[Benchmark] No se pudo cargar {ticker}: {e}. "
               f"El momentum se calculará en términos absolutos.")

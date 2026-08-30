@@ -234,3 +234,33 @@ def desde_dict(datos: Dict[str, Any], claves: Iterable[str], fuente: str,
         k: magnitud(datos.get(k), fuente=fuente, unidad=unidad, periodo=periodo)
         for k in claves
     }
+
+
+def magnitudes_desde_detalle(detalle: Dict[str, Any]) -> Dict[str, Magnitud]:
+    """
+    Inversa de `detalle_magnitudes`: reconstruye el mapa desde su forma JSON.
+
+    Existe por la frontera de las tools. Un `ToolMessage` solo transporta texto,
+    así que las magnitudes cruzan serializadas y hay que rehidratarlas al otro
+    lado. Sin esta función, cada tool tendría que aceptar valores pelados y
+    perdería la procedencia —de qué fuente sale cada número y si está o no
+    disponible—, que es justo lo que `Magnitud` existe para no perder.
+
+    Acepta también valores pelados (`{"roe": 0.3}`) por comodidad de quien llama
+    a mano; en ese caso la procedencia se marca como desconocida en vez de
+    inventarse.
+    """
+    salida: Dict[str, Magnitud] = {}
+    for nombre, d in (detalle or {}).items():
+        if isinstance(d, dict):
+            salida[nombre] = magnitud(
+                d.get("valor"),
+                fuente=d.get("fuente", "desconocida"),
+                unidad=d.get("unidad", "ratio"),
+                periodo=d.get("periodo"),
+                filed=d.get("filed"),
+                nota=d.get("nota"),
+            )
+        else:
+            salida[nombre] = magnitud(d, fuente="desconocida")
+    return salida

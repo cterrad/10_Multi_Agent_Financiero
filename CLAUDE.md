@@ -19,11 +19,19 @@ Los imports son de la forma `from src...`, así que todo se ejecuta **desde la r
 ## Comandos
 
 ```powershell
-# Análisis en vivo (escribe output/daily_selection.md + .json)
+# Análisis en vivo. Escribe TRES documentos más el JSON:
+#   output/resumen_ejecutivo.md   la decisión agregada (punto de entrada)
+#   output/daily_selection.md     el informe completo
+#   output/detalle/{TICKER}.md    ficha por valor + traza de herramientas
 <python> cli.py --tickers NVDA,AAPL,TSLA
 <python> cli.py --tickers NVDA,AAPL --sin-cartera        # omite correlaciones y límites
 <python> cli.py --tickers NVDA,AAPL --sin-benchmark      # momentum absoluto, no relativo
 <python> cli.py --tickers NVDA --benchmark QQQ --capital 250000
+<python> cli.py --detalle NVDA                           # vuelca la ficha pormenorizada
+<python> cli.py --log INFO --tickers NVDA                # detalle en consola; el JSONL va completo siempre
+
+# Agente investigador (ReAct asesor). Requiere LLM y NO altera ningún dictamen.
+<python> cli.py --investigar DOCN "Por que el Altman es 0.04 con flujo de caja libre positivo?"
 
 # Dashboard FastAPI en http://localhost:8000
 <python> -m src.web.app
@@ -42,6 +50,9 @@ Los imports son de la forma `from src...`, así que todo se ejecuta **desde la r
 <python> -m pytest tests/test_momentum.py            # suite sin red (clasificador técnico)
 <python> -m pytest tests/test_calidad.py             # suite sin red (Piotroski/Altman/Graham/estilo)
 <python> -m pytest tests/test_cartera.py             # suite sin red (correlación y riesgo)
+<python> -m pytest tests/test_tools.py               # suite sin red (registro de tools y frontera JSON)
+<python> -m pytest tests/test_mensajes.py            # suite sin red (traza tipada de los agentes)
+<python> -m pytest tests/test_investigador.py        # suite sin red (el ReAct no toca la decisión)
 <python> -m pytest tests/test_backtest.py::test_no_lookahead_future_prices_do_not_change_past_signal -v
 <python> -m pytest tests/test_news_analyst.py -k ruido -v          # filtrar por nombre
 
@@ -49,7 +60,7 @@ Los imports son de la forma `from src...`, así que todo se ejecuta **desde la r
 docker-compose up --build
 ```
 
-`tests/test_backtest.py`, `tests/test_reconciler.py`, `tests/test_news_analyst.py`, `tests/test_llm_texto.py`, `tests/test_integridad_datos.py`, `tests/test_momentum.py`, `tests/test_calidad.py` y `tests/test_cartera.py` son offline y deterministas (los que tocan al LLM usan dobles). `tests/test_fetcher.py` y `tests/test_workflow.py` **golpean yfinance en vivo** y fallan sin red o si yfinance cambia el esquema de `info` — no son fiables en CI.
+`tests/test_backtest.py`, `tests/test_reconciler.py`, `tests/test_news_analyst.py`, `tests/test_llm_texto.py`, `tests/test_integridad_datos.py`, `tests/test_momentum.py`, `tests/test_calidad.py`, `tests/test_cartera.py`, `tests/test_tools.py`, `tests/test_mensajes.py` y `tests/test_investigador.py` son offline y deterministas (los que tocan al LLM usan dobles). `tests/test_fetcher.py` y `tests/test_workflow.py` **golpean yfinance en vivo** y fallan sin red o si yfinance cambia el esquema de `info` — no son fiables en CI.
 
 La primera ejecución de `backtest_cli.py` descarga precios y `companyfacts` de la SEC a `data/cache/` (~250 MB, ignorado por git). A partir de ahí `--offline` reproduce el estudio bit a bit.
 
@@ -69,12 +80,94 @@ ingest → quality_analysis ────┤                 ├─ join_analisis
 
 El corte del gatekeeper es la razón de ser del diseño: un valor rechazado salta el análisis técnico y el debate, y el `fund_manager` le asigna VENTA / VENTA FUERTE directamente.
 
-`gatekeeper` y `news_analysis` corren en paralelo (fan-out desde `ingest`) y convergen en `join_analisis` **antes** del enrutado condicional. Dos restricciones de LangGraph obligan a esa forma exacta, ambas verificadas empíricamente:
+`gatekeeper` y `news_analysis` corren en paralelo (fan-out desde `quality_analysis`) y convergen en `join_analisis` **antes** del enrutado condicional.
 
-- `news_analysis` devuelve solo `news_data` y `news_report`. Si escribiera `logs` o `workflow_status` chocaría con el gatekeeper en el mismo superstep: `FinancialAnalysisState` no declara reductores y LangGraph aborta con `InvalidUpdateError: can receive only one value per step`. Sus trazas las vuelca `node_join_analisis`.
-- Colgar el enrutado condicional del `gatekeeper` y llevar `news_analysis` directamente a `debate_unit` **no funciona**: las ramas tendrían longitudes distintas y `debate_unit` coincidiría con `fund_manager` en un superstep, con el mismo error. Unir antes de ramificar lo resuelve y además deja `news_report` disponible en las dos ramas, incluida la de rechazo.
+**`FinancialAnalysisState` ahora SÍ declara reductores** en dos canales: `messages` con `add_messages` y `logs` con `operator.add`. Eso cambia una de las dos restricciones históricas y deja la otra intacta:
+
+- **Resuelta.** `news_analysis` ya puede escribir sus propias trazas. Antes chocaba con el gatekeeper en el mismo superstep y LangGraph abortaba con `InvalidUpdateError: can receive only one value per step`, así que `node_join_analisis` las volcaba en su nombre. Ese apaño se ha eliminado. Lo que `news_analysis` sigue **sin** escribir es `workflow_status`: es un escalar sin reductor y dos nodos paralelos no tendrían un valor correcto que fusionar.
+- **Vigente.** Colgar el enrutado condicional del `gatekeeper` y llevar `news_analysis` directamente a `debate_unit` **sigue sin funcionar**: las ramas tendrían longitudes distintas y `debate_unit` coincidiría con `fund_manager` en un superstep. Por eso `join_analisis` se conserva.
+
+**Con reductor, cada nodo devuelve SOLO sus líneas nuevas, nunca el acumulado.** Los nodos hacían `logs = state.get("logs", []); logs.append(...); return {"logs": logs}`; con `operator.add` eso duplicaría el log en silencio — no rompe nada, solo ensucia el informe.
 
 `workflow.py` instancia los agentes y compila el grafo **a nivel de módulo** (`financial_app`), así que importar el módulo tiene efectos secundarios.
+
+### Tools (`src/tools/`) — donde viven ahora las reglas de cálculo
+
+Todas las reglas de cálculo del sistema son **tools de LangChain invocables por nombre**. Antes eran métodos privados dentro de los agentes: `QualityAnalystAgent` tenía las siete escuelas clásicas encerradas en una clase de 1 200 líneas, sin forma de calcular una sola por separado ni de exponerla.
+
+```
+src/tools/
+  __init__.py       REGISTRO_TOOLS (nombre → tool) · TOOLS_LECTURA · obtener_tool()
+  extraccion.py     yfinance, SEC EDGAR, Finnhub, reconciliación, noticias, benchmark
+  fundamentales.py  criterios del gatekeeper, umbral de deuda sectorial
+  calidad.py        las siete escuelas + puntuaciones, convicción, banderas, estilo
+  tecnico.py        los cinco bloques de momentum + la etiqueta
+  noticias.py       puntuación por ítem y agregación por OR ruidoso
+  debate.py         tesis alcista, tesis bajista, condiciones de invalidación
+  decision.py       rating compuesto, vetos, niveles de riesgo, tamaño, perfil R:R
+  cartera.py        construcción de cartera y matriz de correlaciones
+```
+
+**Los cuerpos son los de siempre.** El traslado fue mecánico —los scorers nunca usaban `self`— y el `golden` del backtest se verificó idéntico tras cada agente migrado. **Una segunda copia de una regla de decisión es un bug**, exactamente igual que si apareciera en `src/backtest/`.
+
+Dos capas por tool, y el motivo no es estético: los scorers operan sobre `Dict[str, Magnitud]`, que no es serializable y por tanto **no cabe en un `ToolMessage`**. La implementación (`_altman`, `_graham`, …) conserva esa firma; la fachada `@tool` (`calcular_altman`, …) convierte en el borde con `detalle_magnitudes` / `magnitudes_desde_detalle` (`src/data/magnitudes.py`). Los docstrings de las fachadas son la descripción que lee el LLM en la rama ReAct: se redactan como documentación de API.
+
+`src/tools/extraccion.py` es el **único** módulo que sale a la red. Mirando los imports de un agente se sabe si puede hacer una petición; `tests/test_tools.py` fija esa separación en las dos direcciones.
+
+`TOOLS_LECTURA` es el subconjunto que se enlaza al agente investigador. **Excluye deliberadamente** `calcular_rating_compuesto`, `aplicar_vetos`, `calcular_niveles_riesgo`, `dimensionar_posicion`, `calcular_perfil_riesgo`, `construir_cartera` y `reconciliar_fuentes`. Es la barrera que impide que el modelo emita un dictamen, y `test_el_react_no_alcanza_ninguna_tool_de_decision` la protege. **Si añades una tool que produzca una variable de decisión, mantenla fuera de esa lista.**
+
+### Clase base de los agentes (`src/agents/base.py`)
+
+Los seis agentes heredan de `AgenteBase` e implementan dos métodos: `decidir(state, traza)` —todo el análisis determinista— y `prompt_usuario(state, informe)`. `analyze(state) -> dict` se conserva como firma pública porque es el contrato que consumen `src/graph/workflow.py` y `src/backtest/replay.py`.
+
+El orden de `analyze()` es la invariante hecha código: `decidir()` va **siempre** antes que `_redactar()`, de modo que cuando el LLM interviene todas las variables de decisión ya están fijadas y lo único que se le asigna es la clave que declara `campo_texto` (`summary` en cinco agentes, `synthesis` en el debate).
+
+`usar_tool(nombre, args, traza)` es el `take_action` de `RAG_Agent.py` del curso, con una diferencia que lo es todo: **allí los `tool_calls` los emitía el modelo, aquí los emite el código.** La traza resultante tiene la misma forma —`AIMessage` con `tool_calls`, `ToolMessage` con el resultado y su `tool_call_id`— pero el plan de llamadas es determinista. Esa es la razón de que el sistema pueda tener tools sin romper su invariante: la forma de un agente ReAct, la sustancia de una función pura. Está también a nivel de módulo porque el nodo de ingesta invoca tools y deja traza sin ser un agente.
+
+Dos detalles que no conviene deshacer:
+
+- **`_obtener_llm()` resuelve `get_llm` en el módulo de la SUBCLASE**, no en el de la base. `from src.config import get_llm` fija el nombre en el espacio del importador, y todo el sistema se apoya en poder sustituirlo módulo a módulo: `disable_llm()` hace `mod.get_llm = lambda: None` sobre cada módulo de agente, y `tests/test_llm_texto.py` inyecta sus dobles igual. Si la base llamara a su propio `get_llm`, esos parches no surtirían efecto y el backtest abriría llamadas de red y de coste en mitad de una ejecución offline.
+- **Los identificadores de la traza son secuenciales, no UUID.** Con UUID, dos ejecuciones del mismo análisis producían informes distintos —lo detectó `test_el_agente_es_reproducible`— y `daily_selection.json` cambiaba entero en cada pasada, volviendo inútil cualquier diff. Por lo mismo, `Traza.a_dict()` **no publica duraciones**: los milisegundos son irrepetibles por naturaleza y viven en el JSONL.
+
+### Prompts (`src/prompts.py`)
+
+Todos los system prompts y los constructores de prompt de usuario están aquí. Antes cada agente llevaba el suyo incrustado como f-string en mitad de `analyze()` y se invocaba con `llm.invoke(prompt)` — una cadena pelada, **sin `SystemMessage`**. Ahora la llamada es `llm.invoke([SystemMessage(...), HumanMessage(...)])`.
+
+Los seis system prompts comparten tres bloques porque describen invariantes del sistema y no del agente: la **cláusula anti-decisión** (el modelo redacta, no decide), la **cláusula de ausencia** (una magnitud «no disponible» se dice, no se rellena con cero) y el **contrato de salida** (número de frases, español, prosa continua, sin markdown ni preámbulos). La cláusula de ausencia es la regla nº 1 del proyecto y antes solo aparecía en el prompt del gatekeeper, aunque aplica a los seis.
+
+Los constructores del prompt de usuario formatean **toda** cifra con `_v()`, que imprime «no disponible» en vez de un cero: de nada sirve la cláusula del system prompt si el prompt de usuario le presenta al modelo un `0.0` indistinguible de un valor real.
+
+### Agente Investigador (`src/agents/investigador.py` + `src/graph/investigacion.py`) — capa ASESORA
+
+El **único ReAct real** del sistema: `bind_tools` + `ToolNode` + bucle condicional, el patrón de `ReAct.py` sin adulterar. Aquí el LLM sí elige qué tools invocar, con qué argumentos y cuándo parar.
+
+Puede serlo sin romper nada por tres barreras, todas comprobables:
+
+1. **Alcance.** Solo ve `TOOLS_LECTURA`. Las tools que emiten dictámenes no están en su mesa.
+2. **Salida.** Escribe un único campo, `research_report`, y solo texto. `test_research_report_does_not_alter_decision` comprueba que añadirlo al estado no mueve `rating`, `position_size_pct`, `peso_objetivo` ni los niveles. **Si algún día ese test falla, el ReAct ha entrado en la ruta de decisión y el backtest deja de ser válido.**
+3. **Topología.** Vive en un grafo aparte que no está conectado a `financial_app`. Se pide a mano con `cli.py --investigar`; la ejecución diaria no lo invoca porque cuesta dinero y exige clave.
+
+Queda **excluido del backtest** y `disable_llm()` lo cubre, de modo que `modelo_con_tools()` levanta `LLMNoConfigurado` en lugar de abrir una factura en mitad de una ejecución offline. Es el único agente sin motor heurístico al que degradar: su trabajo *es* el razonamiento del modelo, y fallar de forma explícita es más honesto que devolver un informe vacío que parezca una respuesta.
+
+Dos comportamientos del proveedor que costó descubrir y que el ejemplo del curso no contempla:
+
+- **Gemini cierra a veces un turno con un bloque de solo pensamiento**: texto vacío más una firma, sin `tool_calls`. Con la condición del curso («¿hay `tool_calls`? si no, fin») ese turno se tomaba por respuesta final y el agente devolvía cadena vacía habiendo consultado cuatro tools. Ahora un turno sin tools y sin texto se trata como «el modelo aún no ha terminado» y se le devuelve el control, acotado por `MAX_TURNOS_VACIOS` y por el `recursion_limit` del grafo.
+- **No se puede reintentar sin más**: Gemini rechaza una petición cuyo último turno sea del propio modelo (*«does not support model prefilling»*). `_nodo_reencauzar` intercala un `HumanMessage` que además pide explícitamente el cierre.
+
+### Logging estructurado (`src/utils/logging_agentes.py`)
+
+Dos canales con propósitos distintos y deliberadamente separados:
+
+- **`logging` estándar → consola y `output/logs/{fecha}_{ticker}.jsonl`.** Un registro por evento (`inicio`, `tool_call`, `tool_result`, `llm`, `dictamen`) con `duracion_ms`, argumentos y resultado resumido. Es la traza de auditoría, y es JSONL porque se consulta con herramientas, no leyéndola.
+- **La lista `logs` del estado** sigue existiendo, pero solo como resumen legible que el informe imprime. Ya no es la fuente de verdad.
+
+Tres detalles con cicatriz:
+
+- **El nivel se aplica a los HANDLERS, no al logger.** Ponerlo en el logger silenciaba también el fichero: pedir una consola tranquila dejaba el JSONL vacío.
+- **`_AdaptadorQueFusiona`.** El `LoggerAdapter` de la biblioteca estándar hace `kwargs["extra"] = self.extra`, es decir **sustituye**. Con él, `log.info("tool_result", extra={"tool": ..., "duracion_ms": ...})` llegaba al fichero sin la tool ni el tiempo — justo lo que la traza existe para conservar.
+- **Claves reservadas.** `logging` revienta con `KeyError` si `extra` trae una clave que ya existe en `LogRecord` (`args`, `name`, `module`…). El adaptador las renombra en vez de fallar: la traza es un medio, nunca el motivo por el que un dictamen deja de emitirse.
+
+**Por defecto no se configura en el backtest.** Un estudio de 2015 a 2025 recorre ~50 valores en ~130 rebalanceos con ~30 tools por análisis: cientos de miles de registros que no aportan nada al estudio. Sin `configurar_logging()`, el logger no escribe fichero.
 
 ### Ingesta y reconciliación (`src/data/`)
 
@@ -109,25 +202,31 @@ Esto no es un detalle de estilo: es lo que permite que el backtest reproduzca la
 
 **Si añades lógica a un agente, el resultado del LLM no puede entrar en ninguna rama ni en ningún número.** Solo en texto.
 
+La invariante sobrevive a la introducción de tools porque **el plan de llamadas lo escribe el código, no el modelo** (ver `src/agents/base.py`). La única pieza donde el LLM sí elige es el agente investigador, que está fuera de la ruta de decisión y solo alcanza `TOOLS_LECTURA`.
+
 Reglas de decisión concretas (documentadas exhaustivamente en `output/AUDIT.md`):
 - Gatekeeper: umbrales `MIN_NET_MARGIN`, `MIN_REVENUE_GROWTH`, `MAX_DEBT_TO_EQUITY` de `src/config.py` (leídos del entorno **en tiempo de import**), con excepciones sectoriales en `GATEKEEPER_DEUDA_MAXIMA_POR_SECTOR` — aplicar el mismo límite de deuda a un banco que a una empresa de software es un error de categoría.
-- Calidad y valoración: `src/agents/quality.py` → cuatro puntuaciones 0-100 (calidad, valoración, crecimiento, solvencia), `conviccion_fundamental` y `style_classification`. Ver la sección propia más abajo.
-- Momentum: puntuación **continua** en `[-100, +100]` como suma ponderada de cinco bloques (tendencia 30, MACD 20, RSI 20, Bollinger 10, momentum de precio 20); las etiquetas son cortes sobre ese número. Constantes `MOMENTUM_*` en `src/config.py`.
-- Rating final: puntuación compuesta `0.65·convicción + 0.35·momentum_normalizado` cortada por `CORTES_RATING` en `src/agents/fund_manager.py`, más vetos que **solo bajan**. Stop y objetivo salen de `ATR_AJUSTE_POR_ESTILO`, que varía el múltiplo y el horizonte según el estilo asignado.
+- Calidad y valoración: `src/tools/calidad.py` (orquestado por `src/agents/quality.py`) → cuatro puntuaciones 0-100 (calidad, valoración, crecimiento, solvencia), `conviccion_fundamental` y `style_classification`. Ver la sección propia más abajo.
+- Momentum: `src/tools/tecnico.py`, una tool por bloque. Puntuación **continua** en `[-100, +100]` como suma ponderada de cinco bloques (tendencia 30, MACD 20, RSI 20, Bollinger 10, momentum de precio 20); las etiquetas son cortes sobre ese número. Constantes `MOMENTUM_*` en `src/config.py`.
+- Rating final: puntuación compuesta `0.65·convicción + 0.35·momentum_normalizado` cortada por `CORTES_RATING` en `src/tools/decision.py`, más vetos que **solo bajan** (`aplicar_vetos`; `test_los_vetos_solo_bajan_el_rating` recorre el producto cartesiano de condiciones para comprobarlo). Stop y objetivo salen de `ATR_AJUSTE_POR_ESTILO`, que varía el múltiplo y el horizonte según el estilo asignado.
 - Tamaño de posición: **número, no cadena**. `peso = (riesgo_asumible / distancia_al_stop) × factor_volatilidad × descuentos`, acotado por `PESO_MAXIMO_POSICION` y `PESO_MINIMO_OPERABLE`.
-- Noticias: `src/agents/news.py` sobre el dosier que recolecta `src/data/news/`. Por ítem, `p = NEWS_ITEM_PROB_MAX · peso_categoría · credibilidad_de_la_fuente · decaimiento(antigüedad) · corroboración · penalización_de_ruido`; el conjunto se agrega con OR ruidoso sobre los `NEWS_TOP_K_ITEMS` mayores → `impact_probability` y bucket ALTA/MEDIA/BAJA. Categoría y dirección salen de diccionarios cerrados, nunca del LLM. Todas las constantes están en `src/config.py`.
+- Noticias: `src/tools/noticias.py` sobre el dosier que recolecta `src/data/news/`. Por ítem, `p = NEWS_ITEM_PROB_MAX · peso_categoría · credibilidad_de_la_fuente · decaimiento(antigüedad) · corroboración · penalización_de_ruido`; el conjunto se agrega con OR ruidoso sobre los `NEWS_TOP_K_ITEMS` mayores → `impact_probability` y bucket ALTA/MEDIA/BAJA. Categoría y dirección salen de diccionarios cerrados, nunca del LLM. Todas las constantes están en `src/config.py`.
 
 #### Contrato del único campo que sí toca el LLM
 
-La respuesta del proveedor **nunca** se asigna directamente. Los cinco agentes hacen `texto = texto_de_respuesta_llm(llm.invoke(prompt))` (`src/config.py`) y solo sobrescriben el campo si `texto` no es `None`:
+La respuesta del proveedor **nunca** se asigna directamente. `AgenteBase._redactar()` hace `texto = texto_de_respuesta_llm(llm.invoke([SystemMessage(...), HumanMessage(...)]))` (`src/config.py`) —una sola vez, para los seis agentes— y solo sobrescribe el campo si `texto` no es `None`:
 
 - Los proveedores modernos devuelven `content` como **lista de bloques** (`[{"type": "text", "text": "..."}]`), no como cadena. Asignarlo tal cual metía una lista de diccionarios de Python en el informe y en `daily_selection.json` — el defecto que motivó el helper.
 - Devuelve `None` (no cadena vacía) cuando no hay texto utilizable, precisamente para que el agente **conserve su resumen determinista** en lugar de perder información ya calculada.
 - La llamada va siempre dentro de un `try/except`: un fallo del proveedor degrada al texto heurístico, nunca tumba al agente.
 
-`tests/test_llm_texto.py` fija ese contrato para los cinco agentes: `summary`/`synthesis` son `str` pase lo que pase.
+`tests/test_llm_texto.py` fija ese contrato para los seis agentes: `summary`/`synthesis` son `str` pase lo que pase. Los dobles de esa suite declaran `invoke(self, prompt)` con un solo posicional, así que la lista de mensajes los satisface sin cambios.
 
-### Analista de Calidad y Valoración (`src/agents/quality.py`) — capa de DECISIÓN
+El helper hace falta también fuera de los agentes: el agente investigador volvió a caer en el mismo defecto al leer `.content` directamente, y el generador de informes conserva `_texto()` como último blindaje.
+
+### Analista de Calidad y Valoración (`src/agents/quality.py` + `src/tools/calidad.py`) — capa de DECISIÓN
+
+El agente fija el ORDEN de las llamadas y ensambla el informe; los cálculos son tools. El orden no es intercambiable: las puntuaciones necesitan las siete escuelas ya calculadas, las banderas rojas necesitan las puntuaciones, el estilo necesita las banderas y la convicción necesita el estilo y la cobertura. Reordenar no produce un error, produce un dictamen distinto.
 
 Codifica siete escuelas clásicas como reglas deterministas y produce cuatro puntuaciones de 0 a 100 —**calidad, valoración, crecimiento, solvencia**—, una `conviccion_fundamental` y una etiqueta de estilo.
 
@@ -169,14 +268,14 @@ Cada paso deja constancia de lo que recortó en `restricciones_activadas` y en l
 
 `posiciones_existentes` permite usar esta misma capa desde el motor histórico, donde en cada rebalanceo ya hay posiciones abiertas. Entran con peso **fijo** —no se reescalan, porque reajustar la cartera entera en cada rebalanceo generaría rotación cuyo coste se comería el ajuste— pero **consumen presupuesto** sectorial, de riesgo y de exposición. Sin eso, cada rebalanceo respetaría el tope del 30% por sector y la cartera acabaría igualmente con el 90% en un sector tras tres rebalanceos.
 
-### Analista de Noticias (`src/agents/news.py` + `src/data/news/`) — capa ASESORA
+### Analista de Noticias (`src/agents/news.py` + `src/tools/noticias.py` + `src/data/news/`) — capa ASESORA
 
 Estima la probabilidad de que la actualidad de una empresa mueva su cotización. Reparto de responsabilidades idéntico al del resto del sistema: `src/data/news/` ingiere y normaliza, `src/agents/news.py` decide.
 
 - Tres buscadores en paralelo (`ThreadPoolExecutor`), cada uno con su propio try/except: `sec_8k` (8-K con Ítem 2.02, vía `SECEdgarClient.get_recent_8k_earnings`), `google_news` (RSS público) y `tavily` (requiere `TAVILY_API_KEY` **y** el paquete `langchain-tavily`; sin cualquiera de los dos degrada a esa fuente y lo declara en el informe). Ninguna caída tumba el nodo: el peor caso es `status="SIN_DATOS"` con los motivos.
 - El agregador deduplica por URL y por índice de Jaccard entre titulares normalizados. La corroboración se cuenta en **dominios distintos**, no en buscadores distintos.
 - Caché en `data/cache/news/{TICKER}_{YYYY-MM-DD}.json`. La clave incluye el día porque las noticias son un dato "de hoy".
-- El agente es **puro**: consume `state["news_data"]` y no toca la red, igual que el gatekeeper consume los fundamentales ya reconciliados.
+- El agente es **puro**: consume `state["news_data"]` y no toca la red, igual que el gatekeeper consume los fundamentales ya reconciliados. Sus dos tools —`puntuar_noticias` y `agregar_impacto_noticias`— tampoco salen a la red; la recolección la hace `obtener_noticias`, que pertenece al nodo de ingesta. Las funciones del scorer se reexportan desde `src.agents.news` porque son su contrato público y los tests las importan por ese nombre.
 
 **Es una capa asesora, no un input de decisión.** Aparece en el informe y aporta un argumento al `debate_unit`, pero no toca `rating` ni `position_size_pct`. El motivo es el backtest: dos de sus tres fuentes son buscadores "de hoy" y no hay forma asequible de reconstruir qué era visible en una fecha pasada, así que el nodo **se excluye del `HistoricalReplayer`** (documentado en el encabezado de `src/backtest/replay.py` y en `build_limitations()`). Mientras siga siendo asesora, su ausencia en el replay no altera ni una señal. `test_news_report_does_not_alter_decision` protege exactamente esa premisa: **si conectas las noticias a la decisión, ese test debe fallar y el backtest deja de ser válido hasta que exista un `NewsStore` point-in-time.**
 
@@ -239,6 +338,16 @@ Lo que sí resolvió la revalidación: la atribución por estilo (`attr_estilo`)
 **El informe diario ya no lleva estas cifras escritas a mano.** `ReportGenerator._track_record()` las lee de `output/backtest_results.json`, precisamente porque la versión anterior las tenía embebidas en el código y quedó obsoleta en cuanto el backtest volvió a ejecutarse. Si el fichero no existe, el informe lo dice en vez de callar. **No vuelvas a incrustar cifras de rendimiento en el generador.**
 
 El informe diario (`src/utils/report_generator.py`) numera las secciones de cada ficha con un **contador**, no con literales: un valor rechazado no tiene análisis técnico ni debate, y sin `TAVILY_API_KEY` puede no haber noticias. Numerarlas a mano dejaba huecos («3» seguido de «5»).
+
+**El informe se reparte ahora en tres documentos, separados por AUDIENCIA y no por tamaño.** La versión anterior era un único fichero de 75 KB en el que la decisión agregada —lo primero que hay que leer— quedaba enterrada bajo las fichas:
+
+| Documento | Qué contiene |
+|---|---|
+| `output/resumen_ejecutivo.md` | La decisión y nada más: tabla por valor, cartera propuesta, reparto por estilo, track record y enlaces al resto. Es el punto de entrada y lo que devuelve `generate_daily_selection()`. |
+| `output/daily_selection.md` | El informe completo, sin recortes respecto de la versión anterior. |
+| `output/detalle/{TICKER}.md` | Ficha del valor **más la traza**: qué herramienta se invocó, con qué argumentos y qué devolvió. Es lo que se consulta cuando un dictamen sorprende. |
+
+`daily_selection.json` pasa por `_estado_serializable()`, que convierte el canal `messages` a su forma tipada. Sin eso, `json.dump(..., default=str)` volcaba el `repr` de una lista de objetos de LangChain: ilegible y sin estructura sobre la que consultar nada.
 
 ## Configuración del proveedor de LLM
 

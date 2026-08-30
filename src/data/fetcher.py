@@ -280,7 +280,26 @@ class DataFetcher:
     # Técnico
     # ------------------------------------------------------------------ #
     def _add_technical_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Calcula RSI, MACD, Bandas de Bollinger, SMA 50/200, ATR y volumen relativo."""
+        """
+        Calcula RSI, MACD, Bandas de Bollinger, SMA 50/200, ATR y volumen relativo.
+
+        Antes descarta las barras SIN CIERRE. yfinance devuelve a veces una fila
+        final con `Close` a NaN —una sesión abierta, un festivo o simplemente un
+        hueco del proveedor—, y `_extract_latest_tech_metrics` toma la última
+        fila sin condiciones. Ese NaN se propagaba a `close`, y de ahí a `atr`,
+        al stop, al objetivo y al perfil de riesgo.
+
+        El fallo no era visible porque `bool(float("nan"))` es True: el Fund
+        Manager creía tener precio, entraba en la rama larga del resumen y
+        reventaba con `KeyError: 'ratio_riesgo_recompensa'` al pedirle al perfil
+        de riesgo una clave que este no había podido calcular. Se manifestó
+        analizando AAPL en vivo.
+
+        Una barra sin cierre no es una barra con precio cero: es una barra que no
+        existe. Eliminarla es la misma regla que gobierna el resto del sistema
+        —ausencia de dato ≠ cero— aplicada a la serie de precios.
+        """
+        df = df[df["Close"].notna()].copy()
         close = df["Close"]
         high = df["High"]
         low = df["Low"]
@@ -323,6 +342,12 @@ class DataFetcher:
         el clasificador de momentum necesita para no confundir el retardo de una
         media móvil con una tendencia bajista vigente.
         """
+        if df.empty:
+            # Sin una sola barra con cierre no hay indicadores que extraer. Se
+            # devuelve el bloque vacío para que los consumidores apliquen su
+            # propia degradación en vez de recibir NaN disfrazados de precio.
+            return {}
+
         last = df.iloc[-1]
         close = float(last["Close"])
 
