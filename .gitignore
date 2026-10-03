@@ -1,6 +1,15 @@
 # Caché del backtest: precios de yfinance y companyfacts de SEC EDGAR (~250 MB).
 # Se regenera con `python backtest_cli.py` (sin --offline) en la primera pasada.
 data/cache/
+# Artefactos y banco de etiquetas del meta-modelo: se regeneran con
+# `backtest_cli.py --con-meta` y no son fuente, son estado.
+data/meta/
+
+# Memoria de reflexión: el archivo de señales emitidas en vivo y sus desenlaces.
+# Es historial de ESTA instalación, no código: dos máquinas distintas tienen
+# memorias distintas y versionarlo mezclaría los históricos. El backtest
+# construye la suya sobre la marcha y no lee este fichero.
+data/memoria/
 
 # Salidas generadas
 output/*.png

@@ -28,7 +28,7 @@ import pandas as pd
 
 from src.backtest import metrics as M
 from src.backtest.data import (
-    FundamentalStore, PriceStore, TodayFundamentalStore,
+    COTStore, FREDStore, FundamentalStore, PriceStore, TodayFundamentalStore,
     rebalance_dates, trading_calendar,
 )
 from src.backtest.engine import (
@@ -38,7 +38,14 @@ from src.backtest.replay import (
     HistoricalReplayer, Signal, assert_llm_is_decision_neutral, disable_llm,
 )
 from src.backtest.report import generate_report
-from src.config import RIESGO_POR_POSICION_PCT
+from src.config import (
+    META_REENTRENAR_CADA_DIAS,
+    ORDEN_LIMITADA_VIDA_SESIONES,
+    REFLEXION_HORIZONTE_SESIONES,
+    RIESGO_POR_POSICION_PCT,
+)
+from src.memoria import MemoriaReflexion, resolver_desde_precios
+from src.meta import BancoDeEtiquetas, VARIABLES_META, entrenar
 
 # Universo por defecto: grandes capitalizaciones estadounidenses con historia
 # larga y cobertura XBRL completa en EDGAR.
@@ -77,6 +84,42 @@ class PrecomputedReplayer:
         return self.by_date.get(pd.Timestamp(date), [])
 
 
+def resumen_reflexion(memoria, by_date: Dict[pd.Timestamp, List[Signal]]) -> Dict[str, Any]:
+    """
+    Cuánto llegó a actuar la memoria de reflexión durante el estudio.
+
+    Es diagnóstico, no rendimiento. Una capa que no recortó nunca y una que
+    recortó y no mejoró el resultado son dos conclusiones distintas, y sin estas
+    cifras el informe no puede distinguirlas: la primera pide más histórico o un
+    umbral más bajo, la segunda pide retirar la capa.
+    """
+    total = sum(len(v) for v in by_date.values())
+    if memoria is None:
+        return {"activa": False,
+                "motivo": "desactivada por defecto tras el contraste de 2015-2025; "
+                          "se activa con --con-reflexion",
+                "senales_evaluadas": total}
+
+    factores = [s.factor_reflexion for v in by_date.values() for s in v]
+    recortadas = [f for f in factores if f < 1.0]
+    desenlazadas = sum(1 for o in memoria.observaciones if o.retorno_exceso is not None)
+    primera = next((str(pd.Timestamp(d).date()) for d in sorted(by_date)
+                    for s in by_date[d] if s.factor_reflexion < 1.0), None)
+
+    return {
+        "activa": True,
+        "horizonte_sesiones": REFLEXION_HORIZONTE_SESIONES,
+        "senales_evaluadas": total,
+        "observaciones_anotadas": len(memoria.observaciones),
+        "observaciones_desenlazadas": desenlazadas,
+        "senales_recortadas": len(recortadas),
+        "pct_senales_recortadas": (len(recortadas) / total) if total else 0.0,
+        "factor_medio_cuando_recorta": (sum(recortadas) / len(recortadas)) if recortadas else None,
+        "primer_recorte": primera,
+        "media_global_final": round(memoria._global.media, 5) if memoria._global.n else None,
+    }
+
+
 def load_sector_map(tickers: List[str], offline: bool) -> Dict[str, str]:
     """
     Sector actual de cada ticker, para la atribución.
@@ -101,8 +144,35 @@ def load_sector_map(tickers: List[str], offline: bool) -> Dict[str, str]:
 
 
 def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
-                      n_universe: int, years: float, avg_exposure: float = 0.0) -> List[str]:
+                      n_universe: int, years: float, avg_exposure: float = 0.0,
+                      reflexion: Dict[str, Any] = None) -> List[str]:
     lims: List[str] = []
+
+    refl = reflexion or {}
+    if refl.get("activa"):
+        pct = refl.get("pct_senales_recortadas") or 0.0
+        lims.append(
+            "**Esta ejecución lleva ACTIVA la memoria de reflexión, que el contraste de "
+            "2015-2025 refutó** (`--con-reflexion`). Con ella el percentil frente a selección "
+            "aleatoria cayó de 7.4 a 3.1 y la expectativa por operación de +1.23% a +0.95%. "
+            f"Hoy recorta el {pct:.1%} de las señales. El resultado de abajo NO es el del "
+            "sistema tal y como se entrega: para eso, ejecutar sin esa bandera.")
+        lims.append(
+            "**La memoria de reflexión se calibra sobre el MISMO histórico que evalúa.** "
+            "Aunque respete la disciplina point-in-time —solo entran observaciones cuyo "
+            "desenlace ya ocurrió, y `test_la_memoria_respeta_la_fecha_de_desenlace` lo fija— "
+            "el resultado no es enteramente fuera de muestra. Cualquier lectura de esta capa, "
+            "incluida la negativa, exigiría validación walk-forward para ser concluyente.")
+    elif refl:
+        lims.append(
+            "**La memoria de reflexión está desactivada**, que es la configuración de "
+            "entrega. Se implementó como traducción determinista de la *low-level reflection* "
+            "de FinAgent y se midió contra su contrafactual exacto sobre 2015-2025: empeoró "
+            "las dos métricas de selección (percentil aleatorio 7.4 → 3.1, expectativa "
+            "+1.23% → +0.95%) además del CAGR, el Sharpe y el drawdown. El código, sus tests "
+            "y este contraste se conservan; la capa no decide. **Ese resultado negativo es "
+            "publicable y no debe suavizarse: es exactamente el contraste que los dos papers "
+            "de referencia no llegan a ejecutar.**")
 
     if avg_exposure < 0.6:
         idle = 1 - avg_exposure
@@ -145,6 +215,127 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
         lims.append(
             "**Gatekeeper neutralizado.** Este régimen desactiva el filtro fundamental para "
             "aislar la capa técnica. No mide el sistema completo, sino la mitad de él.")
+
+    lims.append(
+        "**El ajuste de entrada que este estudio mide NO es el que produce la cadena de "
+        "opciones.** El Analista de Posicionamiento elige el nivel entre cuatro candidatos: "
+        "soporte de open interest, max pain, punto de inflexión de la gamma y **soporte "
+        "estructural del precio**. Los tres primeros salen de la cadena, cuyo histórico por "
+        "ticker es de pago, así que en el estudio están siempre ausentes. El cuarto sale del "
+        "OHLCV y sí es reconstruible point-in-time, y por eso el ajuste de entrada por fin se "
+        "mide — pero se mide **con soportes de precio, no con open interest**. Son dos niveles "
+        "distintos y el informe no los promedia: lo que estas cifras evalúan es la regla de "
+        "entrada apoyada en la estructura del precio. La versión que corre en vivo, con cadena "
+        "disponible, elegirá a veces otro nivel.")
+
+    lims.append(
+        "**Medido: esperar al soporte NO mejora el resultado, y probablemente lo empeora.** "
+        "Sobre las 936 señales de compra del régimen `pit`, con los stops y objetivos del "
+        "propio Fund Manager y 10 pb de costes, entrar al nivel MEJORA la operación "
+        "(expectativa +1.70% frente a +1.34%, factor de beneficio 1.53 frente a 1.43) y "
+        "EMPEORA el valor esperado por señal (+0.78% frente a +1.34%), porque lo que la orden "
+        "no rellena es precisamente lo que sube: esas señales habrían rendido +3.56% con un "
+        "**59.6% de acierto** frente al 45.3% de la línea base. La selección adversa cancela "
+        "exactamente la mejora de precio. Por eso `--con-entrada-limitada` existe pero está "
+        "DESACTIVADA por defecto: es una medición, no una preferencia.")
+
+    lims.append(
+        "**Del posicionamiento en futuros solo se mide el veto.** El bloque macro sí es "
+        "reconstruible: `COTStore` filtra los informes de la CFTC por fecha de PUBLICACIÓN "
+        "(viernes) y no por la del informe (martes), que es el mismo par `filed`/`end` de los "
+        "hechos XBRL. Lo que el estudio mide es por tanto el veto que topa en COMPRA con "
+        "viento macro fuertemente en contra; la dirección macro, por sí sola, no elige nivel.")
+
+    lims.append(
+        "**Del régimen de volatilidad se mide el 100%, y es la única capa de la que puede "
+        "decirse.** `VIXCLS` y `VXVCLS` llegan por ALFRED, cuyos parámetros de tiempo real "
+        "devuelven la serie tal y como se conocía en una fecha y adjuntan a cada observación "
+        "su fecha de publicación. Verificado contra la API: la observación semanal del "
+        "miércoles 2020-03-25 es invisible consultando ese mismo día y aparece el 26. El "
+        "retardo no hay que modelarlo, hay que no estorbarlo, y `FREDStore` invoca la MISMA "
+        "función de selección de producción con `as_of` en lugar de reimplementarla.")
+
+    lims.append(
+        "**La curva de volatilidad no es reconstruible antes de 2014.** `VXVCLS` observa desde "
+        "2007 pero su ARCHIVO en ALFRED empieza en 2014: pedir 2013 devuelve «the series does "
+        "not exist in ALFRED». No afecta a la ventana del estudio, que empieza en 2015, pero sí "
+        "acota cualquier extensión hacia atrás. Cuando falta, `ratio_curva` es `None` y el "
+        "agravamiento por curva invertida no se aplica — nunca se asume contango.")
+
+    lims.append(
+        "**El meta-modelo está DESACTIVADO, y es una medición, no una duda de diseño.** "
+        "`--con-meta` activa el meta-etiquetado de López de Prado con reentrenamiento "
+        "walk-forward, CV purgada con embargo y pesos por unicidad. En las OCHO ventanas "
+        "con muestra suficiente la AUC en validación cruzada purgada salió por DEBAJO de "
+        "0.5 —0.40, 0.40, 0.45, 0.45, 0.47, 0.47, 0.44, 0.47— así que la barrera de "
+        "`META_VENTAJA_MINIMA_AUC` impidió entregar artefacto en todas ellas y el factor "
+        "se quedó en 1.0. Ejecutar con y sin la bandera produce cifras idénticas. "
+        "**La lectura es que las 23 variables que el sistema conoce al emitir una señal no "
+        "contienen información utilizable sobre si esa compra concreta acabará en "
+        "beneficio**, lo que es coherente con el hallazgo ya publicado de que el rating "
+        "tampoco ordena el rendimiento futuro.")
+
+    lims.append(
+        "**La caché del COT no cubría siete de los once años del estudio, y ahora sí.** "
+        "`data/cache/cot/` solo contenía 2022-2026, así que el veto macro que este informe "
+        "afirmaba medir estuvo INERTE de 2015 a 2021. Recargada de 2013 en adelante con la "
+        "misma función de producción, el veto actúa: **la tasa de acierto sube 2.5 puntos** "
+        "(47.3% → 49.8%) sobre 532 operaciones, la expectativa pasa de +1.283% a +1.291% "
+        "y el percentil frente a selección aleatoria de 16.6 a 17.7 — las dos últimas, "
+        "mejoras marginales. El drawdown empeora de −15.57% a −16.15%. **El valor de esta "
+        "corrección no es el rendimiento sino la corrección misma: un informe que afirmaba "
+        "medir un veto que llevaba siete años inerte estaba equivocado, y lo seguía "
+        "estando aunque el efecto resulte modesto.**")
+
+    lims.append(
+        "**Del sesgo macro se mide la pata de ÍNDICE; la SECTORIAL falta antes de 2022.** "
+        "Los nombres de mercado de la CFTC cambiaron: el patrón `COPPER- #1` no casa con "
+        "`COPPER-GRADE #1`, ni `NAT GAS NYME` con `NATURAL GAS`, ni `UST 10Y NOTE` con "
+        "`10-YEAR U.S. TREASURY NOTES`. Los patrones estaban verificados contra "
+        "`deacot2025.zip` y solo contra ese. El contrato de índice —`E-MINI S&P 500`, que "
+        "reciben TODOS los valores— sí resuelve con 520 semanas, así que el sesgo macro se "
+        "calcula para todos; lo que falta es la pata sectorial de energía, materiales y "
+        "financieras en el primer tramo del estudio.")
+
+    lims.append(
+        "**El freno por drawdown está implementado y es INERTE EN PRODUCCIÓN.** "
+        "`drawdown_guard` traducido a un factor que solo recorta la exposición. El "
+        "backtest conoce la curva de capital; producción NO: el sistema emite "
+        "recomendaciones, no gestiona una cartera y no sabe su patrimonio. Cablearlo solo "
+        "en el estudio sería una variable de decisión medida aquí y ausente en vivo — la "
+        "imagen especular exacta de la divergencia del ajuste de entrada. Por eso el "
+        "parámetro es opcional y neutro por defecto, y por eso estas cifras NO lo "
+        "incluyen.")
+
+    lims.append(
+        "**El sesgo de reajuste retroactivo de los precios sigue SIN CUANTIFICAR.** yfinance "
+        "sirve precios ajustados por splits y dividendos con la información de hoy, así que el "
+        "precio de 2015 que se descarga hoy no es el que vio un observador de 2015. Afecta por "
+        "igual a los indicadores técnicos y a los soportes estructurales. La Fase 1 buscó una "
+        "fuente EOD independiente para acotarlo y la única gratuita probada está tras un "
+        "desafío anti-bot, así que la magnitud del efecto es desconocida.")
+
+    lims.append(
+        "**El signo de la exposición gamma es una convención, no una medición.** Se asume que "
+        "los creadores de mercado están largos gamma en calls y cortos en puts. Es la "
+        "convención estándar del sector, pero la cadena publica open interest y no quién está "
+        "en cada lado de cada contrato. Si esa convención falla en un valor concreto, el punto "
+        "de inflexión calculado apunta al lado contrario. Solo afecta a producción: en el "
+        "backtest no hay cadena.")
+
+    lims.append(
+        "**Los percentiles de put/call y de skew necesitan histórico propio.** Se calculan "
+        "sobre la caché acumulativa de cadenas diarias, así que una instalación nueva no puede "
+        "emitirlos hasta acumular `OPCIONES_MINIMO_DIAS_HISTORICO` observaciones. Hasta "
+        "entonces se declaran DATOS_INSUFICIENTES en lugar de asumir el percentil 50, y el "
+        "sesgo de opciones se apoya solo en el punto de inflexión de la gamma.")
+
+    lims.append(
+        "**El mapa sector→futuro es sectorial, no industrial.** Bancos y REITs comparten la "
+        "entrada del bono a 10 años pese a no responder igual al mismo contrato, y «Basic "
+        "Materials» mezcla mineras de metales industriales con químicas. Los sectores sin "
+        "contrato correlato claro no reciben pata sectorial y se evalúan solo con el índice: "
+        "se declara NO_APLICABLE en lugar de forzar un proxy.")
 
     lims.append(
         "**Normas sectoriales estáticas.** El contexto de valoración compara cada múltiplo "
@@ -212,6 +403,14 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
             "señal, lo que reduce el universo efectivo en los primeros años del estudio.")
 
     lims.append(
+        "**El percentil frente a selección aleatoria arrastra ruido de muestreo.** La misma "
+        "estrategia —mismo CAGR al cuarto decimal, mismas 532 operaciones, misma "
+        "expectativa— da percentil 20.3 con 300 muestras de Monte Carlo y 17.7 con 1000. "
+        "Son del orden de 2.6 puntos de ruido. Las cifras publicadas usan siempre las 1000 "
+        "por defecto, y **una diferencia de percentil por debajo de uno o dos puntos entre "
+        "configuraciones no es interpretable.**")
+
+    lims.append(
         "**Contrastes múltiples.** Se han evaluado varios regímenes, frecuencias y niveles de "
         "coste sobre el mismo periodo histórico. El p-valor mostrado no está corregido por "
         "multiplicidad: interprétese como orientativo, no como una prueba formal.")
@@ -220,6 +419,84 @@ def build_limitations(regime: str, n_trades: int, skips: Dict[str, int],
 
 
 NEXT_STEPS = [
+    "RESUELTO — la regla de ejecución de ÓRDENES LIMITADAS ya está en `engine.py`. La orden "
+    "lleva como límite el `precio_entrada_objetivo`, vive `vida_orden_sesiones` sesiones, se "
+    "rellena a la apertura si esta abre por debajo del límite, al límite si el mínimo lo toca, "
+    "y **se cancela sin abrir posición** si expira. Esa tercera rama es la que hace honesta la "
+    "comparación. Se activa con `--con-entrada-limitada` y está DESACTIVADA por defecto porque "
+    "la medición la desaconseja, no porque falte código.",
+    "NO comprar histórico de cadenas de opciones todavía. La pregunta que justificaba el gasto "
+    "—«¿mejora el resultado entrar más abajo?»— ya tiene respuesta medida, y es que NO: sobre "
+    "las 936 señales de compra del estudio, entrar al soporte mejora la operación (+1.70% "
+    "frente a +1.34% de expectativa) y empeora el valor esperado por señal (+0.78% frente a "
+    "+1.34%), porque lo que la orden no rellena acierta el 59.6% de las veces. Un nivel MEJOR "
+    "—de open interest en vez de de precio— podría cambiar la magnitud, pero tendría que "
+    "invertir el signo de la selección adversa para cambiar la conclusión, y no hay ninguna "
+    "razón para esperar que lo haga. Reconsiderarlo solo con evidencia en vivo.",
+    "Ampliar los patrones de `SECTOR_A_FUTURO` para que casen con las DOS convenciones "
+    "de nombres de la CFTC (`COPPER-GRADE #1` y `COPPER- #1`, `NATURAL GAS` y "
+    "`NAT GAS NYME`, `10-YEAR U.S. TREASURY NOTES` y `UST 10Y NOTE`). `_elegir_mercado` "
+    "ya resuelve la ambigüedad quedándose con el de mayor interés abierto, así que el "
+    "mecanismo existe. NO se hizo en esta revalidación porque cambiaría el dosier macro de "
+    "producción sin medirlo, y el presupuesto de ensayos ya estaba gastado: hacerlo exige "
+    "su propio contraste.",
+    "Reevaluar el meta-etiquetado con OTRO universo o con etiquetas de horizonte más "
+    "corto. Lo medido aquí es que las 23 variables del sistema no separan las compras que "
+    "funcionan de las que no, con AUC bajo 0.5 en ocho ventanas. Antes de volver a "
+    "intentarlo conviene resolver la pregunta de la que depende: **por qué el rating no "
+    "ordena el rendimiento futuro**. Un meta-modelo sobre los insumos de una señal cuya "
+    "dirección no ordena difícilmente puede ordenar él.",
+    "Decidir qué hacer con el freno por drawdown. Está implementado y probado pero es "
+    "inerte en producción porque el sistema no gestiona una cartera. Las dos salidas "
+    "honestas son: persistir una curva de capital en producción —lo que exige que el "
+    "sistema sepa qué se ejecutó, y hoy no lo sabe— o retirarlo. Dejarlo activo solo en el "
+    "backtest no es una de ellas.",
+    "PRIORIDAD 1 DE ESTA REVALIDACIÓN — validar walk-forward el umbral de TENSION del "
+    "régimen de volatilidad. El barrido midió que subirlo de 25 a 30 es la MEJOR de las "
+    "trece configuraciones evaluadas (expectativa +1.44% frente a +1.28%, percentil 24.3 "
+    "frente a 16.7), y que bajarlo a 20 no cambia absolutamente nada. La explicación es "
+    "mecánica: `_clasificar_regimen` toma el MÁXIMO de los escalones por nivel y por "
+    "z-score, y en esta ventana manda el z-score, así que bajar el corte de nivel queda "
+    "enmascarado y subirlo hasta 30 deja el escalón TENSION casi inerte. La lectura sería "
+    "que el escalón TENSION perjudica y solo el de PANICO aporta. **Pero se entrega 25, "
+    "que es el valor fijado ANTES de medir**: tres puntos de una curva sobre el mismo "
+    "histórico no acreditan un óptimo, acreditan que se ha buscado uno, y adoptar el que "
+    "mejor midió sería el defecto que este proyecto ya documentó tres veces. La validación "
+    "que lo resolvería: fijar el umbral con datos hasta 2019 y evaluar 2020-2025 sin "
+    "volver a mirarlo.",
+    "Comprobar si la bandera `soporte_lejano` merece existir. Duplicar su umbral de 1.5 a "
+    "3.0 ATR mueve UNA operación de 535 y deja el acierto en 47.2% frente a 47.3%: es "
+    "prácticamente inerte, así que el +2.7pp de acierto que aporta el Analista de "
+    "Estructura viene del nivel de entrada y no de ella. O se reformula para que actúe, o "
+    "se retira: una bandera que no dispara es código que hay que mantener sin contrapartida.",
+    "Investigar por qué la selección adversa cancela EXACTAMENTE la mejora de precio. Lo "
+    "llamativo de la medición no es que la regla limitada pierda por coste de oportunidad "
+    "—eso era previsible— sino que la rentabilidad CONDICIONADA a operar sea prácticamente "
+    "idéntica en las tres reglas (+1.71% a mercado, +1.76% al límite, +1.71% con recuperación "
+    "confirmada). Si eso se sostiene en otro universo, dice algo sobre la eficiencia del precio "
+    "de entrada a barra diaria que va mucho más allá de este sistema.",
+    "Construir el `NewsStore` point-in-time sobre el índice diario de EDGAR "
+    "(`edgar/daily-index/{año}/QTR{n}/form.{fecha}.idx`), que la Fase 1 acreditó como "
+    "PIT-NATIVE: cada presentación viene con su fecha exacta y el archivo llega a 1994. Cubre "
+    "resultados y hechos relevantes, no prensa general. Construirlo NO autoriza por sí solo a "
+    "conectar las noticias a la decisión: siguen siendo asesoras hasta que el almacén cubra la "
+    "ventana y `test_news_report_does_not_alter_decision` se retire deliberadamente.",
+    "Validar empíricamente la convención de signo de la exposición gamma contrastando el "
+    "`gamma_flip` calculado contra el comportamiento observado del precio en una muestra de "
+    "valores, antes de darle más peso en la elección de nivel.",
+    "Afinar el mapa sector→futuro a nivel de INDUSTRIA. Bancos y REITs no responden igual al "
+    "bono a 10 años, y una aerolínea y una petrolera tienen signos opuestos frente al crudo "
+    "pese a caer en sectores distintos hoy por casualidad.",
+    "HIPÓTESIS DESCARTADA CON DATOS: la reflexión de bajo nivel de FinAgent (arXiv:2402.18485), "
+    "traducida a reglas deterministas y medida contra su contrafactual exacto sobre 2015-2025, "
+    "EMPEORA la selección: percentil frente a señales aleatorias 7.4 → 3.1, expectativa por "
+    "operación +1.23% → +0.95%, drawdown −13.8% → −18.0%. La capa actuó (recortó el 18.3% de "
+    "las señales con factor medio ×0.93), así que no es un problema de activación. La lectura "
+    "más probable es que el rendimiento relativo de un perfil a un mes REVIERTE en lugar de "
+    "persistir. La línea de investigación honesta no es invertir el signo sobre el mismo "
+    "histórico —eso es el defecto metodológico de los papers de referencia— sino declarar la "
+    "hipótesis contraria de antemano y contrastarla con validación walk-forward sobre "
+    "2020-2025, o con otro horizonte de desenlace que el de 21 sesiones.",
     "PRIORIDAD 1 — investigar la ordenación del rating. Antes de tocar stops, sizing o "
     "costes, comprobar si el event study mantiene el orden invertido (VENTA FUERTE rindiendo "
     "más que COMPRA FUERTE) en otros universos y periodos. Si se confirma, el problema está "
@@ -284,6 +561,24 @@ NEXT_STEPS = [
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Backtest del sistema multi-agente financiero")
+    p.add_argument("--con-meta", action="store_true",
+                   help="activa el meta-modelo con reentrenamiento walk-forward. "
+                        "DESACTIVADO por defecto, igual que la memoria de reflexión: "
+                        "una capa que modula el tamaño no se enciende hasta que su "
+                        "contraste lo justifique")
+    p.add_argument("--sin-estructura", action="store_true",
+                   help="ablacion: omite el Analista de Estructura, de modo que el "
+                        "nivel de entrada vuelve a depender solo de la cadena de "
+                        "opciones (es decir, no hay nivel en el backtest)")
+    p.add_argument("--sin-regimen", action="store_true",
+                   help="omite la serie de volatilidad implicita: sin veto de regimen")
+    p.add_argument("--con-entrada-limitada", action="store_true",
+                   help="ejecuta el precio de entrada objetivo como orden LIMITADA "
+                        "con vida acotada; si expira, la posicion NO se abre. Por "
+                        "defecto se rellena a la apertura de t+1, que es el "
+                        "comportamiento historico")
+    p.add_argument("--vida-orden", type=int, default=ORDEN_LIMITADA_VIDA_SESIONES,
+                   help="sesiones que vive una orden limitada antes de cancelarse")
     p.add_argument("--tickers", type=str, default="", help="Lista separada por comas (por defecto, universo interno)")
     p.add_argument("--start", type=str, default="2015-01-01")
     p.add_argument("--end", type=str, default="2025-12-31")
@@ -293,6 +588,12 @@ def main() -> int:
     p.add_argument("--costs-bps", type=float, default=10.0, help="Coste total ida (comisión+slippage), se reparte al 50%%")
     p.add_argument("--max-holding-days", type=int, default=None)
     p.add_argument("--mc-runs", type=int, default=1000, help="Muestras del Monte Carlo aleatorio")
+    p.add_argument("--con-reflexion", action="store_true",
+                   help="Activa la memoria de reflexión. DESACTIVADA POR DEFECTO porque el "
+                        "contraste 2015-2025 la refutó: empeoró el percentil frente a "
+                        "selección aleatoria (7.4 -> 3.1) y la expectativa por operación "
+                        "(+1.23%% -> +0.95%%). Se conserva como bandera para reevaluarla con "
+                        "otro universo, otro horizonte o validación walk-forward")
     p.add_argument("--offline", action="store_true", help="Solo caché en disco, sin red")
     p.add_argument("--out", type=str, default="output")
     p.add_argument("--quiet", action="store_true")
@@ -346,15 +647,94 @@ def main() -> int:
     print(f"\n[3/6] Reproduciendo decisiones históricas (régimen: {args.regime})...")
     if args.regime != "biased" and not args.offline:
         print("  Descargando companyfacts de SEC EDGAR en la primera pasada (puede tardar)...")
-    replayer = HistoricalReplayer(prices, fundamentals, mode=args.regime, sector_map=sector_map)
+    # Posicionamiento en futuros point-in-time. El régimen technical_only lo
+    # omite: allí la capa fundamental está neutralizada y añadir un veto macro
+    # mezclaría dos mediciones distintas, por el mismo motivo por el que
+    # `TodayFundamentalStore` no devuelve estados financieros.
+    cot_store = COTStore(offline=args.offline) if args.regime == "pit" else None
+    # Regimen de volatilidad point-in-time. Mismo criterio que el COT: se omite
+    # en `technical_only`, donde la capa fundamental esta neutralizada y anadir
+    # un veto de regimen mezclaria dos mediciones distintas.
+    #
+    # A DIFERENCIA de la cadena de opciones, esta serie SI es reconstruible:
+    # ALFRED devuelve el valor tal y como se conocia en la fecha y cada
+    # observacion trae la suya de publicacion. De este bloque el estudio mide el
+    # 100% de la logica, no la mitad.
+    fred_store = (FREDStore(offline=args.offline)
+                  if (args.regime == "pit" and not args.sin_regimen) else None)
+    replayer = HistoricalReplayer(prices, fundamentals, mode=args.regime,
+                                  sector_map=sector_map, cot_store=cot_store,
+                                  fred_store=fred_store,
+                                  con_estructura=not args.sin_estructura)
+
+    # Memoria de reflexión. Se construye SOBRE LA MARCHA, en el mismo recorrido
+    # temporal del replay, y ese orden es la propiedad que la hace válida:
+    #
+    #   consolidar(t) → dosier(t) → decidir(t) → anotar las señales de t
+    #
+    # Anotar antes de decidir metería la señal de hoy en el dosier de hoy, que
+    # es la forma más silenciosa de look-ahead que admite esta capa. Y consolidar
+    # solo incorpora observaciones cuya fecha de DESENLACE ya pasó, nunca las que
+    # simplemente se emitieron: es el mismo `filed <= t` de los hechos XBRL
+    # aplicado a la consecuencia en vez de a la publicación.
+    memoria = (MemoriaReflexion(resolver=resolver_desde_precios(price_data, BENCHMARK))
+               if args.con_reflexion else None)
+
+    # Banco de etiquetas del meta-modelo. Mismo patrón temporal que la memoria de
+    # reflexión y por el mismo motivo:
+    #
+    #   resolver(t) → conjunto(t) → reentrenar si toca → decidir(t) → anotar(t)
+    #
+    # Anotar antes de decidir metería la señal de hoy en el conjunto de
+    # entrenamiento de hoy; entrenar con etiquetas cuya barrera aún no se ha
+    # resuelto sería mirar el futuro. `BancoDeEtiquetas.conjunto()` filtra por
+    # fecha de DESENLACE, no de emisión, y ahí está toda la disciplina.
+    def _barras_futuras(ticker: str, desde: pd.Timestamp) -> List[Dict[str, Any]]:
+        df = price_data.get(ticker.upper())
+        if df is None:
+            return []
+        fut = df.loc[df.index > desde]
+        return [{"fecha": str(i.date()), "high": float(r["High"]),
+                 "low": float(r["Low"]), "close": float(r["Close"])}
+                for i, r in fut.iterrows()]
+
+    banco = BancoDeEtiquetas(resolver=_barras_futuras) if args.con_meta else None
+    proximo_reentreno: Optional[pd.Timestamp] = None
+    meta_diag: List[Dict[str, Any]] = []
 
     by_date: Dict[pd.Timestamp, List[Signal]] = {}
     for i, d in enumerate(rebals):
+        if memoria is not None:
+            replayer.reflexion_dosier = memoria.dosier(d)
+        if banco is not None:
+            # 1. Resolver lo que ya se sabe cómo terminó en `d`.
+            banco.resolver_hasta(d)
+            # 2. Reentrenar si toca, SOLO con etiquetas ya desenlazadas.
+            if proximo_reentreno is None or d >= proximo_reentreno:
+                art, diag = entrenar(banco.conjunto(d), VARIABLES_META, d)
+                replayer.meta_artefacto = art
+                diag["fecha"] = str(d.date())
+                diag["artefacto"] = bool(art)
+                meta_diag.append(diag)
+                proximo_reentreno = d + pd.Timedelta(days=META_REENTRENAR_CADA_DIAS)
+                if not args.quiet:
+                    print(f"    [meta] {d.date()}: "
+                          + (f"modelo con {art.n_muestras} etiquetas, "
+                             f"AUC CV {art.metricas_cv.get('auc_media')}, "
+                             f"tasa base {art.tasa_base:.1%}" if art
+                             else f"sin modelo — {diag.get('motivo')}"))
+        # 3. Decidir.
         by_date[d] = replayer.signals_for_date(tickers, d)
+        # 4. Anotar, DESPUÉS de decidir.
+        if memoria is not None:
+            memoria.anotar_senales(by_date[d], calendar)
+        if banco is not None:
+            banco.anotar_senales(by_date[d])
         if not args.quiet and (i % 12 == 0 or i == len(rebals) - 1):
             n = len(by_date[d])
             nb = sum(1 for s in by_date[d] if s.is_buy)
-            print(f"    {d.date()}  con señal={n:3d}  compras={nb:3d}")
+            rec = sum(1 for s in by_date[d] if s.factor_reflexion < 1.0)
+            print(f"    {d.date()}  con señal={n:3d}  compras={nb:3d}  recortadas={rec:3d}")
     total_signals = sum(len(v) for v in by_date.values())
     total_buys = sum(1 for v in by_date.values() for s in v if s.is_buy)
     print(f"  ✓ {total_signals} señales evaluadas, {total_buys} de compra "
@@ -368,7 +748,9 @@ def main() -> int:
     print("\n[4/6] Simulando la cartera...")
     half = args.costs_bps / 2.0
     cfg = BacktestConfig(initial_capital=args.capital, commission_bps=half,
-                         slippage_bps=half, max_holding_days=args.max_holding_days)
+                         slippage_bps=half, max_holding_days=args.max_holding_days,
+                         usar_entrada_limitada=args.con_entrada_limitada,
+                         vida_orden_sesiones=args.vida_orden)
     pre = PrecomputedReplayer(by_date, replayer.skips)
     # La capa de cartera se desactiva en `technical_only`: allí el Analista de
     # Calidad no interviene, todas las convicciones son nulas y no habría nada
@@ -455,10 +837,27 @@ def main() -> int:
     sensitivity.index.name = "Nivel de coste"
 
     years = summary["strategy"].get("years", 0.0)
+    refl_stats = resumen_reflexion(memoria, by_date)
     limitations = build_limitations(args.regime, tstats_trades.get("n_trades", 0),
-                                    res["skips"], len(tickers), years, avg_exposure)
+                                    res["skips"], len(tickers), years, avg_exposure,
+                                    refl_stats)
 
     # ---------- Informe ----------
+    # Vintage de cada serie externa que alimenta la decisión. Es el registro que
+    # permite diagnosticar dos ejecuciones que discrepen: si el COT o la serie de
+    # volatilidad cambiaron de contenido entre una y otra, aquí se ve. NO lleva
+    # reloj de pared: la salida persistida tiene que ser idéntica byte a byte
+    # entre dos ejecuciones `--offline`.
+    vintages: Dict[str, str] = {
+        "precios": f"caché yfinance {args.start}..{args.end}",
+        "fundamentales": ("SEC EDGAR companyfacts, filed<=t"
+                          if args.regime != "biased" else "yfinance.info de HOY (SESGADO)"),
+        "cot": "CFTC, filtrado por fecha_publicacion" if cot_store else "no usado",
+        "volatilidad": ("ALFRED output_type=4, filtrado por fecha_publicacion"
+                        if fred_store else "no usado"),
+        "opciones": "ausente (histórico por ticker de pago)",
+    }
+
     print("\n[6/6] Generando informe...")
     results: Dict[str, Any] = {
         "regime": args.regime,
@@ -498,7 +897,28 @@ def main() -> int:
                        "gross_exposure": avg_exposure},
         "turnover": M.turnover(trades, equity),
         "total_costs": res["total_costs"],
+        # Actividad de la memoria de reflexión. Sin estas cifras no se puede
+        # distinguir «la capa no ayuda» de «la capa nunca llegó a actuar», que
+        # son diagnósticos distintos con remedios distintos.
+        "reflexion": refl_stats,
         "skips": res["skips"],
+        # Órdenes limitadas que expiraron sin rellenarse. Cero cuando la entrada
+        # limitada está desactivada, que es el valor por defecto. Sin esta cifra
+        # el informe no puede decir cuántas señales se dejaron pasar, y una regla
+        # que solo opera cuando el precio le viene encima parecería mejor de lo
+        # que es.
+        "ordenes_expiradas": res.get("ordenes_expiradas", 0),
+        # Vintage de cada serie externa. Dos ejecuciones que discrepen se
+        # diagnostican con esto en vez de discutirse.
+        "vintages": vintages,
+        # Actividad del meta-modelo. Igual que con la reflexión, sin estas cifras
+        # no se puede distinguir «la capa no ayuda» de «la capa nunca llegó a
+        # entrenar», que son diagnósticos distintos con remedios distintos.
+        "meta": {"activo": banco is not None,
+                 "reentrenamientos": meta_diag,
+                 "etiquetas_anotadas": len(banco.etiquetas) if banco else 0,
+                 "etiquetas_resueltas": (sum(1 for e in banco.etiquetas if e.resuelta)
+                                         if banco else 0)},
         "limitations": limitations,
         "next_steps": NEXT_STEPS,
     }

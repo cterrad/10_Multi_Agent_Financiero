@@ -37,12 +37,21 @@ TOOLS_DE_DECISION = {
     "calcular_perfil_riesgo",
     "construir_cartera",
     "reconciliar_fuentes",
+    # Produce `precio_entrada_objetivo`, que alimenta `calcular_niveles_riesgo`
+    # y por esa via el stop, el objetivo y el tamano de la posicion.
+    "ajustar_precio_entrada",
+    # Su salida alimenta la penalizacion por correlacion de
+    # `PortfolioConstructor` y por esa via el peso de cada posicion. Ser mas
+    # estrecho de lo estrictamente necesario es la direccion segura del error.
+    "denoise_correlaciones",
 }
 
 # Tools que salen a la red. No se invocan en esta suite.
 TOOLS_DE_RED = {
     "obtener_datos_yfinance", "obtener_hechos_sec", "obtener_datos_finnhub",
-    "obtener_noticias", "obtener_benchmark",
+    "obtener_noticias", "obtener_benchmark", "obtener_cierres_historicos",
+    "obtener_cadena_opciones", "obtener_contexto_macro",
+    "obtener_contexto_regimen",
 }
 
 
@@ -106,6 +115,20 @@ def test_el_react_si_alcanza_los_scorers_de_calidad():
     for esperada in ("calcular_altman", "calcular_piotroski", "calcular_graham",
                      "construir_magnitudes_base"):
         assert esperada in expuestas
+
+
+def test_el_react_si_alcanza_los_scorers_de_posicionamiento():
+    """
+    Los cálculos de futuros y opciones explican un dictamen sorprendente —por
+    qué la entrada objetivo está por debajo del precio— y por eso se exponen. Lo
+    que no se expone es la tool que produce el número.
+    """
+    expuestas = {t.name for t in TOOLS_LECTURA}
+    for esperada in ("calcular_zscore_cot", "clasificar_sesgo_macro",
+                     "calcular_max_pain", "calcular_gamma_exposure",
+                     "localizar_gamma_flip", "calcular_put_call_ratio"):
+        assert esperada in expuestas
+    assert "ajustar_precio_entrada" not in expuestas
 
 
 # --------------------------------------------------------------------------- #

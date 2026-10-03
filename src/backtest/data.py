@@ -700,6 +700,61 @@ class TodayFundamentalStore:
                 "motivo": "régimen SESGADO: los estados financieros no se reconstruyen"}
 
 
+# --------------------------------------------------------------------------- #
+# Posicionamiento en futuros point-in-time
+# --------------------------------------------------------------------------- #
+class COTStore:
+    """
+    Series de posicionamiento COT conocibles en una fecha dada.
+
+    EL MISMO PROBLEMA `filed` / `end` QUE EL XBRL, Y LA MISMA SOLUCION
+    -----------------------------------------------------------------
+    El informe COT del martes no es publico hasta el viernes a las 15:30 ET.
+    Filtrar por la fecha del INFORME permite operar el miercoles con datos que
+    nadie tenia, que es exactamente la fuga que este modulo corrige para los
+    hechos XBRL filtrando por `filed` y no por `end`.
+
+    Aqui el par es (`fecha_informe`, `fecha_publicacion`) y el filtro
+    —`fecha_publicacion <= t`— ya vive en `src.data.futuros.cot.serie_semanal`,
+    que es el MISMO codigo que usa produccion. Esta clase no reimplementa la
+    seleccion: solo la invoca con `as_of` y memoiza por fecha. Una segunda
+    implementacion de la seleccion point-in-time seria un bug, igual que lo
+    seria una segunda copia de una regla de decision.
+
+    La cache de `data/cache/cot/` esta indexada por ano del informe, no por dia
+    de ejecucion, asi que produccion y backtest comparten los mismos ficheros.
+    """
+
+    def __init__(self, offline: bool = False, cache_dir: Optional[Path] = None,
+                 semanas: int = 156):
+        self.offline = offline
+        self.cache_dir = cache_dir
+        self.semanas = semanas
+        self._mem: Dict[str, Dict[str, Any]] = {}
+
+    def contexto(self, date) -> Dict[str, Any]:
+        """
+        Dosier macro con la MISMA forma que `recolectar_macro()` en produccion,
+        de modo que el agente no distingue si corre en vivo o en replay.
+
+        Sin precios de futuro continuo: no interviene en ninguna decision y
+        pedirlo por fecha de rebalanceo serian cientos de peticiones inutiles.
+        """
+        clave = pd.Timestamp(date).strftime("%Y-%m-%d")
+        if clave in self._mem:
+            return self._mem[clave]
+        from src.data.futuros import recolectar_macro
+        try:
+            datos = recolectar_macro(as_of=clave, offline=self.offline,
+                                     semanas=self.semanas, con_precios=False,
+                                     directorio_cot=self.cache_dir)
+        except Exception as exc:  # pragma: no cover
+            print(f"[COTStore] {clave}: {exc}")
+            datos = {}
+        self._mem[clave] = datos
+        return datos
+
+
 def trading_calendar(price_store: PriceStore, tickers: List[str],
                      start: str, end: str) -> pd.DatetimeIndex:
     """Unión de las fechas de cotización de todos los tickers, recortada a [start, end]."""
@@ -720,3 +775,61 @@ def rebalance_dates(calendar: pd.DatetimeIndex, freq: str = "monthly") -> List[p
     if rule is None:
         raise ValueError(f"Frecuencia de rebalanceo no soportada: {freq}")
     return [d for d in s.resample(rule).last().dropna().tolist()]
+
+
+# --------------------------------------------------------------------------- #
+# Régimen de volatilidad point-in-time
+# --------------------------------------------------------------------------- #
+class FREDStore:
+    """
+    Series de volatilidad implícita conocibles en una fecha dada.
+
+    EL MISMO PAR `filed`/`end`, Y AHORA IMPUESTO POR EL PROVEEDOR
+    -------------------------------------------------------------
+    ALFRED devuelve la serie tal y como se conocía en una fecha, y con
+    `output_type=4` cada observación viene con su propia fecha de publicación.
+    Verificado contra la API: la observación semanal del miércoles 2020-03-25 es
+    INVISIBLE consultando ese mismo día y aparece el 26; el cierre diario del VIX
+    es visible el mismo día.
+
+    Es el par `filed` / `end` de los hechos XBRL y el par
+    `fecha_informe` / `fecha_publicacion` del COT, solo que aquí no hay que
+    modelar el retardo: hay que no estorbarlo.
+
+    NO REIMPLEMENTA LA SELECCIÓN
+    -----------------------------
+    Igual que `COTStore` invoca `src.data.futuros.cot.serie_semanal` con `as_of`,
+    esta clase invoca `src.data.fred.recolectar_regimen` con `as_of` y memoiza
+    por fecha. Una segunda implementación del filtro point-in-time dentro de
+    `src/backtest/` sería un bug de la misma clase que una regla de decisión
+    duplicada.
+
+    La caché de `data/cache/fred/` está indexada por AÑO DE LA OBSERVACIÓN, no
+    por día de ejecución, así que producción y backtest comparten los mismos
+    ficheros.
+    """
+
+    def __init__(self, offline: bool = False, cache_dir: Optional[Path] = None,
+                 dias: int = 400):
+        self.offline = offline
+        self.cache_dir = cache_dir
+        self.dias = dias
+        self._mem: Dict[str, Dict[str, Any]] = {}
+
+    def contexto(self, date) -> Dict[str, Any]:
+        """
+        Dosier con la MISMA forma que `recolectar_regimen()` en producción, de
+        modo que el agente no distingue si corre en vivo o en replay.
+        """
+        clave = pd.Timestamp(date).strftime("%Y-%m-%d")
+        if clave in self._mem:
+            return self._mem[clave]
+        from src.data.fred import recolectar_regimen
+        try:
+            datos = recolectar_regimen(as_of=clave, offline=self.offline,
+                                       dias=self.dias, directorio=self.cache_dir)
+        except Exception as exc:  # pragma: no cover
+            print(f"[FREDStore] {clave}: {exc}")
+            datos = {}
+        self._mem[clave] = datos
+        return datos

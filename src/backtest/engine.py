@@ -5,6 +5,14 @@ Convenciones de ejecución (todas conservadoras a propósito):
 
 1. La señal se calcula con el CIERRE de la sesión de rebalanceo `t` y se ejecuta
    a la APERTURA de `t+1`. Nunca se rellena en la misma barra que genera la señal.
+1bis. Con `usar_entrada_limitada`, la orden lleva como límite el
+   `precio_entrada_objetivo` de la señal y vive `vida_orden_sesiones` sesiones:
+   se rellena a la apertura si esta abre por debajo del límite, al límite si el
+   mínimo lo toca, y **se cancela sin abrir posición** si expira. Esa tercera
+   rama es la cara y la que hace honesta la comparación: sin contabilizar las
+   señales que se dejan pasar, una regla que solo opera cuando el precio le viene
+   encima parece mejor de lo que es. Por defecto está DESACTIVADA, de modo que
+   el comportamiento histórico se reproduce byte a byte.
 2. Los stops y objetivos se evalúan intradía contra el rango High/Low. Si en la
    misma barra se tocan ambos, se asume el PEOR caso: salta el stop.
 3. Si el precio abre con hueco más allá del stop, se rellena en la apertura, no
@@ -21,7 +29,7 @@ import numpy as np
 import pandas as pd
 
 from src.backtest.replay import Signal
-from src.config import CORRELACION_VENTANA_DIAS
+from src.config import CORRELACION_VENTANA_DIAS, ORDEN_LIMITADA_VIDA_SESIONES
 from src.portfolio import PortfolioConstructor
 
 
@@ -33,6 +41,12 @@ class BacktestConfig:
     max_gross_exposure: float = 1.0
     max_holding_days: Optional[int] = None   # None = sin límite temporal
     allow_resize: bool = False               # no reescalar posiciones existentes
+    # Ejecución del precio de entrada objetivo. Con `usar_entrada_limitada=False`
+    # —el valor por defecto— el motor rellena SIEMPRE a la apertura de t+1, que
+    # es el comportamiento histórico exacto: cualquier estudio ejecutado antes de
+    # este cambio sigue reproduciéndose byte a byte.
+    usar_entrada_limitada: bool = False
+    vida_orden_sesiones: int = ORDEN_LIMITADA_VIDA_SESIONES
 
     @property
     def commission(self) -> float:
@@ -95,6 +109,10 @@ class PortfolioEngine:
         self.n_open: Dict[pd.Timestamp, int] = {}
         self.total_costs = 0.0
         self._pending: List[Dict[str, Any]] = []
+        # Órdenes limitadas que expiraron sin rellenarse. Es la cifra que hace
+        # honesta la comparación entre entrada a mercado y entrada limitada: sin
+        # ella, el informe no puede decir cuántas señales se dejaron pasar.
+        self.ordenes_expiradas = 0
 
     # ---------------- utilidades de precio ----------------
     def _bar(self, ticker: str, date: pd.Timestamp) -> Optional[pd.Series]:
@@ -124,7 +142,20 @@ class PortfolioEngine:
 
     # ---------------- órdenes ----------------
     def schedule(self, orders: List[Dict[str, Any]]) -> None:
-        """Encola órdenes para ejecutarse en la apertura de la siguiente sesión."""
+        """
+        Encola órdenes para la sesión siguiente.
+
+        **Una orden nueva SUSTITUYE a la que siguiera viva sobre el mismo
+        ticker.** Con órdenes limitadas de vida acotada, una que no se rellenó
+        puede seguir en cola cuando llega el siguiente rebalanceo; conservar las
+        dos dejaría al motor persiguiendo un límite calculado con una señal que
+        el sistema ya ha revisado, y además las acumularía sin techo. El
+        rebalanceo es precisamente el momento en que el sistema vuelve a opinar,
+        así que su opinión nueva manda.
+        """
+        nuevos = {o["ticker"] for o in orders}
+        if nuevos:
+            self._pending = [o for o in self._pending if o["ticker"] not in nuevos]
         self._pending.extend(orders)
 
     def _execute_sell(self, pos: Position, date: pd.Timestamp, price: float, reason: str) -> None:
@@ -175,7 +206,31 @@ class PortfolioEngine:
         )
 
     def process_open(self, date: pd.Timestamp) -> None:
-        """Ejecuta en la apertura de `date` las órdenes generadas el cierre anterior."""
+        """
+        Ejecuta en `date` las órdenes pendientes.
+
+        DOS REGÍMENES DE EJECUCIÓN, Y EL PRIMERO ES EL DE SIEMPRE
+        ---------------------------------------------------------
+        Sin límite —`limite is None`, que es lo que produce
+        `usar_entrada_limitada=False`— la orden se rellena a la APERTURA de la
+        sesión siguiente a la señal, exactamente como antes.
+
+        Con límite, la orden vive `vida_orden_sesiones` sesiones y se resuelve
+        con tres reglas explícitas, que son lo que `NEXT_STEPS` #1 pedía decidir:
+
+          1. **Hueco de apertura por debajo del límite** → se rellena a la
+             APERTURA, no al límite. Rellenar al límite sería regalarse un precio
+             que el mercado no ofreció.
+          2. **El mínimo de la sesión toca el límite** → se rellena AL LÍMITE.
+          3. **La orden expira sin tocarse** → **la posición NO se abre.** Esa es
+             la parte cara y la que hay que contabilizar: el capital se queda sin
+             desplegar, y medir la regla sin pagar ese coste sería exactamente el
+             sesgo que la Fase 3 documentó.
+
+        La orden se evalúa desde la sesión SIGUIENTE a la señal, igual que el
+        relleno a mercado: la señal se calcula con el cierre de `t` y nada puede
+        ejecutarse dentro de esa misma barra.
+        """
         if not self._pending:
             return
         pending, self._pending = self._pending, []
@@ -190,13 +245,42 @@ class PortfolioEngine:
                 continue
             self._execute_sell(pos, date, float(bar["Open"]), order.get("reason", "rebalance"))
 
+        vivas: List[Dict[str, Any]] = []
         for order in [o for o in pending if o["side"] == "BUY"]:
             if order["ticker"] in self.positions:
                 continue
             bar = self._bar(order["ticker"], date)
             if bar is None:
+                # Sin barra no se puede resolver: la orden sigue viva si le
+                # quedan sesiones, para no cancelarla por un festivo del ticker.
+                if order.get("limite") is not None and order.get("sesiones_restantes", 0) > 1:
+                    order["sesiones_restantes"] -= 1
+                    vivas.append(order)
                 continue
-            self._execute_buy(order, date, float(bar["Open"]))
+
+            limite = order.get("limite")
+            if limite is None:
+                self._execute_buy(order, date, float(bar["Open"]))
+                continue
+
+            apertura, minimo = float(bar["Open"]), float(bar["Low"])
+            if apertura <= limite:
+                # Regla 1: hueco de apertura por debajo del límite.
+                self._execute_buy(order, date, apertura)
+            elif minimo <= limite:
+                # Regla 2: el precio bajó hasta el límite dentro de la sesión.
+                self._execute_buy(order, date, limite)
+            else:
+                # Regla 3: no se tocó. Sigue viva mientras le queden sesiones.
+                restantes = int(order.get("sesiones_restantes", 1)) - 1
+                if restantes > 0:
+                    order["sesiones_restantes"] = restantes
+                    vivas.append(order)
+                else:
+                    self.ordenes_expiradas += 1
+
+        # Las órdenes que siguen vivas vuelven a la cola para la sesión siguiente.
+        self._pending.extend(vivas)
 
     def process_intraday_exits(self, date: pd.Timestamp) -> None:
         """
@@ -284,6 +368,14 @@ def _resultado_desde_señal(s: Signal) -> Dict[str, Any]:
             "current_price": s.close,
             "stop_loss_atr": s.stop_loss,
             "take_profit_atr": s.take_profit,
+            # El factor de reflexión llega SIN aplicar y lo aplica el
+            # constructor, que es quien puede reasignar lo recortado. Si se
+            # perdiera aquí, la capa quedaría muda en el backtest y el estudio
+            # mediría una lógica distinta de la que decide en vivo.
+            "factor_reflexion": s.factor_reflexion,
+            # Igual que el anterior: llega SIN aplicar y lo aplica el
+            # constructor, que es el único que puede reasignar lo recortado.
+            "factor_meta": s.factor_meta,
             "dimensionado": {"motivo": f"dictamen {s.rating}"},
         },
     }
@@ -308,6 +400,39 @@ def _series_hasta(price_data: Dict[str, pd.DataFrame], tickers: List[str],
         if len(serie) >= 30:
             out[t] = serie
     return out
+
+
+def _orden_de_compra(s: Signal, notional: float,
+                    cfg: BacktestConfig) -> Dict[str, Any]:
+    """
+    Orden de compra a partir de una senal, con o sin limite de entrada.
+
+    El limite es `precio_entrada_objetivo` y SOLO se pone cuando la
+    configuracion lo pide Y la senal trae uno estrictamente por debajo del
+    cierre. Las dos condiciones importan:
+
+      · Sin `usar_entrada_limitada` el limite es `None` y el motor rellena a la
+        apertura de t+1, que es el comportamiento historico exacto. Cualquier
+        estudio anterior a este cambio se reproduce byte a byte.
+      · Un `precio_entrada_objetivo` mayor o igual al cierre no es un limite:
+        seria una orden que se rellena al instante y ademas al peor precio. La
+        comprobacion es `is not None` y no `or`, por el mismo motivo que en el
+        Fund Manager: un objetivo de 0.0 es un dato corrupto, no una ausencia.
+    """
+    limite = None
+    if cfg.usar_entrada_limitada and s.precio_entrada_objetivo is not None:
+        if 0 < s.precio_entrada_objetivo < s.close:
+            limite = float(s.precio_entrada_objetivo)
+    return {
+        "side": "BUY", "ticker": s.ticker, "notional": notional,
+        "stop": s.stop_loss, "target": s.take_profit,
+        "rating": s.rating, "sector": s.sector,
+        "estilo": s.estilo, "conviccion": s.conviccion,
+        "volatilidad": s.volatilidad,
+        "limite": limite,
+        "sesiones_restantes": cfg.vida_orden_sesiones if limite is not None else 0,
+        "nivel_origen": s.nivel_origen,
+    }
 
 
 def build_orders(signals: List[Signal], engine: PortfolioEngine,
@@ -380,13 +505,7 @@ def build_orders(signals: List[Signal], engine: PortfolioEngine,
         for s in sorted(new_buys, key=lambda x: -x.target_weight):
             notional = equity * s.target_weight * scale
             if notional > 0:
-                orders.append({
-                    "side": "BUY", "ticker": s.ticker, "notional": notional,
-                    "stop": s.stop_loss, "target": s.take_profit,
-                    "rating": s.rating, "sector": s.sector,
-                    "estilo": s.estilo, "conviccion": s.conviccion,
-                    "volatilidad": s.volatilidad,
-                })
+                orders.append(_orden_de_compra(s, notional, cfg))
         return orders
 
     tickers_matriz = [s.ticker for s in new_buys] + [e["ticker"] for e in existentes]
@@ -408,13 +527,7 @@ def build_orders(signals: List[Signal], engine: PortfolioEngine,
         notional = equity * p.peso_final
         if notional <= 0:
             continue
-        orders.append({
-            "side": "BUY", "ticker": s.ticker, "notional": notional,
-            "stop": s.stop_loss, "target": s.take_profit,
-            "rating": s.rating, "sector": s.sector,
-            "estilo": s.estilo, "conviccion": s.conviccion,
-            "volatilidad": s.volatilidad,
-        })
+        orders.append(_orden_de_compra(s, notional, cfg))
     return orders
 
 
@@ -461,6 +574,9 @@ def run_backtest(replayer, tickers: List[str], calendar: pd.DatetimeIndex,
         "signals": all_signals,
         "total_costs": engine.total_costs,
         "skips": dict(replayer.skips),
+        # Órdenes limitadas que expiraron sin rellenarse. Cero cuando la entrada
+        # limitada está desactivada, que es el valor por defecto.
+        "ordenes_expiradas": engine.ordenes_expiradas,
     }
 
 

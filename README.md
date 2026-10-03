@@ -22,11 +22,15 @@ graph TD
     CC --> Q1[Analista de Calidad y Valoración]
     Q1 --> C1[Gatekeeper Fundamental]
     Q1 --> N1[Analista de Noticias - capa asesora]
+    Q1 --> G1[Analista de Régimen de Volatilidad - VIX]
     C1 --> J1[Unión de análisis]
     N1 --> J1
+    G1 --> J1
     J1 -->|Rechazado o sin datos| D1[VENTA / VENTA FUERTE / SIN OPINION]
     J1 -->|Aprobado| E1[Analista Técnico de Momentum]
-    E1 --> F1[Unidad de Debate: Bullish vs Bearish]
+    E1 --> S1[Analista de Estructura de Precio - soportes]
+    S1 --> O1[Analista de Posicionamiento - precio de entrada]
+    O1 --> F1[Unidad de Debate: Bullish vs Bearish]
     F1 --> H1[Fund Manager - Rating, tamaño y riesgo]
     D1 --> H1
     H1 --> P1[Construcción de cartera: correlación, sectores, riesgo agregado]
@@ -39,6 +43,9 @@ graph TD
 * 🛡️ **Gatekeeper Fundamental (Filtro Inteligente)**: Evalúa crecimiento de ingresos, margen neto y relación deuda/capital, con umbrales **ajustados por sector** (el apalancamiento de un banco no se juzga como el de una empresa de software). Emite tres veredictos: APROBADO, RECHAZADO y **DATOS_INSUFICIENTES** — porque la ausencia de un dato no es evidencia de deterioro.
 * 🎓 **Analista de Calidad y Valoración**: Codifica siete escuelas clásicas como reglas deterministas —**F-Score de Piotroski**, **Z-Score de Altman**, **Número de Graham**, **ROIC vs coste de capital (Buffett)**, **PEG (Lynch)**, **fórmula mágica (Greenblatt)** y **ratio de devengos (Sloan)**— y produce cuatro puntuaciones de 0 a 100 (calidad, valoración, crecimiento, solvencia), una convicción fundamental y una **etiqueta de estilo**: `VALOR`, `CRECIMIENTO`, `GARP`, `CALIDAD_COMPUESTA`, `CICLICA`, `TRAMPA_DE_VALOR` o `ESPECULATIVA`.
 * 📈 **Analista Técnico de Momentum (Technical ISA)**: **RSI (14)**, **MACD (12, 26, 9)**, **Bandas de Bollinger**, **SMA 50/200**, **ATR (14)** y momentum de precio a 12 meses **relativo al índice**. Produce una puntuación continua en `[-100, +100]`, monótona por construcción.
+* 🌡️ **Analista de Régimen de Volatilidad**: sitúa al MERCADO —no a la empresa— en `CALMA`, `NORMAL`, `TENSION` o `PANICO`, cruzando el nivel del VIX, su z-score sobre 60 sesiones y la pendiente de la curva de volatilidad. Es el filtro anti-cuchillo-cayendo: en pánico, lo que parece una oportunidad suele ser una capitulación en curso. Solo puede **recortar** (PANICO topa en MANTENER, TENSION en COMPRA) y cerrar la puerta a perseguir el precio. Su fuente, **ALFRED**, devuelve la serie tal y como se conocía en cada fecha, así que es la única capa del sistema de la que el backtest mide el 100%.
+* 🧱 **Analista de Estructura de Precio**: localiza el soporte más cercano por debajo del precio —mínimos de 10/21/63 sesiones anteriores, SMA 50 y 200, banda inferior de Bollinger— y mide la distancia en unidades de ATR. Aporta el **cuarto candidato de nivel** para el precio de entrada, y el único que no depende de la cadena de opciones: sin él, el backtest no podía medir el ajuste de entrada en absoluto.
+* 🎯 **Analista de Posicionamiento y Precio de Entrada**: cruza el posicionamiento de los especuladores en futuros (COT de la CFTC), la cadena de opciones del valor y su propio momentum, y de ahí sale un **precio de entrada objetivo** que puede bajar la entrada pero **nunca subirla**. Alimenta el stop, el objetivo y el tamaño.
 * 📰 **Analista de Noticias** (capa **asesora**): estima la probabilidad de que la actualidad mueva la cotización. Aporta argumentos al debate y aparece en el informe, pero **no toca el rating ni el tamaño de posición**.
 * ⚖️ **Capa de Debate & Mitigación de Sesgos**: Confrontación entre un **Bullish Researcher** y un **Bearish Researcher** (Abogado del Diablo). Cada argumento está condicionado a la cifra que lo sostiene, y el debate declara las **condiciones que invalidarían la tesis**.
 * 💼 **Fund Manager**: Cruza convicción fundamental y momentum en una puntuación compuesta, aplica vetos de riesgo (que **solo pueden bajar** un dictamen) y calcula el tamaño de posición como **número** a partir de un presupuesto de riesgo: `peso = riesgo asumible / distancia al stop × factor de volatilidad`. Los múltiplos de ATR y el horizonte dependen del estilo asignado.

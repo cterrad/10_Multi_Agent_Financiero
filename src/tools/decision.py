@@ -25,13 +25,16 @@ a compensar una bandera roja con un multiplo atractivo.
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.config import (
+    AJUSTE_MAXIMO_ATR,
     ATR_AJUSTE_POR_ESTILO,
     ATR_MULTIPLO_OBJETIVO,
     ATR_MULTIPLO_STOP,
     HORIZONTE_MINIMO_DIAS,
     PESO_MAXIMO_POSICION,
     PESO_MINIMO_OPERABLE,
+    FACTOR_ENTRADA,
     RIESGO_POR_POSICION_PCT,
+    UMBRAL_SENAL,
     VOLATILIDAD_OBJETIVO,
 )
 from langchain_core.tools import tool
@@ -322,14 +325,38 @@ def calcular_rating_compuesto(conviccion_fundamental: Optional[float],
 @tool("aplicar_vetos")
 def aplicar_vetos(rating_bruto: str, estilo: str, banderas_rojas: List[str],
                   sobreextendido: bool, confianza_datos: float,
-                  conviccion_evaluable: bool = True) -> Dict[str, Any]:
+                  conviccion_evaluable: bool = True,
+                  sesgo_macro_clasificacion: Optional[str] = None,
+                  reflexion_desfavorable: bool = False,
+                  regimen_clasificacion: Optional[str] = None) -> Dict[str, Any]:
     """Recorta el rating por riesgo. Los vetos SOLO bajan, nunca suben.
 
-    Cinco condiciones, aplicadas en orden: estilo ESPECULATIVA,
+    Ocho condiciones, aplicadas en orden: estilo ESPECULATIVA,
     TRAMPA_DE_VALOR o DATOS_INSUFICIENTES topan en MANTENER; dos o más banderas
     rojas bajan un escalón; un valor técnicamente sobreextendido rebaja COMPRA
     FUERTE a COMPRA —por calidad de la entrada, no por la tesis—; y una
-    confianza en los datos por debajo del 60% topa en MANTENER.
+    confianza en los datos por debajo del 60% topa en MANTENER; y un
+    posicionamiento de futuros fuertemente en contra del sector topa en COMPRA;
+    y una memoria de reflexión con expectativa claramente negativa topa en
+    MANTENER.
+
+    El veto macro es la UNICA via por la que el bloque de futuros toca el
+    dictamen, y solo puede bajarlo. Se apoya en los informes COT de la CFTC, que
+    si son reconstruibles point-in-time, a diferencia de la cadena de opciones.
+
+    El veto de reflexion es la unica via por la que la memoria de resultados
+    pasados puede cambiar un rating, y tambien solo lo baja. Exige que el
+    intervalo de un error tipico de la celda quede entero por debajo de cero
+    (ver `src/tools/reflexion.py`): sin esa condicion, cualquier celda con media
+    ligeramente negativa dispararia un veto sobre ruido.
+
+    El veto de regimen es la unica via por la que el estres sistemico toca el
+    dictamen: PANICO topa en MANTENER y TENSION topa en COMPRA. Es la traduccion
+    del filtro anti-cuchillo-cayendo del repositorio 07 — en un regimen de panico
+    lo que parece una oportunidad suele ser una capitulacion en curso — al
+    vocabulario de vetos de este sistema. Se apoya en la serie de volatilidad
+    implicita de ALFRED, que SI es reconstruible point-in-time, a diferencia de la
+    cadena de opciones: el estudio mide este veto sobre la ventana entera.
 
     Que ninguna condición pueda mejorar el dictamen es deliberado: el sesgo del
     sistema es hacia no operar cuando hay dudas, y permitir que un múltiplo
@@ -367,6 +394,25 @@ def aplicar_vetos(rating_bruto: str, estilo: str, banderas_rojas: List[str],
         rating = _tope(rating, "MANTENER")
         vetos.append(f"Confianza en los datos de {confianza_datos:.0%}: "
                      f"no puede superar MANTENER")
+
+    if sesgo_macro_clasificacion == "VIENTO_EN_CONTRA_FUERTE":
+        rating = _tope(rating, "COMPRA")
+        vetos.append("Posicionamiento de futuros fuertemente en contra del sector: "
+                     "el dictamen no puede superar COMPRA")
+
+    if reflexion_desfavorable:
+        rating = _tope(rating, "MANTENER")
+        vetos.append("Memoria de reflexión: las señales con este perfil rindieron por debajo "
+                     "del índice de forma consistente; el dictamen no puede superar MANTENER")
+
+    if regimen_clasificacion == "PANICO":
+        rating = _tope(rating, "MANTENER")
+        vetos.append("Régimen de volatilidad en PANICO: en un episodio de estrés sistémico "
+                     "lo que parece una oportunidad suele ser una capitulación en curso; "
+                     "el dictamen no puede superar MANTENER")
+    elif regimen_clasificacion == "TENSION":
+        rating = _tope(rating, "COMPRA")
+        vetos.append("Régimen de volatilidad en TENSION: el dictamen no puede superar COMPRA")
 
     return {"rating": rating, "vetos": vetos, "rating_bruto": rating_bruto}
 
@@ -450,10 +496,197 @@ def calcular_perfil_riesgo(precio: float, stop: Optional[float],
                           mult_stop, mult_objetivo)
 
 
+
+
+# ------------------------------------------------------------------ #
+# Precio de entrada
+# ------------------------------------------------------------------ #
+def _ajustar_entrada(precio: float, atr: float,
+                     sesgo_macro: Optional[float],
+                     sesgo_opciones: Optional[float],
+                     momentum_score: Optional[float],
+                     soporte_oi: Optional[float] = None,
+                     max_pain: Optional[float] = None,
+                     gamma_flip: Optional[float] = None,
+                     max_pain_operable: bool = False,
+                     regimen_gamma: Optional[str] = None,
+                     sobreextendido: bool = False,
+                     soporte_estructural: Optional[float] = None) -> Dict[str, Any]:
+    """
+    Confluencia de tres senales -> precio de entrada objetivo.
+
+    PASO 1 - Confluencia. Los tres componentes son el sesgo macro (COT), el de
+    la cadena de opciones y el momentum propio del valor. Se promedian y se
+    cuenta que fraccion de los DISPONIBLES coincide en signo con la media. Con
+    un solo componente no hay confluencia que medir: una senal aislada no es una
+    comparacion de tres vias, y fingir que lo es seria justo el defecto que este
+    bloque existe para evitar.
+
+    PASO 2 - Sobreextension. Ninguna bandera cambia el signo; todas prohiben
+    perseguir el precio. Es el mismo principio que gobierna `aplicar_vetos`.
+
+    PASO 3 - Nivel. Se elige el candidato MAS ALTO por debajo del precio: es el
+    retroceso mas cercano y por tanto el mas probable de que se rellene. Tomar
+    el mas bajo seria esperar un desplome. Exigir que este por debajo del precio
+    es lo que hace estructuralmente imposible que este calculo SUBA la entrada.
+
+    Los candidatos eran TRES y salian los tres de la cadena de opciones, de modo
+    que sin cadena no habia nivel y el ajuste era None SIEMPRE — que es
+    exactamente lo que ocurre en el backtest, donde el historico de cadenas no es
+    reconstruible con fuentes gratuitas. `SOPORTE_ESTRUCTURAL` es el cuarto y sale
+    del OHLCV (`src/tools/niveles.py`), que el sistema si tiene point-in-time. Es
+    lo que permite que el estudio MIDA por primera vez el ajuste de entrada.
+    Con cadena disponible ambos compiten con la misma regla; sin ella, el
+    estructural es el unico y el bloque deja de anularse.
+
+    PASO 4 - Ajuste, acotado a `AJUSTE_MAXIMO_ATR` veces el ATR. El tope esta en
+    unidades de volatilidad y no en un porcentaje fijo porque un ajuste mas
+    profundo que el stop dejaria la entrada objetivo por DEBAJO del propio stop.
+
+    `ajuste_entrada_pct = 0.0` significa "entrar a mercado por confluencia".
+    `None` significa "no calculable". No son lo mismo y no deben colapsarse.
+    """
+    componentes: Dict[str, Optional[float]] = {
+        "macro": sesgo_macro,
+        "opciones": sesgo_opciones,
+        "tecnico": (momentum_score / 100.0) if momentum_score is not None else None,
+    }
+    disponibles = {k: v for k, v in componentes.items() if v is not None}
+
+    base: Dict[str, Any] = {
+        "componentes": {k: (round(v, 4) if v is not None else None)
+                        for k, v in componentes.items()},
+        "componentes_disponibles": sorted(disponibles),
+        "sobreextendido": bool(sobreextendido),
+        "regimen_gamma": regimen_gamma,
+        "tope_atr": AJUSTE_MAXIMO_ATR,
+    }
+
+    def sin_ajuste(motivo: str, **extra: Any) -> Dict[str, Any]:
+        return {**base, "entrada_clasificacion": "NO_APLICABLE", "confluencia": None,
+                "sesgo_medio": None, "nivel_referencia": None,
+                "nivel_origen": "NO_APLICABLE", "ajuste_entrada_pct": None,
+                "precio_entrada_objetivo": None, "motivo": motivo, **extra}
+
+    if len(disponibles) < 2:
+        return sin_ajuste("menos de dos componentes disponibles: no hay confluencia "
+                          "que medir")
+
+    sesgo_medio = round(sum(disponibles.values()) / len(disponibles), 4)
+    if sesgo_medio <= 0:
+        return sin_ajuste("el sesgo agregado no es alcista: no hay entrada que optimizar",
+                          sesgo_medio=sesgo_medio)
+
+    concordes = [v for v in disponibles.values()
+                 if (v > 0) == (sesgo_medio > 0) and abs(v) >= UMBRAL_SENAL]
+    confluencia = round(len(concordes) / len(disponibles), 4)
+
+    if confluencia >= 1.0 and not sobreextendido:
+        clasificacion = "PERSEGUIR"
+    elif confluencia >= 0.5:
+        clasificacion = "ESCALONAR"
+    else:
+        clasificacion = "ESPERAR_RETROCESO"
+
+    # Regimen gamma: con los creadores de mercado cortos gamma sus coberturas
+    # aceleran el movimiento, asi que el retroceso puede no llegar nunca y
+    # esperarlo entero sale caro. No cambia el signo, solo cuanto se espera.
+    if regimen_gamma == "ACELERADO" and clasificacion == "ESPERAR_RETROCESO":
+        clasificacion = "ESCALONAR"
+
+    candidatos: List[Any] = []
+    if soporte_oi is not None and 0 < soporte_oi < precio:
+        candidatos.append(("SOPORTE_OI", float(soporte_oi)))
+    if gamma_flip is not None and 0 < gamma_flip < precio:
+        candidatos.append(("GAMMA_FLIP", float(gamma_flip)))
+    if max_pain is not None and max_pain_operable and 0 < max_pain < precio:
+        candidatos.append(("MAX_PAIN", float(max_pain)))
+    if soporte_estructural is not None and 0 < soporte_estructural < precio:
+        candidatos.append(("SOPORTE_ESTRUCTURAL", float(soporte_estructural)))
+
+    if not candidatos or not precio:
+        return {**base, "entrada_clasificacion": "NO_APLICABLE",
+                "confluencia": confluencia, "sesgo_medio": sesgo_medio,
+                "nivel_referencia": None, "nivel_origen": "NO_APLICABLE",
+                "ajuste_entrada_pct": None, "precio_entrada_objetivo": None,
+                "clasificacion_previa": clasificacion,
+                "motivo": ("ningun nivel de referencia por debajo del precio: ni la cadena "
+                           "de opciones ni la estructura de precio ofrecen un candidato")}
+
+    nivel_origen, nivel = max(candidatos, key=lambda c: c[1])
+    bruto = (nivel - precio) / precio
+    tope = -AJUSTE_MAXIMO_ATR * (atr / precio) if (atr and precio) else bruto
+    ajuste = max(tope, FACTOR_ENTRADA[clasificacion] * bruto)
+    # Blindaje explicito: el ajuste NUNCA puede subir el precio de entrada.
+    ajuste = min(0.0, ajuste)
+
+    return {
+        **base,
+        "entrada_clasificacion": clasificacion,
+        "confluencia": confluencia,
+        "sesgo_medio": sesgo_medio,
+        "nivel_referencia": round(nivel, 2),
+        "nivel_origen": nivel_origen,
+        "candidatos": [{"origen": o, "nivel": round(n, 2)} for o, n in candidatos],
+        "ajuste_bruto_pct": round(bruto, 4),
+        "factor": FACTOR_ENTRADA[clasificacion],
+        "ajuste_entrada_pct": round(ajuste, 4),
+        "precio_entrada_objetivo": round(precio * (1 + ajuste), 2),
+        "limitado_por_atr": ajuste <= tope + 1e-9 and tope > bruto,
+        "motivo": None,
+    }
+
+
+@tool("ajustar_precio_entrada")
+def ajustar_precio_entrada(precio: float, atr: float,
+                           sesgo_macro: Optional[float] = None,
+                           sesgo_opciones: Optional[float] = None,
+                           momentum_score: Optional[float] = None,
+                           soporte_oi: Optional[float] = None,
+                           max_pain: Optional[float] = None,
+                           gamma_flip: Optional[float] = None,
+                           max_pain_operable: bool = False,
+                           regimen_gamma: Optional[str] = None,
+                           sobreextendido: bool = False,
+                           soporte_estructural: Optional[float] = None) -> Dict[str, Any]:
+    """Precio de entrada objetivo a partir de la confluencia de tres senales.
+
+    Cruza el sesgo macro de posicionamiento en futuros, el sesgo de
+    posicionamiento en la cadena de opciones y el momentum propio del valor. Si
+    los tres confirman y nada esta sobreextendido se entra a mercado
+    (`ajuste_entrada_pct = 0.0`). Si divergen, se exige un retroceso hasta el
+    nivel de referencia que marque el open interest, el max pain, el punto de
+    inflexion de la exposicion gamma o el soporte estructural del precio.
+
+    El soporte estructural es el cuarto candidato y el unico que NO depende de la
+    cadena de opciones, asi que es el unico disponible en el backtest. Sin el, el
+    ajuste de entrada era `None` en el 100% de las senales del estudio y la
+    logica quedaba sin medir.
+
+    El ajuste SOLO puede bajar el precio de entrada, nunca subirlo, y esta
+    acotado a un ATR: uno mas profundo dejaria la entrada objetivo por debajo del
+    propio stop. Es el mismo sesgo que rige los vetos, que solo bajan.
+
+    Devuelve `ajuste_entrada_pct = None` —no 0.0— cuando no hay dos componentes
+    disponibles o no hay ningun nivel por debajo del precio. `0.0` significa
+    "entrar a mercado por confluencia", que es una lectura distinta.
+
+    VARIABLE DE DECISION: su salida alimenta `calcular_niveles_riesgo`, y por esa
+    via el stop, el objetivo y el tamano. Queda FUERA de `TOOLS_LECTURA`.
+    """
+    return _ajustar_entrada(
+        precio=precio, atr=atr, sesgo_macro=sesgo_macro, sesgo_opciones=sesgo_opciones,
+        momentum_score=momentum_score, soporte_oi=soporte_oi, max_pain=max_pain,
+        gamma_flip=gamma_flip, max_pain_operable=max_pain_operable,
+        regimen_gamma=regimen_gamma, sobreextendido=sobreextendido,
+        soporte_estructural=soporte_estructural)
+
+
 TOOLS_DECISION = [
     calcular_rating_compuesto,
     aplicar_vetos,
     calcular_niveles_riesgo,
     dimensionar_posicion,
     calcular_perfil_riesgo,
+    ajustar_precio_entrada,
 ]

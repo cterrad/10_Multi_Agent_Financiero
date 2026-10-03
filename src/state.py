@@ -51,6 +51,47 @@ class FinancialAnalysisState(TypedDict, total=False):
     # están ausentes en el backtest — ver src/backtest/replay.py.
     news_data: Dict[str, Any]
 
+    # Posicionamiento en derivados. `futures_data` es el dosier macro COMPARTIDO
+    # por todos los tickers de la ejecucion: el sesgo del futuro del petroleo es
+    # el mismo para todas las energeticas del lote y el COT se publica una vez
+    # por semana, asi que lo resuelve el orquestador UNA vez y viaja en el estado
+    # inicial, igual que `benchmark_data`. `options_data` si es por ticker y la
+    # escribe el nodo de ingesta.
+    futures_data: Dict[str, Any]
+    options_data: Dict[str, Any]
+
+    # Dosier de régimen de volatilidad (VIX y VIX a 3 meses, vía ALFRED). Tercer
+    # caso del mismo patrón que `futures_data` y `benchmark_data`: el nivel del
+    # VIX de una fecha es idéntico para las cincuenta empresas del lote, así que
+    # lo resuelve el orquestador UNA vez y viaja en el estado inicial.
+    #
+    # A diferencia de `options_data`, SÍ es reconstruible point-in-time: ALFRED
+    # devuelve la serie tal y como se conocía en una fecha y cada observación
+    # trae su fecha de publicación. De este bloque el backtest mide el 100% de
+    # la lógica, no la mitad.
+    regimen_data: Dict[str, Any]
+
+    # Dosier de la memoria de reflexión: la rentabilidad en exceso sobre el
+    # índice que siguió históricamente a cada configuración de señal, contando
+    # SOLO las observaciones ya desenlazadas en la fecha de análisis. NO es por
+    # ticker —la tabla completa son unas decenas de entradas y cada agente busca
+    # su celda—, así que lo resuelve el orquestador una vez por ejecución y
+    # viaja en el estado inicial, igual que `futures_data` y `benchmark_data`.
+    #
+    # SÍ es variable de decisión: el Fund Manager lo convierte en
+    # `factor_reflexion` (recorta el peso) y en un veto que solo baja el rating.
+    reflexion_data: Dict[str, Any]
+
+    # Probabilidad que el meta-modelo asigna a ESTA señal, más la tasa base con
+    # la que se entrenó. NO es por lote —cada valor tiene la suya— pero tampoco
+    # la calcula ningún agente: la inyecta quien orquesta, porque cargar el
+    # artefacto y evaluarlo es responsabilidad de `src/meta/`, no del grafo.
+    #
+    # SÍ es variable de decisión: el Fund Manager la convierte en `factor_meta`,
+    # que recorta el peso en la capa de cartera. Vacío = capa inactiva y factor
+    # 1.0, que es el estado de una instalación sin artefacto entrenado.
+    meta_data: Dict[str, Any]
+
     # Referencia de mercado (SPY por defecto). La usa el Analista Técnico para
     # calcular momentum RELATIVO en lugar de absoluto: sin benchmark, «el valor
     # sube un 20%» no dice si eso es habilidad o simplemente mercado. Es
@@ -69,6 +110,33 @@ class FinancialAnalysisState(TypedDict, total=False):
     # el tamaño de posición. Por eso el backtest debe ejecutarlo.
     quality_report: Dict[str, Any]
     technical_report: Dict[str, Any]
+
+    # Dictamen del Analista de Posicionamiento y Precio de Entrada. A DIFERENCIA
+    # de `news_report`, SI es variable de decision: `precio_entrada_objetivo`
+    # alimenta `calcular_niveles_riesgo` en el Fund Manager, y por esa via el
+    # stop, el objetivo, el ratio riesgo/recompensa y el tamano de la posicion;
+    # `sesgo_macro_clasificacion` habilita ademas un veto que solo baja.
+    #
+    # El NIVEL de precio tiene ahora DOS proveedores: la cadena de opciones
+    # (soporte de open interest, max pain, gamma flip) y el soporte estructural
+    # que aporta `estructura_report`. Solo el segundo es reconstruible
+    # point-in-time, así que en el backtest el ajuste de entrada se apoya en
+    # soportes de PRECIO y no en open interest. La diferencia se declara en
+    # `build_limitations()` en vez de promediarse.
+    positioning_report: Dict[str, Any]
+
+    # Dictamen del Analista de Estructura de Precio. SÍ es variable de decisión
+    # por dos vías, ambas de las que solo cierran: `soporte` entra como
+    # candidato de nivel en `ajustar_precio_entrada`, y `soporte_lejano` se une
+    # por `or` a `sobreextendido` y prohíbe perseguir el precio.
+    estructura_report: Dict[str, Any]
+
+    # Dictamen del Analista de Régimen de Volatilidad. SÍ es variable de
+    # decisión por dos vías: `regimen_clasificacion` habilita un veto en
+    # `aplicar_vetos` (PANICO topa en MANTENER, TENSION en COMPRA) y
+    # `puerta_regimen` cerrada prohíbe perseguir el precio. Ambas solo bajan.
+    regimen_report: Dict[str, Any]
+
     news_report: Dict[str, Any]
     debate_report: Dict[str, Any]
 

@@ -49,6 +49,17 @@ Es la regla de dimensionamiento por volatilidad estándar: se fija cuánto
 patrimonio se está dispuesto a perder si salta el stop, y el tamaño se deduce.
 No al revés.
 
+PRECIO DE ENTRADA
+-----------------
+Desde que existe el Analista de Posicionamiento, los niveles NO se miden desde
+el último cierre sino desde `precio_entrada_objetivo` cuando este existe. Un
+stop medido sobre un precio que no se ha pagado describe una operación que nadie
+hizo, y el ratio riesgo/recompensa que sale de ahí es ininterpretable.
+
+Cuando ese agente no puede emitir ajuste —sin cadena de opciones no hay nivel de
+precio, y es lo que ocurre en todo el backtest— el precio de entrada ES el de
+mercado y el comportamiento es exactamente el anterior.
+
 INVARIANTE: el LLM solo sobrescribe `summary`, y siempre después de que
 `rating`, `peso_objetivo`, `stop_loss_atr` y `take_profit_atr` estén fijados.
 """
@@ -99,6 +110,8 @@ class FundManagerAgent(AgenteBase):
         tech_report = state.get("technical_report", {}) or {}
         quality_report = state.get("quality_report", {}) or {}
         debate_report = state.get("debate_report", {}) or {}
+        pos_report = state.get("positioning_report", {}) or {}
+        regimen_report = state.get("regimen_report", {}) or {}
         rec = state.get("reconciliation_data", {}) or {}
         raw_tech = state.get("yfinance_data", {}).get("technical", {}) or {}
 
@@ -116,6 +129,26 @@ class FundManagerAgent(AgenteBase):
         momentum = tech_report.get("momentum_classification", "NEUTRAL")
         sobreextendido = bool(tech_report.get("sobreextendido"))
 
+        # --- Precio de referencia para los niveles -------------------------
+        # El stop y el objetivo se miden desde el precio que se espera PAGAR, no
+        # desde el último cruce del mercado: medirlos desde un precio al que no
+        # se ha entrado produce un ratio riesgo/recompensa que describe una
+        # operación que nadie hizo.
+        #
+        # La comprobación es `is None` y NO `or`: un `precio_entrada_objetivo`
+        # de 0.0 es un dato corrupto, no una ausencia, y `or` lo enmascararía
+        # sustituyéndolo en silencio. Es la misma distinción que separa un
+        # ajuste de 0.0 —«entrar a mercado por confluencia»— de uno ausente.
+        precio_entrada = pos_report.get("precio_entrada_objetivo")
+        if precio_entrada is None:
+            precio_entrada = current_price
+        sesgo_macro_cls = pos_report.get("sesgo_macro_clasificacion")
+        # El régimen se lee del informe del Analista de Régimen y NO del de
+        # posicionamiento, aunque este último lo republique: el propietario del
+        # dato es quien lo calcula, y leerlo de su fuente evita que una
+        # reordenación del grafo lo deje en `None` sin que nada lo declare.
+        regimen_cls = regimen_report.get("regimen_clasificacion")
+
         # ---------------- Rama de rechazo del gatekeeper -------------------
         # Se decide ANTES de cualquier otra tool: un valor rechazado no tiene
         # análisis técnico ni debate, y calcular su rating compuesto sería
@@ -130,6 +163,31 @@ class FundManagerAgent(AgenteBase):
             "conviccion_fundamental": conviccion,
             "momentum_score": momentum_score}, traza)
 
+        # ---------------- Memoria de reflexión -----------------------------
+        # Qué hizo el precio DESPUÉS de las señales con este mismo perfil, con
+        # el dosier point-in-time que viaja en el estado. Va ANTES de los vetos
+        # porque habilita uno de ellos, y su factor se publica para que la capa
+        # de cartera lo aplique con la vista puesta en el conjunto: recortar
+        # aquí, valor a valor, dejaría el presupuesto liberado sin reasignar.
+        reflexion = self.usar_tool("consultar_reflexion", {
+            "dosier": state.get("reflexion_data") or {},
+            "estilo": estilo,
+            "momentum": momentum}, traza)
+
+        # ---------------- Meta-modelo --------------------------------------
+        # Probabilidad de que ESTA operación acabe en beneficio, según el modelo
+        # entrenado sobre las señales de compra ya desenlazadas. Llega ya
+        # calculada en el estado —el agente no entrena ni carga artefactos— y se
+        # traduce aquí al factor que la capa de cartera aplicará.
+        #
+        # Se publica SIN APLICAR, por el mismo motivo que `factor_reflexion`:
+        # solo `PortfolioConstructor` ve el rebalanceo entero y puede reasignar
+        # el presupuesto que el recorte libera. Aplicarlo aquí solo sabría restar.
+        meta_estado = state.get("meta_data", {}) or {}
+        meta = self.usar_tool("consultar_meta_etiqueta", {
+            "probabilidad": meta_estado.get("probabilidad"),
+            "tasa_base": meta_estado.get("tasa_base")}, traza)
+
         # ---------------- Vetos y topes ------------------------------------
         vetado = self.usar_tool("aplicar_vetos", {
             "rating_bruto": compuesto["rating_bruto"],
@@ -137,13 +195,16 @@ class FundManagerAgent(AgenteBase):
             "banderas_rojas": banderas,
             "sobreextendido": sobreextendido,
             "confianza_datos": confianza_datos,
-            "conviccion_evaluable": compuesto["conviccion_evaluable"]}, traza)
+            "conviccion_evaluable": compuesto["conviccion_evaluable"],
+            "sesgo_macro_clasificacion": sesgo_macro_cls,
+            "reflexion_desfavorable": bool(reflexion.get("desfavorable")),
+            "regimen_clasificacion": regimen_cls}, traza)
         rating = vetado["rating"]
         vetos = vetado["vetos"]
 
         # ---------------- Riesgo, tamaño y horizonte -----------------------
         niveles = self.usar_tool("calcular_niveles_riesgo", {
-            "precio": current_price, "atr": atr, "estilo": estilo}, traza)
+            "precio": precio_entrada, "atr": atr, "estilo": estilo}, traza)
         stop_loss = niveles["stop_loss"]
         take_profit = niveles["take_profit"]
         mult_stop = niveles["multiplo_stop"]
@@ -160,7 +221,7 @@ class FundManagerAgent(AgenteBase):
             "sobreextendido": sobreextendido}, traza)
 
         riesgo = self.usar_tool("calcular_perfil_riesgo", {
-            "precio": current_price, "stop": stop_loss, "objetivo": take_profit,
+            "precio": precio_entrada, "stop": stop_loss, "objetivo": take_profit,
             "atr": atr, "horizonte_dias": horizonte_dias,
             "mult_stop": mult_stop, "mult_objetivo": mult_objetivo}, traza)
 
@@ -175,6 +236,7 @@ class FundManagerAgent(AgenteBase):
             "rating_antes_de_vetos": compuesto["rating_bruto"],
             "rating_final": rating,
             "cortes": compuesto["cortes"],
+            "reflexion": reflexion,
         }
 
         rationale = _justificacion(ticker, rating, estilo, conviccion, momentum,
@@ -184,7 +246,11 @@ class FundManagerAgent(AgenteBase):
             f"Dictamen Final ({ticker}): {rating} · estilo {estilo}. "
             f"Asignación objetivo {dimensionado['peso_objetivo_pct']:.2f}% de la cartera "
             f"({dimensionado['motivo']}). "
-            f"Precio ${current_price:.2f}; stop ${stop_loss} ({mult_stop}·ATR) y objetivo "
+            f"Precio de mercado ${current_price:.2f}"
+            + ("" if precio_entrada == current_price
+               else f", entrada objetivo ${precio_entrada:.2f} "
+                    f"({pos_report.get('entrada_clasificacion')})")
+            + f"; stop ${stop_loss} ({mult_stop}·ATR) y objetivo "
             f"${take_profit} ({mult_objetivo}·ATR) sobre un horizonte de {horizonte_dias} sesiones "
             f"(~{horizonte_dias / 21:.0f} meses). "
             f"Ratio riesgo/recompensa {riesgo['ratio_riesgo_recompensa']}, que exige acertar el "
@@ -206,7 +272,27 @@ class FundManagerAgent(AgenteBase):
             "position_size_display": dimensionado["display"],
             "peso_objetivo": dimensionado["peso_objetivo"],
             "dimensionado": dimensionado,
+            # Factor de la memoria de reflexión. Se publica SIN aplicar: quien
+            # lo aplica es `PortfolioConstructor`, que ve la cartera entera y
+            # puede reasignar a los demás candidatos el presupuesto que este
+            # recorte libera. Aplicarlo aquí reduciría la exposición en lugar de
+            # redistribuirla, que es justo lo que no se quiere.
+            "factor_reflexion": reflexion.get("factor", 1.0),
+            "reflexion": reflexion,
+            # Igual que el anterior: se publica SIN aplicar. Quien lo aplica y
+            # reasigna es `PortfolioConstructor`.
+            "factor_meta": meta.get("factor_meta", 1.0),
+            "meta": meta,
             "current_price": current_price,
+            # Los dos precios se publican por separado: sin ambos, el lector del
+            # informe no puede saber si el stop está donde está por el ATR o por
+            # el ajuste de entrada.
+            "precio_entrada": round(precio_entrada, 2) if precio_entrada else None,
+            "ajuste_entrada_pct": pos_report.get("ajuste_entrada_pct"),
+            "entrada_clasificacion": pos_report.get("entrada_clasificacion"),
+            "nivel_origen": pos_report.get("nivel_origen"),
+            "sesgo_macro_clasificacion": sesgo_macro_cls,
+            "regimen_clasificacion": regimen_cls,
             "stop_loss_atr": stop_loss,
             "take_profit_atr": take_profit,
             "multiplo_stop": mult_stop,

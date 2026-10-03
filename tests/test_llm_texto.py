@@ -17,10 +17,13 @@ Estos tests fijan el contrato: pase lo que pase, `summary` y `synthesis` son
 import pytest
 
 import src.agents.debate as debate_mod
+import src.agents.estructura as estructura_mod
 import src.agents.fund_manager as fm_mod
 import src.agents.fundamental as fund_mod
 import src.agents.news as news_mod
+import src.agents.posicionamiento as pos_mod
 import src.agents.quality as quality_mod
+import src.agents.regimen as regimen_mod
 import src.agents.technical as tech_mod
 from src.config import texto_de_respuesta_llm
 
@@ -89,7 +92,7 @@ def test_sin_texto_utilizable_devuelve_none(respuesta):
 
 
 # --------------------------------------------------------------------------- #
-# 2. Los cinco agentes
+# 2. Los agentes
 # --------------------------------------------------------------------------- #
 def _estado_completo():
     """Estado que atraviesa la rama aprobada, con dosier de noticias incluido."""
@@ -133,6 +136,8 @@ def _estado_completo():
                            "graham": {}, "piotroski": {}, "altman": {}, "devengos": {}},
         "yfinance_data": {"status": "SUCCESS", "fundamentals": metricas, "technical": tech,
                           "estados_financieros": estados,
+                          "niveles_precio": {"minimo_10": 97.0, "minimo_21": 90.0,
+                                             "minimo_63": 80.0},
                           "price_history_summary": {"change_12m_pct": 0.25,
                                                     "change_1m_pct": 0.02}},
         "sec_edgar_data": {"status": "NOT_USED"},
@@ -154,14 +159,44 @@ def _estado_completo():
                        "buscadores": ["sec_8k"], "n_corroboraciones": 1,
                        "categoria_forzada": "RESULTADOS"}],
         },
+        # Insumos de los tres agentes que faltaban en esta lista. El de
+        # posicionamiento degrada a NO_APLICABLE sin `futures_data` ni
+        # `options_data`, que es una rama tan valida como cualquier otra para
+        # comprobar el contrato de TEXTO: lo que se fija aqui es que `summary`
+        # sea `str` pase lo que pase, no que el dictamen sea uno concreto.
+        "futures_data": {},
+        "options_data": {"disponible": False, "motivo": "sin cadena en el test"},
+        "regimen_data": {
+            "disponible": True, "as_of": "2024-06-28",
+            "serie_volatilidad": "VIXCLS", "serie_volatilidad_3m": "VXVCLS",
+            "series": {
+                "VIXCLS": {"serie": "VIXCLS", "observaciones": [
+                    {"serie": "VIXCLS", "fecha": f"2024-0{1 + i // 28}-{1 + i % 28:02d}",
+                     "fecha_publicacion": f"2024-0{1 + i // 28}-{1 + i % 28:02d}",
+                     "valor": 14.0 + (i % 5)} for i in range(70)]},
+                "VXVCLS": {"serie": "VXVCLS", "observaciones": [
+                    {"serie": "VXVCLS", "fecha": f"2024-0{1 + i // 28}-{1 + i % 28:02d}",
+                     "fecha_publicacion": f"2024-0{1 + i // 28}-{1 + i % 28:02d}",
+                     "valor": 16.0 + (i % 5)} for i in range(70)]},
+            }, "fallos": [],
+        },
+        "estructura_report": {"soporte": 97.0, "soporte_origen": "minimo_10",
+                              "soporte_lejano": False, "distancia_atr": 1.5},
     }
 
 
+# LOS OCHO agentes deterministas. `PositioningAnalystAgent` faltaba en esta
+# lista y era un hueco de cobertura REAL, no una exencion: redacta `summary` con
+# `SYSTEM_POSICIONAMIENTO` igual que los demas, asi que su contrato de texto
+# necesita la misma proteccion. Los dos agentes nuevos entran desde el principio.
 AGENTES = [
     (fund_mod, "FundamentalAnalystAgent", "summary"),
     (quality_mod, "QualityAnalystAgent", "summary"),
     (tech_mod, "TechnicalAnalystAgent", "summary"),
     (news_mod, "NewsAnalystAgent", "summary"),
+    (estructura_mod, "StructureAnalystAgent", "summary"),
+    (regimen_mod, "RegimeAnalystAgent", "summary"),
+    (pos_mod, "PositioningAnalystAgent", "summary"),
     (debate_mod, "DebateUnitAgent", "synthesis"),
     (fm_mod, "FundManagerAgent", "summary"),
 ]

@@ -320,3 +320,109 @@ def percentile_vs_random(strategy_cagr: float, random_cagrs: np.ndarray) -> Dict
         "aleatorio_p95_cagr": float(np.percentile(random_cagrs, 95)),
         "p_value_unilateral": float((random_cagrs >= strategy_cagr).mean()),
     }
+
+
+# --------------------------------------------------------------------------- #
+# Sharpe probabilístico y deflactado (López de Prado 2012, 2014)
+# --------------------------------------------------------------------------- #
+# Levantados de `src/backtest/metrics.py` del repositorio 06. El anfitrión no
+# tenía ninguno de los dos, y es un hueco real de su capa de métricas: un Sharpe
+# a secas es una estimación puntual que ignora la longitud del registro, la
+# asimetría y las colas de la distribución, y sobre todo ignora que el mejor de
+# MUCHAS variantes probadas está sesgado al alza por selección.
+#
+# Es exactamente la defensa que este proyecto necesita contra el defecto que ya
+# documentó dos veces: buscar en el espacio de variantes sobre el mismo
+# histórico hasta que una salga positiva.
+
+_EULER_MASCHERONI = 0.5772156649015329
+
+
+def observed_sharpe(rets: pd.Series) -> float:
+    """Sharpe POR PERIODO, sin anualizar. Es la unidad que PSR y DSR usan."""
+    r = pd.Series(rets).dropna()
+    if len(r) < 2:
+        return float("nan")
+    sd = float(r.std(ddof=1))
+    return 0.0 if sd == 0 else float(r.mean() / sd)
+
+
+def probabilistic_sharpe_ratio(rets: pd.Series, benchmark_sr: float = 0.0) -> float:
+    """
+    P(Sharpe verdadero por periodo > `benchmark_sr`), en [0, 1].
+
+    Corrige por longitud del registro, asimetría y curtosis. Una serie corta y
+    con colas gruesas necesita un Sharpe observado mucho mayor para sostener la
+    misma afirmación que una larga y normal.
+    """
+    from scipy.stats import kurtosis, norm, skew
+
+    r = pd.Series(rets).dropna().to_numpy(dtype=float)
+    n = len(r)
+    if n < 3:
+        return float("nan")
+    sr = observed_sharpe(pd.Series(r))
+    if not np.isfinite(sr):
+        return float("nan")
+    g3 = float(skew(r))
+    g4 = float(kurtosis(r, fisher=False))
+    denom = np.sqrt(max(1e-12, 1.0 - g3 * sr + (g4 - 1.0) / 4.0 * sr ** 2))
+    if not np.isfinite(denom) or denom == 0:
+        return float("nan")
+    return float(norm.cdf((sr - benchmark_sr) * np.sqrt(n - 1) / denom))
+
+
+def expected_max_sharpe(sharpe_std: float, n_trials: int) -> float:
+    """
+    Sharpe máximo ESPERADO por azar tras `n_trials` configuraciones probadas.
+
+    Aproximación de valor extremo de López de Prado (2014). Escala con la
+    dispersión de los Sharpe entre variantes: una búsqueda más amplia infla el
+    listón que la estrategia tiene que superar para no ser un hallazgo del azar.
+
+    `n_trials` es el número REAL de configuraciones evaluadas. No es uno, y no
+    es el número que convenga: pasar un recuento menor del real es la forma
+    exacta de que este control deje de controlar nada.
+    """
+    from scipy.stats import norm
+
+    if n_trials < 2 or sharpe_std <= 0:
+        return 0.0
+    g = _EULER_MASCHERONI
+    z_hi = float(norm.ppf(1.0 - 1.0 / n_trials))
+    z_lo = float(norm.ppf(1.0 - 1.0 / (n_trials * np.e)))
+    return float(sharpe_std * ((1.0 - g) * z_hi + g * z_lo))
+
+
+def deflated_sharpe_ratio(rets: pd.Series, n_trials: int,
+                          sharpe_std: Optional[float] = None,
+                          trial_sharpes: Optional[List[float]] = None) -> Dict[str, Any]:
+    """
+    Sharpe deflactado: PSR contra el listón del máximo esperado por azar.
+
+    Se le pasa o bien `sharpe_std` —la dispersión de los Sharpe de las variantes
+    evaluadas— o bien `trial_sharpes`, la lista completa, de la que se deducen
+    tanto la dispersión como el recuento.
+
+    Un DSR por debajo de 0.95 significa que el resultado NO sobrevive a su
+    propio recuento de ensayos, y en ese caso la configuración se descarta en
+    lugar de reportarse como mejora.
+    """
+    if trial_sharpes is not None and len(trial_sharpes) > 1:
+        arr = np.asarray(trial_sharpes, dtype=float)
+        sharpe_std = float(arr.std(ddof=1))
+        n_trials = int(len(arr))
+    if sharpe_std is None:
+        raise ValueError("deflated_sharpe_ratio necesita sharpe_std o trial_sharpes")
+
+    sr_estrella = expected_max_sharpe(sharpe_std, n_trials)
+    dsr = probabilistic_sharpe_ratio(rets, benchmark_sr=sr_estrella)
+    return {
+        "dsr": dsr,
+        "psr_vs_cero": probabilistic_sharpe_ratio(rets, benchmark_sr=0.0),
+        "sharpe_observado_periodo": observed_sharpe(rets),
+        "sharpe_maximo_esperado": sr_estrella,
+        "n_trials": int(n_trials),
+        "sharpe_std_ensayos": round(float(sharpe_std), 6),
+        "supera": bool(np.isfinite(dsr) and dsr >= 0.95),
+    }

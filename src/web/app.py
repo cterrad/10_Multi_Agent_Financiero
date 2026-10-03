@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 
-from src.graph.workflow import run_stock_analysis
+from src.graph.workflow import cargar_regimen, run_stock_analysis
 from src.utils.report_generator import ReportGenerator
 from src.config import OUTPUT_DIR
 
@@ -42,10 +42,23 @@ async def analyze_stocks(payload: AnalysisRequest):
     if not tickers:
         return JSONResponse(status_code=400, content={"error": "Lista de tickers vacía"})
 
+    # Régimen de volatilidad: dato DE LOTE, así que se resuelve una sola vez
+    # para toda la petición y no una por ticker. Es la única capa de lote que el
+    # dashboard cablea; `benchmark_data`, `macro_data` y `reflexion_data` siguen
+    # con su valor por defecto, y por eso el dashboard sigue produciendo un
+    # dictamen DISTINTO del de la CLI sobre el mismo valor. Ver `CLAUDE.md`,
+    # «Los tres puntos de entrada NO son equivalentes».
+    #
+    # Se cablea este y no los otros por una razón concreta: el veto de régimen
+    # puede TOPAR un dictamen en MANTENER, y un dashboard que emitiera COMPRA
+    # FUERTE en mitad de un episodio de pánico mientras la CLI emite MANTENER
+    # sobre el mismo valor sería una divergencia difícil de defender.
+    regimen = cargar_regimen()
+
     results = []
     for ticker in tickers:
         try:
-            res = run_stock_analysis(ticker)
+            res = run_stock_analysis(ticker, regimen_data=regimen)
             results.append(res)
         except Exception as e:
             results.append({

@@ -189,6 +189,19 @@ class DataFetcher:
             "campos_ausentes": ausentes,
             "estados_financieros": estados,
             "technical": latest_tech,
+            # Mínimos de las N sesiones ANTERIORES, sobre la misma ventana con la
+            # que se han calculado los indicadores. Se extraen aquí —en la
+            # ingesta— y no dentro del Analista de Estructura por el mismo motivo
+            # que la cadena de opciones la recolecta el nodo de ingesta: el
+            # agente es puro y no vuelve a la red ni al DataFrame. El backtest
+            # llama a la MISMA función sobre `PriceStore.window()`, de modo que
+            # hay una sola implementación de la regla.
+            #
+            # La importación es DIFERIDA a propósito: `src.tools.niveles` dispara
+            # el `__init__` del paquete, que importa `src.tools.extraccion`, que
+            # importa este mismo módulo. Es el mismo patrón que usan las tools de
+            # extracción para llegar a `src.data.futuros` y a `src.data.news`.
+            "niveles_precio": self._niveles_precio(df),
             "price_history_summary": self._resumen_precios(df),
         }
 
@@ -279,6 +292,19 @@ class DataFetcher:
     # ------------------------------------------------------------------ #
     # Técnico
     # ------------------------------------------------------------------ #
+    @staticmethod
+    def _niveles_precio(df: pd.DataFrame) -> Dict[str, Optional[float]]:
+        """
+        Mínimos de las N sesiones anteriores, delegando en la regla única.
+
+        La regla vive en `src/tools/niveles.py` porque **todas las reglas de
+        cálculo del sistema viven en `src/tools/`**; aquí solo se invoca. El
+        backtest llama a esa misma función sobre `PriceStore.window()`, así que
+        hay una implementación y no dos.
+        """
+        from src.tools.niveles import minimos_previos
+        return minimos_previos(df)
+
     def _add_technical_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Calcula RSI, MACD, Bandas de Bollinger, SMA 50/200, ATR y volumen relativo.

@@ -223,7 +223,22 @@ def generate_report(results: Dict[str, Any], out_dir: Path) -> Path:
     md: List[str] = []
     a = md.append
     a("# Backtest del sistema multi-agente de recomendaciones de compra\n")
-    a(f"_Generado el {datetime.now():%Y-%m-%d %H:%M}._\n")
+    # SIN RELOJ DE PARED. Un `datetime.now()` aquí hacía que dos ejecuciones
+    # `--offline` produjeran ficheros distintos, y con eso la afirmación «el
+    # estudio es reproducible» dejaba de ser comprobable. Es el mismo defecto
+    # que el proyecto ya corrigió haciendo secuenciales los identificadores de
+    # traza y dejando las duraciones fuera de `Traza.a_dict()`.
+    #
+    # Lo que se imprime en su lugar es MÁS informativo, no menos: el periodo que
+    # el estudio cubre y el vintage de cada serie externa, que es lo que permite
+    # diagnosticar dos ejecuciones que discrepen en vez de discutirlas.
+    a(f"_Periodo del estudio: {cfg.get('start')} a {cfg.get('end')} · "
+      f"régimen `{regime}` · {cfg.get('tickers')} valores · "
+      f"rebalanceo {cfg.get('rebalance')}._\n")
+    _vint = results.get("vintages") or {}
+    if _vint:
+        a("_Vintage de las series: "
+          + " · ".join(f"`{k}` {v}" for k, v in sorted(_vint.items())) + "._\n")
     a(f"> **Régimen de datos:** {REGIME_LABEL[regime]}\n")
 
     ordering = _rating_ordering(results.get("event_study"))
@@ -351,6 +366,33 @@ def generate_report(results: Dict[str, Any], out_dir: Path) -> Path:
         a("\n## 7. Sensibilidad a costes de transacción\n")
         a(_df_to_md(sens))
 
+    refl = results.get("reflexion") or {}
+    if refl:
+        a("\n## 7b. Actividad de la memoria de reflexión\n")
+        if not refl.get("activa"):
+            a(f"Capa desactivada ({refl.get('motivo')}). Ningún peso fue recortado por "
+              "expectativa histórica.\n")
+        else:
+            pct = refl.get("pct_senales_recortadas") or 0.0
+            factor = refl.get("factor_medio_cuando_recorta")
+            a("Cuánto llegó a ACTUAR la capa, que es distinto de cuánto aportó. Sin estas "
+              "cifras no se puede separar «la reflexión no ayuda» de «la reflexión nunca "
+              "se activó»: la primera pide retirarla, la segunda pide más histórico.\n")
+            a(f"- Señales evaluadas: {refl.get('senales_evaluadas')}; "
+              f"archivadas: {refl.get('observaciones_anotadas')}; "
+              f"ya desenlazadas al final: {refl.get('observaciones_desenlazadas')}.")
+            a(f"- Señales con el peso recortado: {refl.get('senales_recortadas')} "
+              f"({pct:.1%} del total)"
+              + (f", con un factor medio de ×{factor:.2f}." if factor else "."))
+            a(f"- Primer recorte: {refl.get('primer_recorte') or 'nunca'}. "
+              f"Horizonte de desenlace: {refl.get('horizonte_sesiones')} sesiones.")
+            media = refl.get("media_global_final")
+            if media is not None:
+                a(f"- Rentabilidad media en exceso sobre el índice de TODAS las señales del "
+                  f"sistema, a {refl.get('horizonte_sesiones')} sesiones: {media:+.2%}. "
+                  "Es la medida más directa de si la selección aporta: por encima de cero, "
+                  "las señales anticipan al mercado; por debajo, no.")
+
     a("\n## 8. Limitaciones y sesgos residuales\n")
     a("Esta sección no se suaviza. Cada punto es una razón concreta por la que el "
       "resultado de arriba podría no repetirse fuera de muestra.\n")
@@ -373,7 +415,12 @@ def generate_report(results: Dict[str, Any], out_dir: Path) -> Path:
 
     # JSON de resultados
     payload = {
-        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        # Identificador determinista del estudio, NO un reloj de pared: dos
+        # ejecuciones `--offline` con la misma configuración tienen que producir
+        # ficheros idénticos byte a byte.
+        "estudio": (f"{results.get('regime')}_"
+                    f"{(results.get('config') or {}).get('start')}_"
+                    f"{(results.get('config') or {}).get('end')}"),
         "regime": regime,
         "regime_label": REGIME_LABEL[regime],
         "config": cfg,
@@ -388,6 +435,22 @@ def generate_report(results: Dict[str, Any], out_dir: Path) -> Path:
         "avg_exposure": results.get("avg_exposure"),
         "turnover": results.get("turnover"),
         "total_costs": results.get("total_costs"),
+        # Órdenes limitadas que expiraron sin rellenarse: sin esta cifra no se
+        # puede saber cuántas señales se dejaron pasar, y una regla que solo
+        # opera cuando el precio le viene encima parecería mejor de lo que es.
+        "ordenes_expiradas": results.get("ordenes_expiradas", 0),
+        # Vintage de cada serie externa que alimentó la decisión.
+        "vintages": results.get("vintages") or {},
+        # Actividad del meta-modelo: cuántas etiquetas se anotaron, cuántas se
+        # resolvieron y qué pasó en cada reentrenamiento walk-forward. Sin estas
+        # cifras no se puede distinguir «el modelo no ayuda» de «el modelo nunca
+        # llegó a entrenar», que son diagnósticos distintos con remedios distintos.
+        "meta": results.get("meta") or {"activo": False},
+        # Actividad de la memoria de reflexión. Va al JSON aunque sea
+        # diagnóstico y no rendimiento: sin estas cifras el informe no puede
+        # distinguir «la capa no ayuda» de «la capa nunca llegó a actuar», que
+        # piden remedios opuestos.
+        "reflexion": results.get("reflexion"),
         "skips": results.get("skips"),
         "limitations": limitations,
         "next_steps": results["next_steps"],
